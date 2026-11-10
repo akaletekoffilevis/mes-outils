@@ -106,6 +106,23 @@ jobs:
           test -f "squashfs-root/usr/lib/mes-outils/_internal/modules.json"
           rm -rf squashfs-root
 
+      - name: Démarrage de l'AppImage (écran virtuel)
+        # La bulle doit démarrer et le tableau de bord répondre, sans erreur.
+        run: |
+          sudo apt-get install -y --no-install-recommends xvfb
+          export MES_OUTILS_DONNEES="$RUNNER_TEMP/essai-mes-outils"
+          mkdir -p "$MES_OUTILS_DONNEES"
+          xvfb-run -a ./dist/Mes-outils-x86_64.AppImage --appimage-extract-and-run > demarrage.log 2>&1 &
+          for i in $(seq 1 40); do
+            if curl -sf -o /dev/null http://127.0.0.1:8760/; then echo "Tableau de bord : OK"; break; fi
+            sleep 1
+          done
+          sleep 3
+          cat demarrage.log
+          cat "$MES_OUTILS_DONNEES/hub.log" 2>/dev/null || true
+          if grep -q "Traceback" demarrage.log; then echo "::error::Erreur au démarrage de l'AppImage : $(grep -A3 -m1 Error demarrage.log | tr '\n' ' ')"; exit 1; fi
+          curl -sf -o /dev/null http://127.0.0.1:8760/ || { echo "::error::Le tableau de bord ne répond pas"; exit 1; }
+
       - uses: actions/upload-artifact@v4
         with:
           name: Mes-outils-AppImage

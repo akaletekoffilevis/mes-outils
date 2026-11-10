@@ -63,7 +63,9 @@ ICONE_PNG = os.path.join(OUTIL, "mes_outils.png")
 
 # Linux : icône de la zone de notification (jeepney, D-Bus en pur Python) et
 # trousseau du bureau (secretstorage) ; facultatives, prises si installées.
-EN_PLUS = ["icone_linux"]
+# PIL._tkinter_finder : ImageTk (dessin de la bulle) le charge à la volée,
+# PyInstaller ne le voit pas sous Linux.
+EN_PLUS = ["icone_linux", "PIL.ImageTk", "PIL._tkinter_finder"]
 if not WINDOWS:
     from PyInstaller.utils.hooks import collect_submodules
     for paquet in ("jeepney", "secretstorage"):
