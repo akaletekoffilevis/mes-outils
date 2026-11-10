@@ -21,7 +21,7 @@ PC, sans compte ni service en ligne.
 - [Accueil](#accueil)
 - Au quotidien : [Mails](#mails) · [Notes](#notes) · [Tâches](#tâches) ·
   [Agenda](#agenda) · [Mots de passe](#mots-de-passe)
-- Clients et ventes : [Contacts](#contacts) · [Devis et factures](#devis-et-factures) ·
+- Clients et ventes : [Missions](#missions) · [Contacts](#contacts) · [Devis et factures](#devis-et-factures) ·
   [Dépenses](#dépenses) · [Temps](#temps)
 - Organisation : [Documents](#documents) · [Réunions et déplacements](#réunions-et-déplacements) ·
   [Échéances](#échéances) · [Modèles de messages](#modèles-de-messages) ·
@@ -268,6 +268,43 @@ Un coffre chiffré, ouvert avec un mot de passe maître.
 > coffre est perdu. Notez-le sur papier.
 
 ## Clients et ventes
+
+### Missions
+
+Des offres de missions freelance et de postes en télétravail, triées selon ce
+que vous cherchez, et le suivi de vos candidatures.
+
+![Missions : la sélection d'une recherche](images/fr/missions.webp)
+
+- **Sources** : Remotive, Remote OK, Himalayas, Jobicy et We Work Remotely,
+  lues depuis votre PC deux fois par jour au plus. Chaque offre renvoie à sa
+  page d'origine. Bouton **Sources** pour en désactiver une.
+- **Recherches enregistrées** : une par type de mission (par exemple
+  « Missions Odoo » et « Développement React »), chacune avec sa liste et son
+  compteur de nouvelles offres. Au premier passage, un modèle est proposé selon
+  votre métier.
+- **Ce que vous cherchez** : domaines (développement, support client,
+  assistanat, rédaction…), types (freelance, contrat, temps plein, temps
+  partiel), zones d'où vous pouvez postuler, niveau, salaire minimum, mots
+  importants (+5), utiles (+2) et à éviter (−5), score minimum.
+
+![Réglage d'une recherche](images/fr/missions-recherche.webp)
+
+- **Sélection** : chaque offre a un score et les mots qui l'ont fait remonter.
+  Les nouvelles sont en haut, celles déjà vues en dessous. Un clic déplie
+  l'offre : technologies, expérience demandée, **Ouvrir l'offre**,
+  **Postuler**, **Ajouter l'entreprise aux contacts**, **Masquer**.
+- **Postuler** : un message à copier, ou un de vos modèles (application
+  Modèles), avec le poste, l'entreprise et le lien déjà remplis. L'offre passe
+  ensuite dans **Candidatures**.
+- **Candidatures** : à voir, postulé, entretien, refus, retenu, avec une note et
+  une date de relance (une tâche est créée si Tâches est active).
+- **Chercher aussi sur** : Malt, Codeur.com, ComeUp, Upwork, LinkedIn et Indeed
+  s'ouvrent dans le navigateur avec vos mots-clés.
+- La bulle prévient quand de nouvelles offres correspondent à une recherche.
+
+Vous aviez un profil `profil.json` (outil metiers-tension) ? Il s'importe en
+une recherche « Mon profil ».
 
 ### Contacts
 
@@ -665,4 +702,4 @@ si elle le souhaite, sur l'Accueil. Tout est expliqué dans
 
 ---
 
-Anciennes versions de ce guide : [version 1.5](archives/v1.5/GUIDE.md) · [version 1.4](archives/v1.4/GUIDE.md) · [version 1.3](archives/v1.3/GUIDE.md).
+Anciennes versions de ce guide : [version 1.7](archives/v1.7/GUIDE.md) · [version 1.5](archives/v1.5/GUIDE.md) · [version 1.4](archives/v1.4/GUIDE.md) · [version 1.3](archives/v1.3/GUIDE.md).

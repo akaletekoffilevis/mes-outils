@@ -20,7 +20,7 @@ Everything runs on your PC, with no account and no online service.
 - [Home](#home)
 - Everyday: [Email](#email) · [Notes](#notes) · [Tasks](#tasks) ·
   [Calendar](#calendar) · [Passwords](#passwords)
-- Clients & sales: [Contacts](#contacts) · [Quotes & invoices](#quotes--invoices) ·
+- Clients & sales: [Missions](#missions) · [Contacts](#contacts) · [Quotes & invoices](#quotes--invoices) ·
   [Expenses](#expenses) · [Time](#time)
 - Organisation: [Documents](#documents) · [Meetings and trips](#meetings-and-trips) ·
   [Due dates](#due-dates) · [Message templates](#message-templates) ·
@@ -260,6 +260,39 @@ An encrypted vault, opened with a master password.
 > lost. Write it down on paper.
 
 ## Clients & sales
+
+### Missions
+
+Freelance gigs and remote jobs, sorted by what you are looking for, and a
+tracker for your applications.
+
+![Missions: the selection of a search](images/en/missions.webp)
+
+- **Sources**: Remotive, Remote OK, Himalayas, Jobicy and We Work Remotely,
+  read from your PC at most twice a day. Each offer links to its original page.
+  The **Sources** button turns one off.
+- **Saved searches**: one per kind of gig (for example "Odoo gigs" and "React
+  development"), each with its own list and count of new offers. On first use,
+  a template is suggested from your role.
+- **What you are looking for**: fields (development, customer support,
+  assistance, writing…), types (freelance, contract, full-time, part-time),
+  zones you can apply from, level, minimum salary, important (+5), useful (+2)
+  and avoided (−5) words, minimum score.
+
+![Editing a search](images/en/missions-recherche.webp)
+
+- **Selection**: each offer has a score and the words that raised it. New ones
+  come first, already seen ones below. A click opens the offer: technologies,
+  experience required, **Open offer**, **Apply**, **Add company to
+  contacts**, **Hide**.
+- **Apply**: a message to copy, or one of your templates (Templates app), with
+  the job, company and link already filled in. The offer then moves to
+  **Applications**.
+- **Applications**: to review, applied, interview, rejected, hired, with a note
+  and a follow-up date (a task is created if Tasks is on).
+- **Also search on**: Malt, Codeur.com, ComeUp, Upwork, LinkedIn and Indeed
+  open in the browser with your keywords.
+- The bubble tells you when new offers match a search.
 
 ### Contacts
 
@@ -637,4 +670,4 @@ Everything is explained in [MODULES.md](MODULES.md) (in French).
 
 ---
 
-Older versions of this guide: [version 1.5](archives/v1.5/GUIDE.en.md) · [version 1.4](archives/v1.4/GUIDE.en.md) · [version 1.3](archives/v1.3/GUIDE.en.md).
+Older versions of this guide: [version 1.7](archives/v1.7/GUIDE.en.md) · [version 1.5](archives/v1.5/GUIDE.en.md) · [version 1.4](archives/v1.4/GUIDE.en.md) · [version 1.3](archives/v1.3/GUIDE.en.md).

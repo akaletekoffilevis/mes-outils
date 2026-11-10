@@ -32,6 +32,9 @@ anglais, thème clair ou sombre, palette de commandes (Ctrl + K).
   chiffré AES-256-GCM, clé tirée du mot de passe maître par scrypt).
 
 **Clients et ventes**
+- **Missions** : offres freelance et télétravail (Remotive, Remote OK,
+  Himalayas, Jobicy, We Work Remotely) triées selon ce que vous cherchez
+  (domaines, type, zones, niveau, salaire, mots-clés), suivi des candidatures.
 - **Contacts** : personnes et entreprises, historique des échanges, relances,
   import et export CSV.
 - **Devis et factures** : numérotation automatique, TVA multi-taux, remises,

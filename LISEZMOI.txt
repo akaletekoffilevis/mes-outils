@@ -73,6 +73,15 @@ Tâches    Titre, description, échéance (heure facultative), priorité,
              glisser-déposer). Ajout rapide : taper le titre puis Entrée.
              Rappel par la bulle pour les tâches avec une heure.
 
+Missions  Offres freelance et télétravail (Remotive, Remote OK, Himalayas,
+             Jobicy, We Work Remotely), lues deux fois par jour au plus.
+             Recherches enregistrées : domaines, types, zones, niveau, salaire
+             minimum, mots importants / utiles / à éviter, score minimum.
+             Chaque offre a un score ; Postuler (message ou modèle), Ajouter
+             l'entreprise aux contacts, Masquer. Onglet Candidatures : à voir,
+             postulé, entretien, refus, retenu, relance (tâche). Liens vers
+             Malt, Codeur.com, ComeUp, Upwork, LinkedIn, Indeed.
+
 Contacts  Personnes et entreprises : coordonnées, statut (prospect, client,
              ancien, fournisseur), étiquettes, historique daté (appel, mail,
              rendez-vous, note), relance à une date (rappel par la bulle).

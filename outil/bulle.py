@@ -85,7 +85,8 @@ ANGLAIS = {
 # Applications qui peuvent envoyer des rappels par la bulle (alertes_dues),
 # avec le titre de la carte de rappel.
 APPS_ALERTES = {"temps": "Pomodoro", "taches": "Tâche", "contacts": "Relance", "factures": "Facture",
-                "depenses": "Budget", "documents": "Document", "echeances": "Échéance", "reunions": "Réunion"}
+                "depenses": "Budget", "documents": "Document", "echeances": "Échéance", "reunions": "Réunion",
+                "missions": "Missions"}
 
 
 def tr(texte, **valeurs):
