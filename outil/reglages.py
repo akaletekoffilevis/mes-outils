@@ -34,6 +34,8 @@ def lire(_d=None):
         "langue": config.langue(),
         "theme": config.theme(),
         "onglets_masques": contenu.get("onglets_masques") or [],
+        "apps_actives": contenu.get("apps_actives"),
+        "profil": contenu.get("profil") or "",
         "dossiers_projets": config.dossiers_projets(),
         "version": config.VERSION,
         "depot": config.DEPOT,
@@ -55,6 +57,17 @@ def enregistrer(d):
         if d["theme"] not in config.THEMES:
             raise ValueError("Thème inconnu.")
         valeurs["theme"] = d["theme"]
+    if "apps_actives" in d:
+        apps = d["apps_actives"]
+        if apps is not None and (not isinstance(apps, list) or not all(isinstance(n, str) and n.isidentifier() for n in apps)):
+            raise ValueError("Liste d'applications invalide.")
+        valeurs["apps_actives"] = None if apps is None else sorted(set(apps) - set(config.APPS_FIXES))
+    if "profil" in d:
+        if d["profil"] not in config.PROFILS:
+            raise ValueError("Profil inconnu.")
+        valeurs["profil"] = d["profil"]
+    if "assistant_fait" in d:
+        valeurs["assistant_fait"] = bool(d["assistant_fait"])
     if "onglets_masques" in d:
         masques = d["onglets_masques"] or []
         if not isinstance(masques, list) or not all(isinstance(n, str) and n.isidentifier() for n in masques):

@@ -94,6 +94,23 @@ window.t = window.I18N.t;
    (Les onglets ont leur propre dictionnaire dans outil/web/<nom>.js.)
    --------------------------------------------------------------------------- */
 I18N.ajouter({
+  // descriptions des applications (page Applications, assistant de démarrage)
+  "Votre boîte mail (Gmail, Yahoo, OVH…) : lire, répondre, écrire.": "Your mailbox (Gmail, Yahoo, OVH…): read, reply, write.",
+  "Notes en cartes ou listes à cocher, épinglées, avec rappel.": "Notes as cards or checklists, pinned, with reminders.",
+  "Rendez-vous de la semaine et du mois, rappels par la bulle.": "Appointments for the week and month, reminders from the bubble.",
+  "Coffre chiffré pour vos mots de passe et codes.": "Encrypted vault for your passwords and codes.",
+  "Chrono par projet ou client, Pomodoro, export pour la facturation.": "Timer per project or client, Pomodoro, export for invoicing.",
+  "Les derniers textes copiés, pour les retrouver en un clic.": "Your latest copied texts, one click away.",
+  "Vos commandes et bouts de code favoris.": "Your favourite commands and code snippets.",
+  "JWT, JSON, Base64, UUID, expressions régulières…": "JWT, JSON, Base64, UUID, regular expressions…",
+  "Vos serveurs de dev et vos serveurs Odoo : démarrer, arrêter, journal.": "Your dev servers and Odoo servers: start, stop, log.",
+  "Vos projets : VS Code, terminal, serveurs de dev, état Git.": "Your projects: VS Code, terminal, dev servers, Git status.",
+  "Dépôts, pull requests, issues, état des tests GitHub.": "Repositories, pull requests, issues, GitHub test status.",
+  "Quel programme occupe tel port, et l'arrêter.": "Which program uses a port, and stop it.",
+  "Conteneurs Docker : démarrer, arrêter, journaux.": "Docker containers: start, stop, logs.",
+  "Tester une API : requêtes, réponses, historique.": "Test an API: requests, responses, history.",
+  "Une clé par serveur, posée en un clic.": "One key per server, installed in one click.",
+  "Réunions et trajets": "Meetings and trips",
   // en-tête
   "Coucou !": "Hi there!",
   "Bonjour": "Hello",

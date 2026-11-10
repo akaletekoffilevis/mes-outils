@@ -25,10 +25,24 @@ Pastille rouge (en bas)  tests GitHub (Actions) en échec
 Le tableau de bord s'ouvre dans une fenêtre Edge sans barre d'adresse. La
 fermer (ou la croix) ne coupe rien : la bulle reste là.
 
-Menu à gauche : les onglets, rangés en « Au quotidien », « Développement »,
-« Petits outils ». Ctrl + K (ou « Rechercher… » en haut) : aller à un onglet,
-lancer un outil ou une action au clavier. : thème clair, sombre ou
-automatique (comme Windows).
+Menu à gauche : les applications actives, rangées en « Au quotidien »,
+« Clients et ventes », « Organisation », « Développement », « Petits
+outils ». Ctrl + K (ou « Rechercher… » en haut) : aller à une application,
+lancer un outil ou une action au clavier. Bouton soleil/lune : thème clair,
+sombre ou automatique (comme Windows).
+
+
+PREMIER LANCEMENT ET APPLICATIONS
+---------------------------------
+Au premier lancement, trois étapes : votre prénom et la langue, votre métier
+(freelance, assistant virtuel, assistant de direction, développeur ou
+personnalisé), puis les applications à garder (cochées d'après le métier,
+modifiables).
+
+Page « Applications » (menu, en bas) : un interrupteur par application.
+Désactiver une application la retire du menu, de l'Accueil, de Ctrl + K et
+de la bulle ; ses données restent et reviennent quand on la réactive.
+« Repartir d'un métier… » recoche les applications d'un métier.
 
 
 LES OUTILS
@@ -47,7 +61,67 @@ LES OUTILS
 LES ONGLETS
 -----------
 Accueil   « Aujourd'hui » (rendez-vous du jour et du lendemain, notes
-             épinglées, mails non lus), vos outils, les serveurs Odoo.
+             épinglées, mails non lus) et une carte par application active
+             qui a quelque chose à signaler (tâches du jour, relances,
+             factures impayées, budget, échéances, documents à renouveler,
+             prochaine réunion), puis vos outils.
+
+Tâches    Titre, description, échéance (heure facultative), priorité,
+             étiquettes, client, sous-étapes à cocher, répétition (chaque
+             jour, semaine ou mois). Vue Liste (en retard, aujourd'hui, cette
+             semaine, plus tard) ou Tableau (À faire, En cours, Fait, par
+             glisser-déposer). Ajout rapide : taper le titre puis Entrée.
+             Rappel par la bulle pour les tâches avec une heure.
+
+Contacts  Personnes et entreprises : coordonnées, statut (prospect, client,
+             ancien, fournisseur), étiquettes, historique daté (appel, mail,
+             rendez-vous, note), relance à une date (rappel par la bulle).
+             Import et export CSV (Excel) : une fiche déjà présente est
+             complétée, jamais écrasée.
+
+Devis et factures
+             Première fois : votre entreprise (nom, adresse, identifiants,
+             logo, TVA, devise, préfixes de numérotation). Devis, factures et
+             avoirs : lignes, plusieurs taux de TVA, remise ; numéro attribué
+             à l'émission, à la suite, remis à 1 chaque année ; un document
+             émis n'est plus modifiable (avoir pour corriger). Devis accepté
+             = transformé en facture. Paiements partiels, retard signalé par
+             la bulle, PDF (dans Documents\Mes outils\Factures\<année>),
+             envoi par mail, import des heures de Temps, export CSV.
+
+Dépenses  Tableau de bord du mois (budget, reste par jour, projection),
+             dépenses par mois, charges fixes ajoutées seules chaque mois,
+             budget, épargne (reprise possible en cas de dépassement),
+             statistiques, catégories. Dépense professionnelle : client,
+             statut (à rembourser, remboursée, refacturée), justificatif
+             photo ou PDF ; onglet Notes de frais ; export CSV.
+
+Documents Un classeur de vos documents importants : le fichier reste où il
+             est (copie facultative dans Documents\Mes outils\Classeur).
+             Type, client ou projet, étiquettes, date d'expiration avec
+             rappel. Un fichier déplacé est signalé « Introuvable » avec
+             « Retrouver… ». « Retirer de la liste » ne supprime jamais le
+             fichier.
+
+Réunions et déplacements
+             Réunions : participants, ordre du jour, notes, décisions,
+             actions (transformées en tâches), compte rendu préparé dans un
+             mail, ajout à l'agenda. Déplacements : trajets, hébergement,
+             documents, liste à emporter, feuille de route imprimable.
+             Rappels : 15 minutes avant une réunion, la veille d'un départ.
+
+Échéances Abonnements, contrats, assurances, noms de domaine, loyers :
+             montant, périodicité, prochaine date, reconduction tacite et
+             préavis. Rappel avant l'échéance et avant la date limite de
+             résiliation. « Payé » passe à la période suivante. Coût mensuel
+             et annuel par catégorie, export CSV.
+
+Modèles de messages
+             Réponses types, relances, confirmations : textes avec variables
+             ({prenom}, {montant}…) remplies au moment de l'utilisation, avec
+             un contact choisi dans Contacts. Copier, ouvrir dans un mail,
+             ou bouton « Modèle » dans la fenêtre Nouveau mail. Favoris,
+             catégories, import et export.
 
 Mails     Votre boîte mail : Gmail, Yahoo, iCloud, Zoho, Fastmail, GMX,
              OVH, Orange, Free, La Poste, ou « Autre » (serveurs IMAP/SMTP
@@ -159,9 +233,10 @@ Temps     Chrono par projet (un seul à la fois), Pomodoro (la bulle
              prévient à la fin de chaque période), sessions par jour, semaine
              ou mois, totaux par projet, export CSV pour Excel.
 
-Réglages  Prénom, langue (français / anglais), thème, onglets affichés,
-             dossiers de projets, démarrage avec Windows, raccourci sur le
-             Bureau, mise à jour (si installé avec git clone).
+Réglages  Prénom, langue (français / anglais), thème, métier et
+             applications (bouton « Choisir mes applications »), dossiers de
+             projets, démarrage avec Windows, raccourci sur le Bureau, mise à
+             jour.
 
 WhatsApp  La tuile ouvre WhatsApp Web dans sa propre fenêtre (votre
              WhatsApp habituel : scannez le QR code une fois avec le téléphone).
@@ -173,6 +248,9 @@ LES RAPPELS
 bulle frétille : « Ouvrir » (affiche la note ou l'agenda), « Plus tard »
 (dans 10 minutes) ou « OK ». Les rappels manqués pendant que le PC était
 éteint apparaissent au démarrage (jusqu'à 2 jours de retard).
+Les applications actives ajoutent leurs propres rappels : tâche à l'heure,
+contact à relancer, facture en retard, budget dépassé, document qui expire,
+échéance, réunion et départ en déplacement.
 
 
 LES SERVEURS ODOO
@@ -202,9 +280,11 @@ LES FICHIERS
   outil\coffre.py      le coffre à mots de passe
   outil\github.py      l'onglet GitHub (connexion, dépôts, clonage, envoi, PR, Actions)
   outil\<nom>.py et outil\web\<nom>.js
-                       un onglet chacun (projets, ports, conteneurs, requetes,
-                       extraits, presse_papiers, temps, reglages…) ; pour en
-                       ajouter un : docs\MODULES.md
+                       une application chacune (taches, contacts, factures,
+                       depenses, documents, echeances, reunions, modeles,
+                       projets, ports, temps, reglages…) ; leurs données
+                       dans donnees\<nom>.json (fichiers joints dans
+                       donnees\<nom>\) ; pour en ajouter une : docs\MODULES.md
   outil\config.py      lecture et écriture d'outils.json et du dossier donnees
   outil\coffre_windows.py  lecture et écriture dans le coffre de Windows
   tests\               tests automatiques : python -m unittest discover -s tests

@@ -4,6 +4,7 @@
    passe est rangé dans le coffre Windows (voir mail.py). */
 (() => {
   I18N.ajouter({
+    "Modèle": "Template",
     "Mails": "Mail",
     "✉️ Mails": "✉️ Mail",
     // connexion
@@ -436,13 +437,24 @@
         if (M.dossier === "envoyes") rafraichir();
       } catch (e) { toast("😕 " + e.message, "erreur", 7000); envoyer.disabled = false; envoyer.textContent = t("📨 Envoyer"); }
     } }, "📨 Envoyer");
+    // Application Modèles de messages : insérer un texte prêt à l'emploi.
+    // Le mail en cours est gardé (la fenêtre est remplacée le temps du choix).
+    const boutonModele = window.Modeles && appActive("modeles")
+      ? el("button", { class: "btn", style: "margin-right:auto", onclick: () => {
+          const enCours = { ...v, a: a.value, cc: cc.value, sujet: objet.value, corps: corps.value };
+          Modeles.choisir(r => composer({ ...enCours,
+            a: enCours.a || r.a || "",
+            sujet: enCours.sujet || r.objet || "",
+            corps: (r.texte || "") + (enCours.corps ? "\n\n" + enCours.corps : "") }));
+        } }, icone("message-square-text"), "Modèle")
+      : null;
     fenetre([
       el("h3", {}, v.reponse_a ? "↩️ Répondre" : "✏️ Nouveau mail"),
       el("label", { class: "champ" }, "À", a),
       el("label", { class: "champ" }, "Cc", cc),
       el("label", { class: "champ" }, "Objet", objet),
       el("label", { class: "champ" }, "Message", corps),
-      el("div", { class: "actions" }, el("button", { class: "btn", onclick: fermer }, "Annuler"), envoyer)]);
+      el("div", { class: "actions" }, boutonModele, el("button", { class: "btn", onclick: fermer }, "Annuler"), envoyer)]);
     $("#fenetre").style.width = "min(720px, 94vw)";
     setTimeout(() => { (v.a ? corps : a).focus(); if (v.a) corps.setSelectionRange(0, 0); }, 60);
   }

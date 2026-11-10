@@ -842,7 +842,42 @@ $("#btn-quitter").onclick = async () => {
 // afficher() est appelée à chaque ouverture de l'onglet (section #vue-<nom>).
 // Groupes : quotidien, dev, outils, systeme.
 window.VUES = window.VUES || {};
-const GROUPES = { quotidien: "Au quotidien", dev: "Développement", outils: "Petits outils", systeme: "Mes outils" };
+const GROUPES = { quotidien: "Au quotidien", clients: "Clients et ventes", organisation: "Organisation",
+  dev: "Développement", outils: "Petits outils", systeme: "Mes outils" };
+// Métiers proposés au premier lancement (config.PROFILS).
+const PROFILS = {
+  freelance: { titre: "Freelance", icone: "briefcase", detail: "Clients, devis, factures, temps passé." },
+  assistant_virtuel: { titre: "Assistant(e) virtuel(le)", icone: "headset", detail: "Plusieurs clients, tâches, messages types." },
+  assistant_direction: { titre: "Assistant(e) de direction", icone: "calendar-check", detail: "Agenda, réunions, déplacements, documents." },
+  developpeur: { titre: "Développeur", icone: "code", detail: "Projets, serveurs, GitHub, outils techniques." },
+  personnalise: { titre: "Je choisis moi-même", icone: "settings", detail: "Partir de zéro et cocher ce qui sert." },
+};
+const TOUS_PROFILS = ["freelance", "assistant_virtuel", "assistant_direction", "developpeur"];
+// Applications toujours présentes (jamais désactivables).
+const APPS_FIXES = ["accueil", "applications", "reglages"];
+// Catalogue des applications écrites avant la page Applications : description,
+// métiers, catégorie. Ce qu'un onglet déclare lui-même dans VUES l'emporte,
+// sauf la catégorie, imposée ici quand elle a changé (SURCHARGES).
+const CATALOGUE = {
+  mails: { description: "Votre boîte mail (Gmail, Yahoo, OVH…) : lire, répondre, écrire.", profils: TOUS_PROFILS },
+  notes: { description: "Notes en cartes ou listes à cocher, épinglées, avec rappel.", profils: TOUS_PROFILS },
+  agenda: { description: "Rendez-vous de la semaine et du mois, rappels par la bulle.", profils: TOUS_PROFILS },
+  motsdepasse: { description: "Coffre chiffré pour vos mots de passe et codes.", profils: TOUS_PROFILS },
+  temps: { description: "Chrono par projet ou client, Pomodoro, export pour la facturation.", profils: TOUS_PROFILS },
+  presse_papiers: { description: "Les derniers textes copiés, pour les retrouver en un clic.", profils: TOUS_PROFILS },
+  extraits: { description: "Vos commandes et bouts de code favoris.", profils: ["developpeur"] },
+  boite: { description: "JWT, JSON, Base64, UUID, expressions régulières…", profils: ["developpeur"] },
+  serveurs: { description: "Vos serveurs de dev et vos serveurs Odoo : démarrer, arrêter, journal.", profils: ["developpeur"] },
+  projets: { description: "Vos projets : VS Code, terminal, serveurs de dev, état Git.", profils: ["developpeur"] },
+  github: { description: "Dépôts, pull requests, issues, état des tests GitHub.", profils: ["developpeur"] },
+  ports: { description: "Quel programme occupe tel port, et l'arrêter.", profils: ["developpeur"] },
+  conteneurs: { description: "Conteneurs Docker : démarrer, arrêter, journaux.", profils: ["developpeur"] },
+  requetes: { description: "Tester une API : requêtes, réponses, historique.", profils: ["developpeur"] },
+  ssh: { description: "Une clé par serveur, posée en un clic.", profils: ["developpeur"] },
+};
+// titreMenu : libellé plus court dans le menu (le titre complet reste en info-bulle).
+const SURCHARGES = { temps: { groupe: "clients", ordre: 40 }, presse_papiers: { groupe: "organisation", ordre: 50 },
+  reunions: { titreMenu: "Réunions et trajets" } };
 // Onglets écrits avant le menu latéral (ils ne déclarent que afficher()).
 const ONGLETS_CONNUS = {
   accueil: { titre: "Accueil", icone: "🏠", groupe: "quotidien", ordre: 0 },
@@ -854,16 +889,22 @@ const ONGLETS_CONNUS = {
   ssh: { titre: "SSH", icone: "🔑", groupe: "dev", ordre: 60 },
 };
 VUES.accueil = { afficher: () => afficherAujourdhui() };
-function infosOnglet(nom) { return { ...(ONGLETS_CONNUS[nom] || {}), ...(VUES[nom] || {}) }; }
+function infosOnglet(nom) { return { ...(ONGLETS_CONNUS[nom] || {}), ...(CATALOGUE[nom] || {}), ...(VUES[nom] || {}), ...(SURCHARGES[nom] || {}) }; }
+/** Vrai si l'application est active (choisie au premier lancement ou dans
+    la page Applications ; anciennes installations : tout sauf les masqués). */
+function appActive(nom) {
+  if (APPS_FIXES.includes(nom)) return true;
+  if (Array.isArray(S.appsActives)) return S.appsActives.includes(nom);
+  return !(S.masques || []).includes(nom);
+}
 /** Les onglets qui ont un titre, avec leurs infos (Réglages s'en sert). */
 function listeOnglets() {
   return Object.keys(VUES).filter(n => $("#vue-" + n) && infosOnglet(n).titre).map(n => ({ nom: n, ...infosOnglet(n) }));
 }
 function construireMenu() {
-  const masques = new Set(S.masques || []);
   const parGroupe = {};
   for (const o of listeOnglets()) {
-    if (masques.has(o.nom) && o.nom !== "accueil" && o.nom !== "reglages") continue;
+    if (!appActive(o.nom)) continue;
     (parGroupe[o.groupe || "outils"] ||= []).push(o);
   }
   const nav = $("#onglets");
@@ -876,7 +917,7 @@ function construireMenu() {
     for (const o of liste) {
       const titre = I18N.traduire(o.titre);
       nav.append(el("button", { "data-vue": o.nom, title: titre, onclick: () => montrerVue(o.nom) },
-        el("span", { class: "ic" }, iconeOnglet(o.icone)), el("span", { class: "lib" }, titre),
+        el("span", { class: "ic" }, iconeOnglet(o.icone)), el("span", { class: "lib" }, o.titreMenu ? I18N.traduire(o.titreMenu) : titre),
         o.nom === "mails" ? el("span", { class: "compteur", id: "compteur-mails", hidden: "" }) : null));
     }
   }
@@ -919,6 +960,8 @@ async function demarrerOnglets() {
   try { info = await api("/api/onglets"); } catch (e) { toast("😕 " + e.message, "erreur", 8000); }
   I18N.langue = info.langue;
   S.masques = info.masques;
+  S.appsActives = info.apps_actives;
+  S.profil = info.profil;
   appliquerTheme(info.theme || "auto");
   for (const f of info.fichiers) {
     const nom = f.replace(/\.js$/, "");
@@ -930,6 +973,8 @@ async function demarrerOnglets() {
   construireMenu();
   horloge();
   montrerVue((location.hash || "#accueil").slice(1) || "accueil");
+  // Installation neuve : assistant de démarrage (web/applications.js).
+  if (info.assistant && typeof window.assistantDemarrage === "function") window.assistantDemarrage();
   compterMails();
   chargerServeursProjets();
 }
@@ -953,17 +998,17 @@ async function afficherAujourdhui() {
     el("span", { class: "heure" }, e.journee ? "Jour" : e.debut.slice(11, 16)),
     el("span", { class: "pastille-c", style: `background:${e.couleur || "#6c4cf5"}` }), e.titre ? document.createTextNode(e.titre) : "Rendez-vous");
   const cartes = [
-    el("div", { class: "carte-jour", style: "--accent:var(--violet)", onclick: () => montrerVue("agenda") },
+    !appActive("agenda") ? null : el("div", { class: "carte-jour", style: "--accent:var(--violet)", onclick: () => montrerVue("agenda") },
       el("h4", {}, "📅 Aujourd'hui"),
       duJour.length ? duJour.map(ligneRdv) : el("div", { class: "rien" }, "Rien de prévu, profitez-en 🌴"),
       deDemain.length ? [el("h4", { style: "margin-top:12px" }, "Demain"), deDemain.slice(0, 3).map(ligneRdv)] : null),
-    el("div", { class: "carte-jour", style: "--accent:var(--ambre)", onclick: () => montrerVue("notes") },
+    !appActive("notes") ? null : el("div", { class: "carte-jour", style: "--accent:var(--ambre)", onclick: () => montrerVue("notes") },
       el("h4", {}, "📌 Notes épinglées"),
       epinglees.length ? epinglees.map(n => el("div", { class: "ligne-jour" },
         el("span", { class: "pastille-c", style: `background:${n.couleur || "#ffb020"}` }), (n.titre || (n.texte || "").slice(0, 50)) ? document.createTextNode(n.titre || (n.texte || "").slice(0, 50)) : "Note"))
         : el("div", { class: "rien" }, "Épinglez une note pour la retrouver ici")),
-  ];
-  if (S.mailsNonLus !== undefined && S.mailsNonLus !== null) {
+  ].filter(Boolean);
+  if (appActive("mails") && S.mailsNonLus !== undefined && S.mailsNonLus !== null) {
     cartes.push(el("div", { class: "carte-jour", style: "--accent:var(--corail)", onclick: () => montrerVue("mails") },
       el("h4", {}, "✉️ Mails"),
       el("div", { class: "ligne-jour" }, el("span", { class: "heure", style: "font-size:26px" }, String(S.mailsNonLus)),
@@ -975,16 +1020,32 @@ async function afficherAujourdhui() {
   const tour = (S.tourAujourdhui = (S.tourAujourdhui || 0) + 1);
   // Les cartes de développement d'un affichage précédent restent en place
   // jusqu'à l'arrivée des nouvelles (pas de clignotement).
-  box.replaceChildren(...cartes, ...box.querySelectorAll(".carte-dev"));
+  box.replaceChildren(...cartes, ...box.querySelectorAll(".carte-app, .carte-dev"));
+
+  // Cartes des autres applications actives (tâches du jour, factures
+  // impayées, échéances…) : VUES.<nom>.carteAccueil(), chacune facultative.
+  // Affichées dès qu'elles arrivent, sans attendre Git ni GitHub.
+  const fournisseurs = listeOnglets().filter(o => typeof o.carteAccueil === "function" && appActive(o.nom))
+    .sort((a, b) => (Object.keys(GROUPES).indexOf(a.groupe) - Object.keys(GROUPES).indexOf(b.groupe)) || ((a.ordre ?? 99) - (b.ordre ?? 99)));
+  Promise.all(fournisseurs.map(o => Promise.resolve().then(() => o.carteAccueil()).catch(e => { console.error(o.nom, e); return null; })))
+    .then(autres => {
+      if (tour !== S.tourAujourdhui) return;
+      const apps = autres.filter(Boolean);
+      apps.forEach(c => c.classList.add("carte-jour", "carte-app"));
+      if (box.querySelector(".carte-app")) apps.forEach(c => (c.style.animation = "none"));
+      box.querySelectorAll(".carte-app").forEach(c => c.remove());
+      const premierDev = box.querySelector(".carte-dev");
+      apps.forEach(c => box.insertBefore(c, premierDev));
+    });
 
   // Développement : état Git des projets, tests GitHub, chrono en cours.
   // Chaque morceau est facultatif (onglet masqué ou absent : rien) et
   // s'ajoute quand il arrive (GitHub peut être lent).
   const dev = [];
   const [git, ci, chrono] = await Promise.all([
-    VUES.projets ? api("/api/projets/git/etats", {}).catch(() => null) : null,
-    VUES.github ? api("/api/github/echecs_ci", {}).catch(() => null) : null,
-    VUES.temps ? api("/api/temps/etat", {}).catch(() => null) : null,
+    VUES.projets && appActive("projets") ? api("/api/projets/git/etats", {}).catch(() => null) : null,
+    VUES.github && appActive("github") ? api("/api/github/echecs_ci", {}).catch(() => null) : null,
+    VUES.temps && appActive("temps") ? api("/api/temps/etat", {}).catch(() => null) : null,
   ]);
   if (git?.git) {
     const etats = Object.values(git.git).filter(g => !g.erreur);
@@ -1121,13 +1182,14 @@ const P = { items: [], vus: [], choix: 0 };
 const sansAccents = s => (s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 function elementsPalette() {
   const items = [];
-  for (const o of listeOnglets()) {
+  for (const o of listeOnglets().filter(o => appActive(o.nom))) {
     items.push({ section: "Onglets", icone: iconeOnglet(o.icone), titre: I18N.traduire(o.titre), detail: I18N.traduire(GROUPES[o.groupe] || ""), action: () => montrerVue(o.nom) });
   }
   for (const o of S.config?.outils || []) {
     items.push({ section: "Mes outils", icone: icone(iconeOutil(o)), titre: o.nom, detail: o.description || "", action: () => lancer(o, document.createElement("div")) });
   }
   for (const n of Object.keys(VUES)) {
+    if (!appActive(n)) continue;  // actions des applications désactivées : non proposées
     try { for (const c of VUES[n].commandes?.() || []) items.push({ section: "Actions", icone: "▶", ...c, titre: I18N.traduire(c.titre), detail: I18N.traduire(c.detail || "") }); }
     catch (e) { console.error(e); }
   }

@@ -40,7 +40,16 @@ TABLE = {
 # Icônes de plus pour les tuiles et l'interface (sans emoji d'origine).
 EN_PLUS = ["app-window", "layout-grid", "info", "circle-check", "circle-alert", "loader-circle", "chevron-right", "chevron-down", "ellipsis",
            "server", "files", "file-code", "code", "kanban", "notebook", "music", "camera", "shopping-cart",
-           "cloud", "gamepad-2", "graduation-cap", "heart", "home", "printer", "video", "github"]
+           "cloud", "gamepad-2", "graduation-cap", "heart", "home", "printer", "video", "github",
+           # Applications 1.6 (tâches, contacts, factures, dépenses, documents, échéances, réunions, modèles)
+           "wallet", "credit-card", "piggy-bank", "banknote", "receipt-text", "euro", "chart-pie", "trending-down",
+           "plane", "hotel", "map-pin", "luggage", "train-front", "car", "calendar-clock", "calendar-check",
+           "calendar-days", "file-text", "file-plus", "file-down", "file-up", "file-pen-line", "file-check",
+           "contact", "building-2", "phone", "at-sign", "user-plus", "user-round", "users-round", "handshake",
+           "tag", "tags", "list-todo", "square-check", "flag", "bell", "bell-ring", "repeat", "hourglass",
+           "message-square-text", "mail-plus", "clipboard-list", "notebook-tabs", "upload", "archive", "filter",
+           "arrow-up-down", "grip-vertical", "layout-list", "columns-3", "copy", "circle-dot", "briefcase-business",
+           "presentation", "sparkles", "list", "landmark", "percent", "hash", "shield-check", "circle-plus", "headset", "chevron-left", "arrow-left"]
 
 noms = sorted({n for n in TABLE.values() if n} | set(EN_PLUS))
 icones, manquantes = {}, []

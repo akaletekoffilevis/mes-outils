@@ -2,6 +2,10 @@
 donnees/
 outils.json
 bulle.json
+# Copies de fichiers faites par l'application Documents
+Classeur/
+# PDF des devis et factures
+Factures/
 
 # Fichiers de travail
 *.bak

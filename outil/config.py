@@ -23,7 +23,7 @@ import shutil
 import sys
 import threading
 
-VERSION = "1.5.0"
+VERSION = "1.6.0"
 DEPOT = "https://github.com/rarianaAina/mes-outils"
 API_VERSIONS = "https://api.github.com/repos/rarianaAina/mes-outils/releases/latest"
 # Vrai dans le programme installé (Mes outils.exe) : pas de Python sur le PC.
@@ -51,6 +51,10 @@ FICHIER_BULLE = os.path.join(BASE, "bulle.json")
 JOURNAL = os.path.join(BASE if GELE else ICI, "hub.log")
 LANGUES = ("fr", "en")
 THEMES = ("auto", "clair", "sombre")
+# Métiers proposés au premier lancement (ils pré-cochent des applications).
+PROFILS = ("freelance", "assistant_virtuel", "assistant_direction", "developpeur", "personnalise")
+# Toujours présentes, jamais désactivables.
+APPS_FIXES = ("accueil", "applications", "reglages")
 
 _verrou = threading.RLock()
 
@@ -157,6 +161,18 @@ def langue():
 def theme():
     valeur = lire().get("theme") or "auto"
     return valeur if valeur in THEMES else "auto"
+
+
+def app_active(nom):
+    """Vrai si l'application est active (page Applications). Anciennes
+    installations sans choix : tout est actif sauf les onglets masqués."""
+    if nom in APPS_FIXES:
+        return True
+    contenu = lire()
+    choisies = contenu.get("apps_actives")
+    if isinstance(choisies, list):
+        return nom in choisies
+    return nom not in (contenu.get("onglets_masques") or [])
 
 
 def dossiers_projets():

@@ -213,6 +213,47 @@ class TestProgrammeInstalle(unittest.TestCase):
         self.assertIn("$env:MESOUTILS_SSH_SECRET", ssh_cles.CONTENU_ASKPASS)
 
 
+class TestApplications(ServeurTest):
+    """Applications actives, métier et assistant du premier lancement."""
+
+    def test_installation_neuve_passe_par_l_assistant(self):
+        with ConfigTemporaire({"assistant_fait": False, "outils": []}):
+            statut, r = self.get("/api/onglets")
+        self.assertEqual((statut, r["assistant"], r["apps_actives"]), (200, True, None))
+        with ConfigTemporaire({"prenom": "Alex", "outils": []}):
+            statut, r = self.get("/api/onglets")
+        self.assertFalse(r["assistant"], "une ancienne installation ne repasse pas par l'assistant")
+
+    def test_choix_des_applications(self):
+        with ConfigTemporaire({"assistant_fait": False, "outils": []}) as cfg:
+            statut, r = self.post("/api/reglages/enregistrer", {"apps_actives": ["taches", "agenda", "taches", "reglages"],
+                                                                 "profil": "freelance", "assistant_fait": True})
+            self.assertEqual(statut, 200)
+            contenu = cfg.lire()
+            self.assertEqual(contenu["apps_actives"], ["agenda", "taches"], "doublons et applications fixes retirés")
+            self.assertEqual((contenu["profil"], contenu["assistant_fait"]), ("freelance", True))
+            self.assertTrue(config.app_active("taches"))
+            self.assertFalse(config.app_active("github"))
+            self.assertTrue(config.app_active("reglages"), "toujours présente")
+
+    def test_valeurs_refusees(self):
+        with ConfigTemporaire() as cfg:
+            for valeurs in ({"profil": "pirate"}, {"apps_actives": "taches"}, {"apps_actives": ["<script>"]}):
+                statut, _ = self.post("/api/reglages/enregistrer", valeurs)
+                self.assertEqual(statut, 400, valeurs)
+            self.assertNotIn("apps_actives", cfg.lire())
+
+    def test_ancienne_installation_tout_actif_sauf_masques(self):
+        with ConfigTemporaire({"onglets_masques": ["ssh"], "outils": []}):
+            self.assertTrue(config.app_active("github"))
+            self.assertFalse(config.app_active("ssh"))
+
+    def test_page_applications_chargee(self):
+        with ConfigTemporaire():
+            statut, r = self.get("/api/onglets")
+        self.assertIn("applications.js", r["fichiers"])
+
+
 class TestDonnees(unittest.TestCase):
     def test_ecriture_sure_avec_copie(self):
         with ConfigTemporaire():

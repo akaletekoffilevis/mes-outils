@@ -53,7 +53,16 @@ ANGLAIS = {
     "Note rapide · 1re ligne = titre · Ctrl + Entrée pour enregistrer": "Quick note · 1st line = title · Ctrl + Enter to save",
     "1re ligne = titre · Ctrl + Entrée pour enregistrer": "1st line = title · Ctrl + Enter to save",
     "Annuler": "Cancel", "Enregistrer": "Save", "Copié : {texte}": "Copied: {texte}",
+    "Tâche": "Task", "Relance": "Follow-up", "Facture": "Invoice", "Budget": "Budget", "Document": "Document",
+    "Échéance": "Due date", "Réunion": "Meeting", "Tâches": "Tasks", "Contacts": "Contacts",
+    "Devis et factures": "Quotes & invoices", "Dépenses": "Expenses",
 }
+
+
+# Applications qui peuvent envoyer des rappels par la bulle (alertes_dues),
+# avec le titre de la carte de rappel.
+APPS_ALERTES = {"temps": "Pomodoro", "taches": "Tâche", "contacts": "Relance", "factures": "Facture",
+                "depenses": "Budget", "documents": "Document", "echeances": "Échéance", "reunions": "Réunion"}
 
 
 def tr(texte, **valeurs):
@@ -412,15 +421,26 @@ class Bulle:
                     self.afficher_rappel(rappel)
         except Exception as erreur:  # noqa: BLE001
             hub.journal(f"Rappels : {erreur}")
-        # Fin d'une période Pomodoro (onglet Temps).
-        temps = module("temps")
+        # Rappels des applications (fin de Pomodoro, tâche, relance, échéance…) :
+        # chaque application active qui a alertes_dues(). Les applications
+        # connues d'abord (ordre fixe), puis toute nouvelle application.
         try:
-            for alerte in temps.alertes_dues() if temps else []:
-                if ("temps", alerte["id"]) not in self.rappels_affiches:
-                    self.afficher_rappel({"genre": "temps", "id": alerte["id"], "titre": alerte.get("titre", ""),
-                                          "detail": alerte.get("detail")})
-        except Exception as erreur:  # noqa: BLE001
-            hub.journal(f"Alertes du chrono : {erreur}")
+            noms = list(APPS_ALERTES) + sorted(hub.modules_connus() - set(APPS_ALERTES) - {"config"})
+        except Exception:  # noqa: BLE001
+            noms = list(APPS_ALERTES)
+        for nom in noms:
+            try:
+                if not hub.config.app_active(nom):
+                    continue
+                mod = module(nom)
+                if not mod or not hasattr(mod, "alertes_dues"):
+                    continue
+                for alerte in mod.alertes_dues():
+                    if (nom, alerte["id"]) not in self.rappels_affiches:
+                        self.afficher_rappel({"genre": nom, "id": alerte["id"], "titre": alerte.get("titre", ""),
+                                              "detail": alerte.get("detail")})
+            except Exception as erreur:  # noqa: BLE001
+                hub.journal(f"Rappels de {nom} : {erreur}")
         self.racine.after(30000, self.suivre_rappels)
 
     def afficher_rappel(self, rappel):
@@ -434,8 +454,7 @@ class Bulle:
         self.rappels_affiches[cle] = f
         cadre = tk.Frame(f, bg="#ffffff", padx=16, pady=12)
         cadre.pack(padx=2, pady=2)
-        icone = {"notes": "📝", "agenda": "📅", "temps": "⏱️"}.get(rappel["genre"], "⏰")
-        entete = tr("Pomodoro") if rappel["genre"] == "temps" else tr("Rappel")
+        entete = tr(APPS_ALERTES.get(rappel["genre"], "Rappel"))
         tk.Label(cadre, text=entete.upper(), bg="#ffffff", fg="#5f5f68",
                  font=("Segoe UI", 9, "bold")).pack(anchor="w")
         tk.Label(cadre, text=sobre(rappel["titre"]), bg="#ffffff", fg="#18181b", font=("Segoe UI", 12, "bold"),
@@ -448,10 +467,10 @@ class Bulle:
 
         def fin(action):
             try:
-                if rappel["genre"] == "temps":
-                    temps = module("temps")
-                    if temps:
-                        temps.marquer_alerte(rappel["id"])
+                if rappel["genre"] in APPS_ALERTES:
+                    mod = module(rappel["genre"])
+                    if mod and hasattr(mod, "marquer_alerte"):
+                        mod.marquer_alerte(rappel["id"])
                 elif action == "plus_tard":
                     hub.donnees.marquer_rappel(rappel["genre"], rappel["id"], reporter_minutes=10)
                 else:
@@ -465,8 +484,8 @@ class Bulle:
         choix = (("Plus tard", "plus_tard", "#f2f2f4", "#6b6790"),
                  ("OK", "ok", "#f2f2f4", "#1f1a3a"),
                  ("Ouvrir", "ouvrir", "#5b5bd6", "#ffffff"))
-        if rappel["genre"] == "temps":
-            choix = choix[1:]  # une fin de période ne se reporte pas
+        if rappel["genre"] in APPS_ALERTES:
+            choix = choix[1:]  # rappel d'une application : pas de report
         for texte, action, fond, encre in choix:
             tk.Button(boutons, text=tr(texte), command=lambda a=action: fin(a), bg=fond, fg=encre, activebackground=fond,
                       relief="flat", bd=0, padx=12, pady=4, font=("Segoe UI", 10, "bold"), cursor="hand2").pack(side="left", padx=(6, 0))
@@ -546,14 +565,20 @@ class Bulle:
         m.add_command(label="🧰  " + tr("Ouvrir le tableau de bord"), command=ouvrir_tableau)
         m.add_command(label="📝  " + tr("Note rapide"), command=self.note_rapide)
         mails = f"  ({self.nb_mails} {tr('non lus')})" if self.nb_mails else ""
-        m.add_command(label=f"✉️  {tr('Mails')}{mails}", command=lambda: ouvrir_tableau("mails"))
-        m.add_command(label="📅  " + tr("Agenda"), command=lambda: ouvrir_tableau("agenda"))
-        m.add_command(label="🗒️  " + tr("Notes"), command=lambda: ouvrir_tableau("notes"))
-        m.add_command(label="🔐  " + tr("Mots de passe"), command=lambda: ouvrir_tableau("motsdepasse"))
+        # Les applications actives seulement (page Applications).
+        actif = hub.config.app_active
+        if actif("mails"):
+            m.add_command(label=f"{tr('Mails')}{mails}", command=lambda: ouvrir_tableau("mails"))
+        for nom, libelle in (("agenda", "Agenda"), ("taches", "Tâches"), ("notes", "Notes"), ("motsdepasse", "Mots de passe"),
+                             ("contacts", "Contacts"), ("factures", "Devis et factures"), ("depenses", "Dépenses")):
+            if actif(nom):
+                m.add_command(label=tr(libelle), command=lambda n=nom: ouvrir_tableau(n))
         m.add_separator()
-        m.add_command(label="📦  " + tr("Projets"), command=lambda: ouvrir_tableau("projets"))
+        if actif("projets"):
+            m.add_command(label=tr("Projets"), command=lambda: ouvrir_tableau("projets"))
         ci = f"  ({self.nb_ci} {tr('en échec')})" if self.nb_ci else ""
-        m.add_command(label=f"🐙  GitHub{ci}", command=lambda: ouvrir_tableau("github"))
+        if actif("github"):
+            m.add_command(label=f"GitHub{ci}", command=lambda: ouvrir_tableau("github"))
 
         # Serveurs : ceux des projets (derniers états connus, relus toutes
         # les 6 s) puis ceux du gadget Odoo. Le menu s'ouvre sans attendre.
@@ -580,11 +605,11 @@ class Bulle:
                     sous.add_command(label=f"      {tr('Arrêter')} 🐘 {s['base']}", command=lambda s=s: self.arreter(s))
                 else:
                     sous.add_command(label=f"{rond}  {tr('Démarrer')} 🐘 {s['base']}", command=lambda s=s: self.demarrer(s))
-        if sous.index("end") is not None:
+        if sous.index("end") is not None and actif("serveurs"):
             m.add_cascade(label="🖥️  " + tr("Serveurs locaux"), menu=sous)
 
         # Chrono (onglet Temps)
-        temps = module("temps")
+        temps = module("temps") if actif("temps") else None
         try:
             chrono = temps.etat() if temps else {"en_cours": False}
         except Exception:
@@ -597,7 +622,7 @@ class Bulle:
             m.add_command(label="⏱️  " + tr("Démarrer un chrono…"), command=lambda: ouvrir_tableau("temps"))
 
         # Extraits favoris et presse-papiers : un clic = copié.
-        extraits = module("extraits")
+        extraits = module("extraits") if actif("extraits") else None
         try:
             favoris = extraits.lister()[:10] if extraits else []
         except Exception:
@@ -608,7 +633,7 @@ class Bulle:
                 sous_e.add_command(label=self.court(x.get("titre") or x.get("contenu", "")),
                                    command=lambda x=x: self.en_fond(extraits.copier, x["id"]))
             m.add_cascade(label="✂️  " + tr("Extraits"), menu=sous_e)
-        presse_papiers = module("presse_papiers")
+        presse_papiers = module("presse_papiers") if actif("presse_papiers") else None
         try:
             historique = presse_papiers.lister()[:10] if presse_papiers else []
         except Exception:

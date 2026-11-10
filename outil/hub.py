@@ -349,8 +349,14 @@ class Gestionnaire(BaseHTTPRequestHandler):
             if chemin == "/api/outils":
                 return self.repondre(200, etat_outils())
             if chemin == "/api/onglets":
+                contenu = lire_outils()
                 return self.repondre(200, {"fichiers": onglets_web(), "langue": config.langue(), "theme": config.theme(),
-                                           "masques": lire_outils().get("onglets_masques") or []})
+                                           "masques": contenu.get("onglets_masques") or [],
+                                           # None : jamais choisies (anciennes installations : tout est actif)
+                                           "apps_actives": contenu.get("apps_actives"),
+                                           "profil": contenu.get("profil") or "",
+                                           # False seulement pour une installation neuve (outils.exemple.json)
+                                           "assistant": contenu.get("assistant_fait") is False})
             if chemin == "/api/serveurs":
                 return self.repondre(200, etats_serveurs())
             if chemin == "/api/notes":

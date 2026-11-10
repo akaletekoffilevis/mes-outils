@@ -1,6 +1,6 @@
-# Écrire un onglet pour « Mes outils »
+# Écrire une application pour « Mes outils »
 
-Un onglet = jusqu'à trois fichiers, sans toucher au reste :
+Une application (un onglet) = jusqu'à trois fichiers, sans toucher au reste :
 
 | Fichier | Rôle |
 |---|---|
@@ -74,8 +74,35 @@ La section `<section id="vue-<nom>">` est créée pour lui.
 })();
 ```
 
-- `groupe` : `quotidien`, `dev`, `outils` ou `systeme`. `afficher()` est
-  appelée à chaque ouverture de l'onglet.
+- Chaque onglet est une **application** que la personne active ou non (page
+  « Applications », assistant du premier lancement). Déclaration complète :
+
+  ```js
+  VUES.taches = {
+    afficher,                        // appelée à chaque ouverture
+    titre: "Tâches", icone: icone("list-checks"),
+    groupe: "quotidien",             // quotidien | clients | organisation | dev | outils | systeme
+    ordre: 25,
+    description: "Une phrase pour le catalogue des applications.",
+    profils: ["freelance", "assistant_virtuel", "assistant_direction", "developpeur"],
+    carteAccueil: async () => el("div", { class: "carte-jour" }, …) || null,  // facultatif
+    commandes: () => [ … ],          // facultatif (palette Ctrl + K)
+  };
+  ```
+
+  `profils` : les métiers pour lesquels l'application est cochée d'office au
+  premier lancement. `carteAccueil` : une petite carte (classe `carte-jour`,
+  titre en `h4`) affichée sur l'Accueil quand il y a quelque chose d'utile
+  (tâches du jour, factures impayées…), sinon `null`.
+- Une application peut être désactivée : ses données restent, son code reste
+  chargé, mais elle n'est plus dans le menu. Une application qui en utilise une
+  autre (ex. Factures et Contacts) l'appelle par son API (`/api/contacts/liste`)
+  dans un `try/catch`, et reste utilisable si l'autre est absente.
+- Rappels par la bulle (Python, facultatif) : `alertes_dues()` renvoie
+  `[{id, titre, detail}]` et `marquer_alerte(id)` les marque comme vues ; la
+  bulle les affiche comme les rappels de l'agenda (toute application qui a
+  `alertes_dues()` est lue toute seule, si elle est active).
+- Fichiers joints (justificatifs, logos…) : dans `config.DONNEES/<nom>/`.
 - Palette de commandes (Ctrl + K) : un onglet peut y proposer des actions,
   `commandes: () => [{ icone: icone("play"), titre: "Démarrer le projet X", detail: "…", action: () => … }]`.
 - **Couleurs : uniquement les variables** (thème clair et thème sombre) :

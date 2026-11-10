@@ -15,6 +15,9 @@
     "☀️ Clair": "☀️ Light",
     "🌙 Sombre": "🌙 Dark",
     "Onglets affichés": "Visible tabs",
+    "Choisissez les applications du menu, comme dans un ERP : les autres disparaissent, leurs données restent.":
+      "Choose the apps in the menu, like in an ERP: the others leave, their data stays.",
+    "Choisir mes applications": "Choose my apps",
     "Décochez les onglets dont vous ne vous servez pas : ils disparaissent du menu (rien n'est effacé).":
       "Untick the tabs you don't use: they disappear from the menu (nothing is deleted).",
     "Dossiers de projets": "Project folders",
@@ -165,7 +168,9 @@
           el("label", { class: "champ" }, "Prénom (pour la salutation)", prenom),
           el("label", { class: "champ" }, "Langue", langues),
           el("label", { class: "champ" }, "Thème", themes)),
-        carte("🗂️", "Onglets affichés", el("p", { class: "aide" }, "Décochez les onglets dont vous ne vous servez pas : ils disparaissent du menu (rien n'est effacé)."), cases),
+        carte("🗂️", "Applications", el("p", { class: "aide" }, "Choisissez les applications du menu, comme dans un ERP : les autres disparaissent, leurs données restent."),
+          i.profil && PROFILS[i.profil] ? el("p", { class: "aide" }, t("Votre métier : {p}", { p: t(PROFILS[i.profil].titre) })) : null,
+          el("button", { class: "btn", onclick: () => montrerVue("applications") }, "Choisir mes applications")),
         carte("📁", "Dossiers de projets", el("p", { class: "aide" }, "Les onglets GitHub, Projets et État Git y cherchent vos projets (le dossier et ses sous-dossiers directs)."),
           listeDossiers, ajoutDossier),
         carte("💻", "Windows", interrupteur("demarrage", "Lancer la bulle au démarrage de Windows"),
