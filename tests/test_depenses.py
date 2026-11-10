@@ -291,7 +291,7 @@ class TestNotesDeFrais(Base):
             self.ajouter("10", justificatif_source=os.path.join(self.cfg.dossier, "absent.pdf"))
         self.assertEqual(depenses._lire()["depenses"], [], "rien d'enregistré")
         with self.assertRaises(ValueError):
-            depenses._chemin_justificatif("..\\outils.json")
+            depenses._chemin_justificatif(os.path.join("..", "outils.json"))
 
     def test_joindre_retirer_et_fenetre(self):
         dep = self.ajouter("10", pro=True)["depense"]

@@ -186,7 +186,10 @@ class TestDeplacements(Base):
     def test_type_inconnu_et_doublons(self):
         d = reunions.enregistrer_deplacement(deplacement(
             etapes=[{"type": "fusee", "de": "A"}], hebergements=[{"nom": ""}],
-            documents=[r"C:\Docs\billet.pdf", {"chemin": r"c:\docs\BILLET.pdf"}, ""], budget=""))
+            # Windows ne distingue pas les majuscules dans les chemins ; Linux si.
+            documents=([r"C:\Docs\billet.pdf", {"chemin": r"c:\docs\BILLET.pdf"}, ""] if sys.platform == "win32"
+                       else ["/home/alex/Docs/billet.pdf", {"chemin": "/home/alex/Docs/billet.pdf"}, ""]),
+            budget=""))
         self.assertEqual(d["etapes"][0]["type"], "autre")
         self.assertEqual(d["hebergements"], [])
         self.assertEqual(len(d["documents"]), 1, "même fichier une seule fois")
@@ -462,7 +465,7 @@ class TestPage(unittest.TestCase):
     @unittest.skipUnless(shutil.which("node"), "node absent")
     def test_syntaxe_js(self):
         r = subprocess.run(["node", "--check", os.path.join(WEB, "reunions.js")], capture_output=True, text=True,
-                           timeout=30, creationflags=0x08000000)
+                           timeout=30, **({"creationflags": 0x08000000} if sys.platform == "win32" else {}))
         self.assertEqual(r.returncode, 0, r.stderr)
 
 

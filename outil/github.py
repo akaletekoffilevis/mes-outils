@@ -389,7 +389,8 @@ def _fichiers_a_envoyer(dossier, existant):
 
 
 def nom_suggere(dossier):
-    nom = re.sub(r"[^A-Za-z0-9._-]+", "-", os.path.basename(dossier.rstrip("\\/"))).strip("-.")
+    # Les deux séparateurs : un chemin Windows peut arriver sous Linux, et l'inverse.
+    nom = re.sub(r"[^A-Za-z0-9._-]+", "-", re.split(r"[\\/]", dossier.rstrip("\\/"))[-1]).strip("-.")
     return nom.lower()[:100] or "mon-projet"
 
 

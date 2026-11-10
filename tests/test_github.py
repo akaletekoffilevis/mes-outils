@@ -256,6 +256,7 @@ class TestEnvoi(unittest.TestCase):
 
 
 class TestCoffreWindows(unittest.TestCase):
+    @unittest.skipUnless(sys.platform == "win32", "vrai coffre de Windows (pas de trousseau sur la machine de test Linux)")
     def test_aller_retour(self):
         cible = f"MesOutils:test:{uuid.uuid4()}"
         try:

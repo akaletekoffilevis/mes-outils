@@ -391,7 +391,10 @@ class TestPdfMailExport(BaseFactures):
         self.assertEqual(self.commande[0], "msedge.exe")
         self.assertIn("--headless", self.commande)
         self.assertTrue(self.commande[-1].startswith("file:///"))
-        self.assertEqual(self.options.get("creationflags"), 0x08000000, "Windows : jamais de fenêtre noire")
+        if sys.platform == "win32":
+            self.assertEqual(self.options.get("creationflags"), 0x08000000, "Windows : jamais de fenêtre noire")
+        else:
+            self.assertNotIn("creationflags", self.options, "creationflags est refusé hors de Windows")
         self.assertTrue(r["document"]["resume"]["pdf"])
 
     def test_pdf_par_chromium_sous_linux(self):
