@@ -383,4 +383,4 @@ Everything is explained in [MODULES.md](MODULES.md) (in French).
 
 ---
 
-Older versions of this guide: [version 1.3](archives/v1.3/GUIDE.en.md).
+Older versions of this guide: [version 1.4](archives/v1.4/GUIDE.en.md) · [version 1.3](archives/v1.3/GUIDE.en.md).

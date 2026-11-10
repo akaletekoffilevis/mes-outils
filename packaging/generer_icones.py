@@ -38,7 +38,7 @@ TABLE = {
     "🦀": "cog", "🔷": "hexagon", "🐦": "smartphone", "💎": "gem", "🟢": "circle", "🟡": "circle", "⚪": "circle",
 }
 # Icônes de plus pour les tuiles et l'interface (sans emoji d'origine).
-EN_PLUS = ["app-window", "layout-grid", "info", "circle-check", "chevron-right", "chevron-down", "ellipsis",
+EN_PLUS = ["app-window", "layout-grid", "info", "circle-check", "circle-alert", "loader-circle", "chevron-right", "chevron-down", "ellipsis",
            "server", "files", "file-code", "code", "kanban", "notebook", "music", "camera", "shopping-cart",
            "cloud", "gamepad-2", "graduation-cap", "heart", "home", "printer", "video", "github"]
 

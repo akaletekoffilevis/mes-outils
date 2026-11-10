@@ -172,21 +172,23 @@
   h2 .espace { flex: 1; }
 
   /* Tuiles des outils ------------------------------------------------ */
-  .tuiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+  .tuiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; }
   .tuile {
-    position: relative; border: 1px solid var(--ligne); text-align: left; cursor: pointer; padding: 14px; border-radius: var(--rayon); min-height: 124px; color: var(--encre);
-    background: var(--carte); box-shadow: var(--ombre); display: flex; flex-direction: column; gap: 4px; transition: border-color .12s, box-shadow .12s;
+    position: relative; border: 1px solid var(--ligne); text-align: left; cursor: pointer; padding: 12px 14px; border-radius: var(--rayon); min-height: 64px; color: var(--encre);
+    background: var(--carte); display: grid; grid-template-columns: 32px minmax(0, 1fr); column-gap: 12px; align-content: center; transition: border-color .12s, background .12s;
   }
-  .tuile:hover { border-color: var(--ligne-forte); box-shadow: var(--ombre-forte); }
+  .tuile:hover { border-color: var(--ligne-forte); background: var(--surface); }
   .tuile .emoji {
-    width: 34px; height: 34px; border-radius: 8px; display: grid; place-items: center; margin-bottom: 8px;
-    background: color-mix(in srgb, var(--c) 14%, var(--carte)); color: var(--c);
+    grid-row: span 3; align-self: center; width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center;
+    background: color-mix(in srgb, var(--c) 13%, var(--carte)); color: var(--c);
   }
-  .tuile .emoji svg.ico { width: 18px; height: 18px; margin: 0; }
-  .tuile .nom { font-weight: 600; font-size: 14px; }
-  .tuile .desc { color: var(--doux); font-size: 13px; line-height: 1.35; }
-  .tuile .etat { margin-top: auto; padding-top: 6px; font-size: 12px; display: flex; align-items: center; gap: 6px; color: var(--gris); }
-  .tuile.ajout { border: 1px dashed var(--ligne-forte); background: transparent; box-shadow: none; align-items: center; justify-content: center; color: var(--doux); font-weight: 500; }
+  .tuile .emoji svg.ico { width: 17px; height: 17px; margin: 0; }
+  .tuile .nom, .tuile .desc, .tuile .etat { grid-column: 2; min-width: 0; }
+  .tuile .nom { font-weight: 500; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tuile .desc { color: var(--doux); font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tuile .desc:empty { display: none; }
+  .tuile .etat { font-size: 12px; display: flex; align-items: center; gap: 6px; color: var(--gris); margin-top: 2px; }
+  .tuile.ajout { border: 1px dashed var(--ligne-forte); background: transparent; box-shadow: none; display: flex; align-items: center; justify-content: center; gap: 10px; color: var(--doux); font-weight: 500; }
   .tuile.ajout .emoji { background: var(--surface); color: var(--doux); }
   .tuile .actions-edition { position: absolute; top: 8px; right: 8px; display: none; gap: 4px; z-index: 2; }
   .edition .tuile:not(.ajout) { outline: 1px dashed var(--violet); outline-offset: 2px; }
@@ -256,7 +258,7 @@
   .types button span svg.ico { margin: 0 auto; }
   .types button.choisi { border-color: var(--violet); background: var(--violet-clair); color: var(--violet); }
   .apercu-tuile { display: flex; justify-content: center; margin-bottom: 18px; }
-  .apercu-tuile .tuile { width: 240px; min-height: 120px; cursor: default; }
+  .apercu-tuile .tuile { width: 280px; cursor: default; }
 
   #toasts { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 60; align-items: center; pointer-events: none; }
   .toast { background: var(--encre); color: var(--fond); padding: 9px 14px; border-radius: 8px; box-shadow: var(--ombre-forte); font-weight: 500; font-size: 13.5px;
@@ -274,16 +276,17 @@
   .vue.actif { display: block; animation: apparait .15s ease-out both; }
 
   /* Aujourd'hui (accueil) ----------------------------------------------- */
-  .aujourdhui { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-bottom: 8px; }
-  .carte-jour { background: var(--carte); border: 1px solid var(--ligne); border-radius: var(--rayon); box-shadow: var(--ombre); padding: 14px 16px; cursor: pointer; transition: border-color .12s; }
-  .carte-jour:hover { border-color: var(--ligne-forte); }
-  .carte-jour h4 { margin: 0 0 10px; font-size: 13px; font-weight: 600; color: var(--doux); display: flex; gap: 7px; align-items: center; }
-  .carte-jour h4 svg.ico { color: var(--accent, var(--doux)); margin: 0; }
-  .carte-jour .ligne-jour { display: flex; gap: 10px; align-items: center; padding: 4px 0; font-size: 13.5px; }
-  .carte-jour .ligne-jour .heure { font-weight: 600; min-width: 46px; font-variant-numeric: tabular-nums; display: inline-flex; align-items: center; gap: 4px; }
-  .carte-jour .ligne-jour .pastille-c { width: 8px; height: 8px; border-radius: 50%; flex: none; }
-  .carte-jour .grand { font-size: 26px; font-weight: 600; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
-  .carte-jour .rien { color: var(--gris); font-size: 13.5px; }
+  .aujourdhui { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-bottom: 4px; }
+  .carte-jour { background: var(--carte); border: 1px solid var(--ligne); border-radius: var(--rayon); padding: 12px 14px; cursor: pointer; transition: border-color .12s, background .12s; }
+  .carte-jour:hover { border-color: var(--ligne-forte); background: var(--surface); }
+  .carte-jour h4 { margin: 0 0 8px; font-size: 11.5px; font-weight: 600; color: var(--gris); text-transform: uppercase; letter-spacing: .04em; display: flex; gap: 6px; align-items: center; }
+  .carte-jour h4 svg.ico { color: var(--gris); margin: 0; width: 14px; height: 14px; }
+  .carte-jour .ligne-jour { display: flex; gap: 10px; align-items: center; padding: 2px 0; font-size: 13.5px; }
+  .carte-jour .ligne-jour .heure { font-weight: 500; min-width: 44px; font-variant-numeric: tabular-nums; display: inline-flex; align-items: center; gap: 4px; color: var(--doux); }
+  .carte-jour .ligne-jour .heure svg.ico { width: 13px; height: 13px; }
+  .carte-jour .ligne-jour .pastille-c { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+  .carte-jour .grand { font-size: 22px; font-weight: 500; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+  .carte-jour .rien { color: var(--gris); font-size: 13px; }
 
   /* Éléments communs aux onglets ---------------------------------------- */
   .barre-vue { display: flex; align-items: center; gap: 10px; margin: 0 0 18px; flex-wrap: wrap; }
@@ -316,6 +319,43 @@
   .palette .item.choisi { background: var(--surface); }
   .palette .item.choisi .ic { background: var(--violet); color: var(--sur-violet); }
   .palette .pied { display: flex; gap: 14px; padding: 8px 14px; border-top: 1px solid var(--ligne); color: var(--gris); font-size: 12px; }
+
+  /* Listes en lignes compactes (projets, dépôts, serveurs…) ------------
+     <div class="lignes">
+       <div class="ligne">
+         <span class="ligne-ic">…</span>
+         <div class="ligne-corps"><div class="ligne-titre">nom <span class="tag">info</span></div>
+           <div class="ligne-meta">détail discret</div></div>
+         <div class="ligne-cote">état, date</div>
+         <div class="ligne-actions">boutons (visibles au survol)</div>
+       </div>
+       <div class="ligne-detail">contenu déplié (facultatif)</div>
+     </div> */
+  .lignes { background: var(--carte); border: 1px solid var(--ligne); border-radius: var(--rayon); overflow: hidden; }
+  .lignes + .lignes { margin-top: 12px; }
+  .ligne { display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 7px 12px 7px 14px; border-top: 1px solid var(--ligne); cursor: default; }
+  .lignes > .ligne:first-child, .lignes > .titre-lignes + .ligne { border-top: 0; }
+  .ligne.cliquable { cursor: pointer; }
+  .ligne:hover, .ligne.ouverte { background: var(--surface); }
+  .ligne-ic { width: 26px; height: 26px; border-radius: 6px; display: grid; place-items: center; color: var(--doux); flex: none; position: relative; }
+  .ligne-ic svg.ico { margin: 0; width: 16px; height: 16px; }
+  .ligne-ic .point { position: absolute; right: -1px; bottom: -1px; width: 9px; height: 9px; border: 2px solid var(--carte); }
+  .ligne:hover .ligne-ic .point, .ligne.ouverte .ligne-ic .point { border-color: var(--surface); }
+  .ligne-corps { flex: 1; min-width: 0; }
+  .ligne-titre { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 8px; }
+  .ligne-titre > span:first-child, .ligne-titre > b { overflow: hidden; text-overflow: ellipsis; }
+  .ligne-meta { color: var(--doux); font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+  .ligne-cote { color: var(--gris); font-size: 12.5px; white-space: nowrap; display: flex; align-items: center; gap: 10px; flex: none; }
+  .ligne-actions { display: flex; gap: 2px; flex: none; opacity: 0; transition: opacity .1s; }
+  .ligne:hover .ligne-actions, .ligne:focus-within .ligne-actions, .ligne.ouverte .ligne-actions { opacity: 1; }
+  .ligne-detail { padding: 10px 14px 14px 52px; background: var(--surface); border-top: 1px solid var(--ligne); }
+  .titre-lignes { padding: 8px 14px; font-size: 12px; font-weight: 600; color: var(--gris); text-transform: uppercase; letter-spacing: .04em; background: var(--surface); border-bottom: 1px solid var(--ligne); }
+  /* Étiquette neutre (une seule couleur ; la couleur est réservée aux états) */
+  .tag { font-size: 11.5px; font-weight: 500; color: var(--doux); border: 1px solid var(--ligne); border-radius: 4px; padding: 0 5px; line-height: 17px; white-space: nowrap; flex: none; }
+  /* État en texte coloré, sans fond */
+  .etat-txt { font-size: 12.5px; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+  .etat-txt.vert { color: var(--vert-texte); } .etat-txt.rouge { color: var(--rouge-texte); }
+  .etat-txt.ambre { color: var(--ambre-texte); } .etat-txt.gris { color: var(--gris); }
 
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
@@ -355,16 +395,16 @@
   <h2>Serveurs Odoo <span class="compte" id="nb-marche">…</span><span class="espace"></span>
     <button class="btn discret" id="btn-gadget" title="Ouvrir le gadget « Serveurs Odoo » (ajouter un serveur, comptes…)">🧩 Gadget complet</button>
   </h2>
-  <div class="serveurs" id="serveurs"><div class="vide">Lecture des serveurs…</div></div>
+  <div class="lignes" id="serveurs"><div class="vide">Lecture des serveurs…</div></div>
   </div>
 
   <div id="bloc-projets" hidden>
   <h2>Serveurs des projets <span class="compte" id="nb-projets-marche">…</span><span class="espace"></span>
     <button class="btn discret" onclick="montrerVue('projets')">📦 Projets</button></h2>
-  <div class="serveurs" id="serveurs-projets"></div>
+  <div class="lignes" id="serveurs-projets"></div>
   </div>
 
-  <div class="vide" id="aucun-serveur" hidden>Aucun serveur pour l'instant. Ajoutez les commandes de vos serveurs de dev dans l'onglet 📦 Projets (bouton ⚙️ d'un projet).</div>
+  <div class="vide" id="aucun-serveur" hidden>Aucun serveur pour l'instant. Dans l'onglet Projets, ouvrez un projet puis « Configurer » pour ajouter ses serveurs de dev.</div>
   </section>
   <footer>Mes outils · tout tourne sur ce PC · <span id="maj"></span></footer>
   </main>
@@ -594,7 +634,7 @@ function tuile(outil, apercu = false) {
   const statut = outil.type === "appli_web"
     ? el("div", { class: "etat" }, el("span", { class: "point" + (outil.en_marche ? " marche" : "") }), outil.en_marche ? "En marche" : "Prêt à lancer")
     : outil.introuvable ? el("div", { class: "etat", style: "color:var(--rouge)" }, "⚠️ Introuvable")
-    : el("div", { class: "etat" }, (TYPES[outil.type]?.emoji || "") + " " + (TYPES[outil.type]?.nom || ""));
+    : null;
   const t = el("button", { class: "tuile", style: `--c:${outil.couleur || "#6c4cf5"}` },
     el("div", { class: "emoji" }, icone(iconeOutil(outil))),
     el("div", { class: "nom" }, outil.nom ? document.createTextNode(outil.nom) : "Sans nom"),
@@ -744,22 +784,33 @@ function afficherServeurs() {
   if (!liste.length) { box.replaceChildren(el("div", { class: "vide" }, "Aucun serveur : ajoutez-en depuis le gadget complet.")); return; }
   const marche = liste.filter(s => s.etat === "En marche").length;
   $("#nb-marche").textContent = t("{n} / {total} en marche", { n: marche, total: liste.length });
-  box.replaceChildren(...liste.map((s, i) => {
+  box.replaceChildren(...liste.map(s => {
     const classe = CLASSE_ETAT[s.etat] ?? "";
     const enRoute = s.etat === "En marche" || s.etat === "Démarrage…";
-    return el("div", { class: "serveur", style: `animation-delay:${i * 50}ms` },
-      el("div", { class: "pastille", title: s.etat }, s.reference ? "🛡️" : "🐘", el("span", { class: "point " + classe })),
-      el("div", { class: "infos" },
-        el("div", { class: "base", title: s.base }, s.base),
-        el("div", { class: "ligne2" }, `${t(s.etat)} · port ${s.port}`,
-          s.reference ? el("span", { class: "etiquette ref" }, "référence") : null,
-          s.conf ? el("span", { class: "etiquette conf", title: "Fichier de configuration" }, s.conf) : null)),
-      el("div", { class: "boutons" },
-        el("button", { class: "icone-btn go", title: "Démarrer", disabled: enRoute || s.etat.startsWith("Port") ? "" : null, onclick: () => serveur("demarrer", s) }, "▶"),
-        el("button", { class: "icone-btn stop", title: "Arrêter", disabled: !enRoute ? "" : null, onclick: () => serveur("arreter", s) }, "■"),
-        el("button", { class: "icone-btn", title: "Ouvrir dans le navigateur", onclick: () => serveur("ouvrir", s) }, "↗"),
-        el("button", { class: "icone-btn", title: "Journal", onclick: () => serveur("journal", s) }, "☰")));
+    return ligneServeur({
+      icone: s.reference ? "shield" : "database", point: classe, titre: s.base,
+      tags: [s.reference ? "référence" : null, s.conf], meta: "port " + s.port,
+      etat: t(s.etat), couleur: COULEUR_ETAT[classe] || "gris", enRoute, occupe: s.etat.startsWith("Port"),
+      actions: { demarrer: () => serveur("demarrer", s), arreter: () => serveur("arreter", s),
+        ouvrir: () => serveur("ouvrir", s), journal: () => serveur("journal", s) } });
   }));
+}
+/** Une ligne de l'onglet Serveurs (Odoo ou projet). */
+const COULEUR_ETAT = { marche: "vert", demarrage: "ambre", occupe: "rouge", "": "gris" };
+function ligneServeur(o) {
+  return el("div", { class: "ligne" },
+    el("span", { class: "ligne-ic", title: o.etat }, icone(o.icone), el("span", { class: "point " + (o.point || "") })),
+    el("div", { class: "ligne-corps" },
+      el("div", { class: "ligne-titre" }, el("span", { title: o.titre }, document.createTextNode(o.titre)),
+        ...(o.tags || []).filter(Boolean).map(x => el("span", { class: "tag" }, x))),
+      el("div", { class: "ligne-meta" }, o.meta)),
+    el("div", { class: "ligne-cote" }, el("span", { class: "etat-txt " + o.couleur }, o.etat)),
+    el("div", { class: "ligne-actions" },
+      o.enRoute
+        ? el("button", { class: "icone-btn stop", title: "Arrêter", onclick: o.actions.arreter }, icone("square"))
+        : el("button", { class: "icone-btn go", title: "Démarrer", disabled: o.occupe ? "" : null, onclick: o.actions.demarrer }, icone("play")),
+      el("button", { class: "icone-btn", title: "Ouvrir dans le navigateur", disabled: o.sansAdresse ? "" : null, onclick: o.actions.ouvrir }, icone("external-link")),
+      o.actions.journal ? el("button", { class: "icone-btn", title: "Journal", onclick: o.actions.journal }, icone("scroll-text")) : null));
 }
 async function serveur(action, s) {
   if (action === "demarrer" && s.reference &&
@@ -984,17 +1035,15 @@ async function chargerServeursProjets() {
   $("#bloc-projets").hidden = !liste.length;
   majVideServeurs();
   $("#nb-projets-marche").textContent = t("{n} / {total} en marche", { n: liste.filter(s => s.etat === "marche").length, total: liste.length });
-  $("#serveurs-projets").replaceChildren(...liste.map((s, i) => {
+  $("#serveurs-projets").replaceChildren(...liste.map(s => {
     const enRoute = s.etat === "marche" || s.etat === "demarrage";
-    return el("div", { class: "serveur", style: `animation-delay:${i * 40}ms` },
-      el("div", { class: "pastille", title: t(TEXTE_PROJET[s.etat] || s.etat) }, "📦", el("span", { class: "point " + (CLASSE_PROJET[s.etat] ?? "") })),
-      el("div", { class: "infos" },
-        el("div", { class: "base", title: `${s.projet} · ${s.nom}` }, s.projet),
-        el("div", { class: "ligne2" }, s.nom, s.port ? el("span", { class: "etiquette" }, ":" + s.port) : null)),
-      el("div", { class: "boutons" },
-        el("button", { class: "icone-btn go", title: "Démarrer", disabled: enRoute || s.etat === "occupe" ? "" : null, onclick: () => commandeProjet(s, "demarrer") }, "▶"),
-        el("button", { class: "icone-btn stop", title: "Arrêter", disabled: !enRoute ? "" : null, onclick: () => commandeProjet(s, "arreter") }, "■"),
-        el("button", { class: "icone-btn", title: "Ouvrir dans le navigateur", disabled: s.url || s.port ? null : "", onclick: () => commandeProjet(s, "ouvrir") }, "↗")));
+    const classe = CLASSE_PROJET[s.etat] ?? "";
+    return ligneServeur({
+      icone: "package", point: classe, titre: s.projet, tags: [], meta: s.nom + (s.port ? " · :" + s.port : ""),
+      etat: t(TEXTE_PROJET[s.etat] || s.etat), couleur: COULEUR_ETAT[classe] || "gris", enRoute, occupe: s.etat === "occupe",
+      sansAdresse: !(s.url || s.port),
+      actions: { demarrer: () => commandeProjet(s, "demarrer"), arreter: () => commandeProjet(s, "arreter"),
+        ouvrir: () => commandeProjet(s, "ouvrir") } });
   }));
 }
 async function commandeProjet(s, action) {
@@ -1030,8 +1079,8 @@ I18N.ajouter({
   "Palette de commandes": "Command palette",
   "Serveurs des projets": "Project servers",
   "Serveurs": "Servers", "🔄 Actualiser": "🔄 Refresh",
-  "Aucun serveur pour l'instant. Ajoutez les commandes de vos serveurs de dev dans l'onglet 📦 Projets (bouton ⚙️ d'un projet).":
-    "No server yet. Add your dev server commands in the 📦 Projects tab (a project's ⚙️ button).",
+  "Aucun serveur pour l'instant. Dans l'onglet Projets, ouvrez un projet puis « Configurer » pour ajouter ses serveurs de dev.":
+    "No server yet. In the Projects tab, open a project and use “Set up” to add its dev servers.",
   "Le gadget « Serveurs Odoo » ne se charge pas : {e}": "The “Odoo servers” gadget does not load: {e}", "📦 Projets": "📦 Projects", "Code": "Code",
   "projet à envoyer": "project to push", "projets à envoyer": "projects to push",
   "projet modifié": "modified project", "projets modifiés": "modified projects",

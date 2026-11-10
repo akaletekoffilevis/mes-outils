@@ -13,6 +13,8 @@ window.I18N = (() => {
   const listeMotifs = [];
   let langue = "fr";
 
+  const PICTO = /[\p{Extended_Pictographic}←-⇿■-◿⌀-⏿]️?/gu;
+  const sansPicto = x => typeof x === "string" ? x.replace(PICTO, "").replace(/\s{2,}/g, " ").trim() : x;
   // Début d'un texte qui n'est pas à traduire : emojis, espaces, ponctuation.
   const PREFIXE = /^[^\p{L}\p{N}«"(]+/u;
 
@@ -50,7 +52,15 @@ window.I18N = (() => {
   }
 
   return {
-    ajouter(d) { Object.assign(dico, d); },
+    ajouter(d) {
+      Object.assign(dico, d);
+      // Les emojis des textes sont remplacés par des icônes à l'affichage
+      // (hub.html) : chaque traduction existe aussi sans eux.
+      for (const [k, v] of Object.entries(d)) {
+        const k2 = sansPicto(k), v2 = sansPicto(v);
+        if (k2 && k2 !== k && dico[k2] === undefined) dico[k2] = v2;
+      }
+    },
     motifs(liste) { listeMotifs.push(...liste); },
     t, traduire,
     get langue() { return langue; },

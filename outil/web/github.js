@@ -132,102 +132,128 @@
     [/^Le dépôt (\S+) est créé, mais l'envoi a échoué \(([\s\S]*)\)\. Relancez « (.+) » dans le dossier\.$/,
       "The repository $1 was created, but the upload failed ($2). Run “$3” again in the folder."],
   ]);
+  I18N.ajouter({
+    // Affichage en lignes compactes
+    "Plus d'actions": "More actions", "Ouvrir le dossier": "Open the folder",
+    "Dossiers de projets…": "Project folders…",
+    "Ouvrir la page du dépôt sur GitHub": "Open the repository page on GitHub",
+  });
 
   const G = { etat: null, depots: null, dossiers: [], recherche: "", filtre: "tous", sous: "depots",
     prs: null, issues: null, actions: null };
+  // Couleurs officielles des langages sur GitHub (petit point devant le nom).
   const COULEURS_LANGUES = { JavaScript: "#f1e05a", TypeScript: "#3178c6", Python: "#3572A5", Java: "#b07219", HTML: "#e34c26",
     CSS: "#663399", Vue: "#41b883", PHP: "#4F5D95", "C#": "#178600", Rust: "#dea584", Go: "#00ADD8", Dart: "#00B4AB",
     Kotlin: "#A97BFF", Shell: "#89e051", PowerShell: "#012456", "Jupyter Notebook": "#DA5B0B", PLpgSQL: "#336790" };
+  // État d'un run : une icône, et une couleur réservée à l'état.
   const ETATS = {
-    succes: { icone: "✅", libelle: "Réussi", badge: "vert" }, echec: { icone: "❌", libelle: "Échec", badge: "rouge" },
-    en_cours: { icone: "⏳", libelle: "En cours", badge: "ambre" }, annule: { icone: "⛔", libelle: "Annulé", badge: "gris" },
-    action: { icone: "✋", libelle: "Validation demandée", badge: "bleu" }, ignore: { icone: "⏭️", libelle: "Ignoré", badge: "gris" },
-    inconnu: { icone: "❔", libelle: "Illisible", badge: "gris" }, aucun: { icone: "➖", libelle: "Aucun workflow", badge: "gris" },
+    succes: { icone: "circle-check", libelle: "Réussi", couleur: "vert" },
+    echec: { icone: "circle-x", libelle: "Échec", couleur: "rouge" },
+    en_cours: { icone: "loader", libelle: "En cours", couleur: "ambre" },
+    action: { icone: "hand", libelle: "Validation demandée", couleur: "ambre" },
+    annule: { icone: "octagon-x", libelle: "Annulé", couleur: "gris" },
+    ignore: { icone: "skip-forward", libelle: "Ignoré", couleur: "gris" },
+    inconnu: { icone: "circle-help", libelle: "Illisible", couleur: "gris" },
+    aucun: { icone: "minus", libelle: "Aucun workflow", couleur: "gris" },
   };
   const infoEtat = e => ETATS[e] || ETATS.inconnu;
 
   const style = document.createElement("style");
   style.textContent = `
-    .liste-gh { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 12px; }
-    .depot { background: var(--carte); border-radius: var(--rayon); box-shadow: var(--ombre); padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; animation: apparait .3s both; min-width: 0; }
-    .depot .l1 { display: flex; align-items: center; gap: 8px; min-width: 0; }
-    .depot .t { font-weight: 600; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
-    .badge-gh { font-size: 11.5px; font-weight: 700; border-radius: 999px; padding: 2px 9px; white-space: nowrap; flex: none; }
-    .badge-gh.prive, .badge-gh.rouge { background: var(--rouge-clair); color: var(--rouge-texte); }
-    .badge-gh.public, .badge-gh.vert { background: var(--vert-clair); color: var(--vert-texte); }
-    .badge-gh.ambre { background: var(--ambre-clair); color: var(--ambre-texte); }
-    .badge-gh.bleu { background: var(--bleu-clair); color: var(--bleu-texte); }
-    .badge-gh.gris { background: var(--surface); color: var(--doux); }
-    .depot .d { font-size: 13px; color: var(--doux); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 1em; }
-    .depot .meta, .meta-gh { font-size: 12.5px; color: var(--doux); display: flex; gap: 12px; align-items: center; flex-wrap: wrap; min-width: 0; }
-    .depot .langue::before { content: ""; display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--c, var(--gris)); margin-right: 5px; }
-    .depot .local { font-size: 12.5px; color: var(--vert-texte); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .actions-gh { display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
-    .depot .actions-gh .btn { padding: 6px 12px; font-size: 13px; }
-    .profil-gh { display: flex; align-items: center; gap: 8px; font-weight: 700; color: var(--doux); font-size: 14px; }
-    .profil-gh img { width: 30px; height: 30px; border-radius: 50%; }
-    .outils-gh input, .outils-gh select { border: 1.5px solid var(--ligne); border-radius: 12px; padding: 8px 11px; outline: none; background: var(--champ); color: var(--encre); font: inherit; }
-    .outils-gh input { width: 240px; }
-    .outils-gh input:focus, .outils-gh select:focus { border-color: var(--violet); background: var(--champ-focus); }
-    .code-gh { font-family: var(--mono); font-size: 34px; font-weight: 600; letter-spacing: 4px; background: var(--violet-clair); color: var(--violet); border-radius: var(--rayon); padding: 14px; margin: 6px 0 14px; user-select: all; }
+    /* Barre du haut */
+    .profil-gh { display: flex; align-items: center; gap: 7px; color: var(--doux); font-size: 13px; }
+    .profil-gh img { width: 22px; height: 22px; border-radius: 50%; }
+    .plus-gh { position: relative; }
+    .plus-liste { display: none; position: absolute; right: 0; top: calc(100% + 4px); min-width: 240px; z-index: 25; padding: 4px;
+      background: var(--carte); border: 1px solid var(--ligne); border-radius: var(--rayon); box-shadow: var(--ombre-forte); }
+    .plus-gh.ouvert .plus-liste { display: block; animation: pop .12s ease-out both; }
+    .plus-gh.ouvert > .icone-btn { background: var(--surface); color: var(--encre); }
+    .plus-liste button { display: flex; align-items: center; gap: 10px; width: 100%; border: 0; background: transparent; color: var(--encre);
+      padding: 7px 10px; border-radius: 6px; cursor: pointer; font-size: 13.5px; text-align: left; white-space: nowrap; }
+    .plus-liste button svg.ico { margin: 0; color: var(--doux); }
+    .plus-liste button:hover { background: var(--surface); }
+    .plus-liste button.danger:hover, .plus-liste button.danger:hover svg.ico { color: var(--rouge-texte); }
+    .plus-liste .sep-gh { height: 1px; background: var(--ligne); margin: 4px 2px; }
+    .sous-gh { margin: 0 0 14px; }
+    .nb-gh { color: var(--gris); font-size: 12px; font-variant-numeric: tabular-nums; display: inline-flex; align-items: center; gap: 3px; }
+    .puce.actif .nb-gh:not(.etat-txt) { color: var(--doux); }
+    .nb-gh.etat-txt { font-size: 12px; }
+    .nb-gh svg.ico { margin: 0; width: 13px; height: 13px; }
+    .conseil-gh { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; color: var(--doux); font-size: 13px; margin: -4px 2px 12px; }
+    .conseil-gh svg.ico { margin: 0; color: var(--gris); }
+
+    /* Lignes */
+    .ligne-titre .num-gh { color: var(--gris); font-weight: 400; flex: none; }
+    .ligne-titre .proprio-gh { color: var(--doux); font-weight: 400; }
+    .ligne.brouillon .ligne-titre > span:first-child { color: var(--doux); }
+    .ligne-meta .sep { color: var(--gris); margin: 0 6px; }
+    .langue-gh::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--c, var(--gris)); margin-right: 6px; vertical-align: .05em; }
+    .tag .pt-gh { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 4px; vertical-align: .05em; }
+    .ligne-cote .date-gh { min-width: 118px; text-align: right; }
+    .ligne-cote .col-langue { min-width: 104px; color: var(--gris); }
+    .ligne-cote .col-com { min-width: 34px; }
+    .ligne-cote .info-gh { display: inline-flex; align-items: center; gap: 4px; color: var(--gris); }
+    .ligne-cote .info-gh svg.ico { margin: 0; width: 14px; height: 14px; }
+    .ligne-cote .local-gh { color: var(--doux); display: inline-flex; width: 16px; justify-content: center; }
+    .ligne-cote .local-gh svg.ico { margin: 0; width: 15px; height: 15px; }
+    .ligne-actions .icone-btn { width: 28px; height: 28px; }
+    /* Trois places de bouton : les colonnes restent alignées, cloné ou non. */
+    .ligne-actions.depot-gh { width: 88px; justify-content: flex-end; }
+    .ligne-ic.etat-txt svg.ico { width: 17px; height: 17px; }
+    .wf-gh { border: 0; background: transparent; padding: 2px; border-radius: 5px; cursor: pointer; display: inline-flex; }
+    .wf-gh:hover { background: var(--ligne); }
+    .wf-gh svg.ico { margin: 0; width: 14px; height: 14px; }
+    .titre-lignes .nb-gh { margin-left: 6px; letter-spacing: 0; text-transform: none; font-weight: 500; }
+    .titre-lignes .plus-gh-n { margin-left: 10px; font-weight: 400; text-transform: none; letter-spacing: 0; }
+    .rien-gh { padding: 14px; color: var(--doux); font-size: 13px; }
+    .bandeau-gh { margin: 0 2px 10px; font-size: 13px; }
+    .bandeau-gh.etat-txt { font-size: 13px; white-space: normal; }
+    .bandeau-gh svg.ico { margin: 0; }
+    .notes-gh { margin: 12px 2px 0; display: flex; flex-direction: column; gap: 3px; }
+    .note-gh { font-size: 12.5px; color: var(--gris); }
+    .attente-gh { color: var(--doux); padding: 18px; text-align: center; }
+    .tourne-gh { animation: tourne-gh 1.2s linear infinite; }
+    @keyframes tourne-gh { to { transform: rotate(360deg); } }
+
+    /* Connexion, fenêtres */
+    .connexion-gh { max-width: 560px; margin: 24px auto; }
+    .connexion-gh h3 { margin: 10px 0 4px; font-size: 16px; font-weight: 600; }
+    .connexion-gh ol { padding-left: 20px; margin: 12px 0; }
+    .connexion-gh li { margin: 4px 0; }
+    .connexion-gh .cx-note { color: var(--doux); font-size: 13px; display: flex; gap: 6px; align-items: center; }
+    .connexion-gh .cx-note svg.ico { margin: 0; }
+    .connexion-gh .actions { display: flex; justify-content: flex-end; margin-top: 14px; }
+    .gros-gh { width: 38px; height: 38px; border-radius: 9px; background: var(--surface); color: var(--doux); display: grid; place-items: center; }
+    .gros-gh svg.ico { margin: 0; width: 20px; height: 20px; }
+    .code-gh { font-family: var(--mono); font-size: 34px; font-weight: 600; letter-spacing: 4px; text-align: center; background: var(--violet-clair); color: var(--violet); border-radius: var(--rayon); padding: 14px; margin: 6px 0 14px; user-select: all; }
+    .etat-attente-gh { display: flex; align-items: center; gap: 8px; }
+    .etat-attente-gh svg.ico { margin: 0; }
     .dossiers-gh { display: flex; flex-direction: column; gap: 6px; margin: 4px 0 12px; }
-    .dossiers-gh div { display: flex; align-items: center; gap: 8px; background: var(--surface); border-radius: 12px; padding: 7px 10px; font-size: 14px; }
+    .dossiers-gh div { display: flex; align-items: center; gap: 8px; background: var(--surface); border-radius: 8px; padding: 5px 6px 5px 10px; font-size: 13.5px; }
+    .dossiers-gh div > svg.ico { margin: 0; color: var(--doux); }
     .dossiers-gh div span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .ajout-gh { display: flex; gap: 8px; }
-    .ajout-gh input { flex: 1; border: 1.5px solid var(--ligne); border-radius: 12px; padding: 9px 11px; outline: none; background: var(--champ); color: var(--encre); font: inherit; }
-    .ajout-gh input:focus { border-color: var(--violet); background: var(--champ-focus); }
-    .bilan-gh { background: var(--surface); border-radius: 14px; padding: 12px 14px; font-size: 13.5px; margin: 8px 0; text-align: left; }
+    .ajout-gh input { flex: 1; }
+    .bilan-gh { background: var(--surface); border-radius: 8px; padding: 10px 12px; font-size: 13.5px; margin: 8px 0; text-align: left; }
     .bilan-gh ul { margin: 6px 0 0; padding-left: 18px; }
     .bilan-gh.danger { background: var(--rouge-clair); color: var(--rouge-texte); }
-    .bilan-gh code { font-size: 12.5px; font-family: var(--mono); background: var(--code); color: var(--code-texte); border-radius: 6px; padding: 0 4px; }
+    .bilan-gh code { font-size: 12.5px; font-family: var(--mono); background: var(--code); color: var(--code-texte); border-radius: 4px; padding: 0 4px; }
     .choix-gh { display: flex; gap: 14px; margin: 4px 0 10px; font-size: 14px; }
     .choix-gh label { display: flex; gap: 6px; align-items: center; cursor: pointer; }
-
-    .sous-gh { margin: 0 0 14px; flex-wrap: wrap; }
-    .sous-gh .puce { display: inline-flex; align-items: center; gap: 6px; }
-    .nb-gh { background: var(--violet-clair); color: var(--violet); border-radius: 99px; padding: 0 7px; font-size: 11.5px; min-width: 20px; text-align: center; }
-    .puce.actif .nb-gh { background: color-mix(in srgb, var(--fond) 25%, transparent); color: inherit; }
-    .nb-gh.echec-gh, .puce.actif .nb-gh.echec-gh { background: var(--rouge); color: var(--sur-violet); }
-    .puce.alerte-gh:not(.actif) { box-shadow: 0 0 0 2px var(--rouge) inset; color: var(--rouge-texte); }
-
-    .lignes-gh { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
-    .ligne-gh { background: var(--carte); border-radius: var(--rayon); box-shadow: var(--ombre); padding: 11px 14px; display: flex; align-items: center; gap: 12px; animation: apparait .3s both; min-width: 0; }
-    .ligne-gh .ic-gh { font-size: 20px; width: 26px; text-align: center; flex: none; }
-    .ligne-gh .corps-gh { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
-    .ligne-gh .t-gh { display: flex; align-items: center; gap: 8px; min-width: 0; }
-    .ligne-gh .titre-gh { font-weight: 700; font-size: 14.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .ligne-gh .num-gh { color: var(--doux); font-weight: 600; font-size: 13px; flex: none; }
-    .ligne-gh.brouillon .titre-gh { color: var(--doux); }
-    .ligne-gh img.av-gh { width: 18px; height: 18px; border-radius: 50%; vertical-align: -4px; margin-right: 4px; }
-    .etiq-gh { font-size: 11px; font-weight: 700; border-radius: 99px; padding: 1px 8px; white-space: nowrap; flex: none; }
-    .section-gh { font-size: 13px; font-weight: 600; color: var(--doux); text-transform: uppercase; letter-spacing: .6px; margin: 4px 2px 8px; display: flex; gap: 8px; align-items: center; }
-
-    .run-gh { background: var(--carte); border-radius: var(--rayon); box-shadow: var(--ombre); padding: 13px 16px; display: flex; flex-direction: column; gap: 6px; border-left: 5px solid var(--ligne); animation: apparait .3s both; min-width: 0; }
-    .run-gh.succes { border-left-color: var(--menthe); }
-    .run-gh.echec { border-left-color: var(--rouge); background: var(--carte); }
-    .run-gh.en_cours { border-left-color: var(--ambre); }
-    .run-gh.action { border-left-color: var(--bleu-texte); }
-    .run-gh .l1 { display: flex; align-items: center; gap: 8px; min-width: 0; }
-    .run-gh .ic-run { font-size: 18px; flex: none; }
-    .run-gh .t { font-weight: 600; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
-    .run-gh .wf { font-size: 13.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .run-gh .commit { font-size: 13px; color: var(--doux); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .run-gh .autres { display: flex; gap: 6px; flex-wrap: wrap; }
-    .run-gh .autres button { border: 1px solid var(--ligne); background: var(--surface); color: var(--encre); border-radius: 99px; font-size: 11.5px; padding: 1px 8px; cursor: pointer; }
-    .alerte-ci { border-radius: var(--rayon); padding: 12px 16px; font-weight: 700; margin-bottom: 12px; }
-    .alerte-ci.echec { background: var(--rouge-clair); color: var(--rouge-texte); box-shadow: 0 0 0 2px var(--rouge) inset; }
-    .alerte-ci.en_cours { background: var(--ambre-clair); color: var(--ambre-texte); }
-    .alerte-ci.succes { background: var(--vert-clair); color: var(--vert-texte); }
-    .note-gh { font-size: 12.5px; color: var(--doux); margin: 14px 2px 0; }
-    .attente-gh { color: var(--doux); padding: 18px; text-align: center; }
+    .choix-gh label svg.ico { margin: 0; color: var(--doux); }
   `;
   document.head.append(style);
   const racine = () => $("#vue-github");
   /** Texte venu de GitHub ou déjà traduit : el() ne le retraduit pas. */
   const brut = s => document.createTextNode(s == null ? "" : String(s));
+  /** Icône suivie d'un texte (petite marge à droite). */
+  const ic = nom => icone(nom, "av");
+  const attente = texte => [icone("loader", "av tourne-gh"), t(texte)];
+  /** Message d'erreur du serveur, dans un cadre vide. */
+  const erreur = message => el("div", { class: "vide" }, icone("triangle-alert"), brut(message));
+  const sep = () => el("span", { class: "sep" }, "·");
 
   // -- dates ---------------------------------------------------------------------
-  const dateCourte = iso => iso ? new Date(iso).toLocaleDateString(I18N.locale(), { day: "numeric", month: "short", year: "numeric" }) : "";
   const dateLongue = iso => iso ? new Date(iso).toLocaleString(I18N.locale(), { dateStyle: "medium", timeStyle: "short" }) : "";
   function ilYa(iso) {
     if (!iso) return "";
@@ -238,21 +264,21 @@
     }
     return rtf.format(0, "minute");
   }
-  const quand = iso => el("span", { title: dateLongue(iso) }, brut(ilYa(iso)));
+  const quand = iso => el("span", { class: "date-gh", title: dateLongue(iso) }, brut(ilYa(iso)));
 
   // -- affichage ---------------------------------------------------------------
   async function afficher(relire = true, forcer = false) {
     if (relire || !G.etat) {
       try { G.etat = await api("/api/github/etat", {}); }
-      catch (e) { racine().replaceChildren(el("div", { class: "vide" }, "😕 " + e.message)); return; }
+      catch (e) { racine().replaceChildren(erreur(e.message)); return; }
       G.dossiers = G.etat.dossiers || [];
     }
     if (!G.etat.connecte) return ecranConnexion();
     chargerSuivi(forcer);
     if (relire || !G.depots) {
-      if (!G.depots) racine().replaceChildren(el("div", { class: "vide" }, el("span", { class: "attente" }, "⏳"), " ", t("Lecture de vos dépôts…")));
+      if (!G.depots) racine().replaceChildren(el("div", { class: "vide" }, icone("loader", "tourne-gh"), t("Lecture de vos dépôts…")));
       try { const r = await api("/api/github/depots", {}); G.depots = r.depots; }
-      catch (e) { racine().replaceChildren(el("div", { class: "vide" }, "😕 " + e.message)); return; }
+      catch (e) { racine().replaceChildren(erreur(e.message)); return; }
     }
     dessiner();
   }
@@ -269,6 +295,28 @@
     }
   }
 
+  /** Menu « … » : les actions moins fréquentes, rangées hors de la barre. */
+  function menuPlus() {
+    const choix = (nom, libelle, faire, classe = "") => el("button", { class: classe, role: "menuitem",
+      onclick: () => { zone.classList.remove("ouvert"); faire(); } }, icone(nom), libelle);
+    const bouton = el("button", { class: "icone-btn", title: "Plus d'actions", "aria-haspopup": "menu",
+      onclick: () => zone.classList.toggle("ouvert") }, icone("ellipsis"));
+    const zone = el("div", { class: "plus-gh" }, bouton,
+      el("div", { class: "plus-liste", role: "menu" },
+        choix("folders", "Dossiers de projets…", reglerDossiers),
+        choix("refresh-cw", "Relire depuis GitHub", () => afficher(true, true)),
+        el("div", { class: "sep-gh" }),
+        choix("log-out", "Déconnecter GitHub de ce PC", deconnecter, "danger")));
+    return zone;
+  }
+  // Le menu se ferme au clic ailleurs et avec Échap.
+  document.addEventListener("mousedown", e => {
+    for (const m of document.querySelectorAll(".plus-gh.ouvert")) if (!m.contains(e.target)) m.classList.remove("ouvert");
+  });
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape") document.querySelectorAll(".plus-gh.ouvert").forEach(m => m.classList.remove("ouvert"));
+  });
+
   function dessiner() {
     const surDepots = G.sous === "depots";
     const recherche = el("input", { placeholder: surDepots ? "Rechercher un dépôt…" : "Filtrer…", value: G.recherche,
@@ -277,17 +325,16 @@
       [["tous", "Tous"], ["prive", "Privés"], ["public", "Publics"], ["local", "Sur ce PC"], ["absent", "Pas sur ce PC"]]
         .map(([v, lib]) => el("option", { value: v, ...(G.filtre === v ? { selected: "" } : {}) }, lib))) : null;
     const barre = el("div", { class: "barre-vue" },
-      el("h2", {}, "🐙 GitHub ", el("span", { class: "compte", id: "nb-depots" }, String(G.depots.length))),
+      el("h2", {}, icone("git-branch"), "GitHub"),
       el("div", { class: "profil-gh" }, G.etat.avatar ? el("img", { src: G.etat.avatar, alt: "" }) : null, brut(G.etat.login)),
       el("div", { class: "espace" }),
-      el("div", { class: "outils-gh", style: "display:flex;gap:8px;flex-wrap:wrap" }, recherche, filtre),
-      el("button", { class: "btn principal", onclick: nouveauDepot }, "＋ " + t("Nouveau dépôt")),
-      el("button", { class: "icone-btn", title: "Dossiers de projets (où chercher et cloner)", onclick: reglerDossiers }, "📁"),
-      el("button", { class: "icone-btn", title: "Relire depuis GitHub", onclick: () => afficher(true, true) }, "🔄"),
-      el("button", { class: "icone-btn", title: "Déconnecter GitHub de ce PC", onclick: deconnecter }, "🔌"));
-    const conseil = G.dossiers.length || !surDepots ? null : el("div", { class: "vide", style: "margin-bottom:12px" },
-      "📁 " + t("Indiquez vos dossiers de projets pour voir quels dépôts sont déjà sur ce PC et pouvoir cloner : "),
-      el("button", { class: "btn", onclick: reglerDossiers }, "Choisir les dossiers"));
+      el("div", { class: "champ-recherche" }, el("span", {}, icone("search")), recherche),
+      filtre,
+      el("button", { class: "btn principal", onclick: nouveauDepot }, ic("plus"), t("Nouveau dépôt")),
+      menuPlus());
+    const conseil = G.dossiers.length || !surDepots ? null : el("div", { class: "conseil-gh" },
+      icone("folders"), t("Indiquez vos dossiers de projets pour voir quels dépôts sont déjà sur ce PC et pouvoir cloner : "),
+      el("button", { class: "btn petit", onclick: reglerDossiers }, "Choisir les dossiers"));
     racine().replaceChildren(...[barre, el("div", { class: "puces sous-gh", id: "sous-gh" }), conseil, el("div", { id: "liste-gh" })].filter(Boolean));
     majPuces();
     dessinerListe();
@@ -295,7 +342,7 @@
 
   function compte(donnees) {
     if (!donnees) return el("span", { class: "nb-gh" }, "…");
-    if (donnees.erreur) return el("span", { class: "nb-gh", title: donnees.erreur }, "!");
+    if (donnees.erreur) return el("span", { class: "nb-gh etat-txt rouge", title: donnees.erreur }, "!");
     return el("span", { class: "nb-gh" }, String(donnees.nombre ?? 0));
   }
 
@@ -304,18 +351,19 @@
     if (!zone) return;
     const a = G.actions;
     const echecs = a && !a.erreur ? a.nombre_echecs : 0;
-    const badgeActions = !a ? el("span", { class: "nb-gh" }, "…")
-      : a.erreur ? el("span", { class: "nb-gh", title: a.erreur }, "!")
-      : echecs ? el("span", { class: "nb-gh echec-gh" }, "❌ " + echecs)
-      : el("span", { class: "nb-gh" }, a.depots.some(d => d.etat === "en_cours") ? "⏳" : "✅");
-    const puce = (cle, libelle, badge, alerte = false) => el("button", {
-      class: "puce" + (G.sous === cle ? " actif" : "") + (alerte ? " alerte-gh" : ""),
+    const badgeActions = !a || a.erreur ? compte(a)
+      : echecs ? el("span", { class: "nb-gh etat-txt rouge", title: t(echecs > 1 ? "{n} dépôts en échec : {depots}" : "{n} dépôt en échec : {depots}", { n: echecs, depots: a.echecs.join(", ") }) },
+          icone("circle-x"), String(echecs))
+      : a.depots.some(d => d.etat === "en_cours") ? el("span", { class: "nb-gh etat-txt ambre", title: "En cours" }, icone("loader"))
+      : el("span", { class: "nb-gh etat-txt vert", title: "Tous les derniers runs ont réussi." }, icone("check"));
+    const puce = (cle, libelle, badge) => el("button", {
+      class: "puce" + (G.sous === cle ? " actif" : ""),
       onclick: () => { if (G.sous !== cle) { G.sous = cle; G.recherche = ""; dessiner(); } } }, libelle, badge);
     zone.replaceChildren(
-      puce("depots", "📦 " + t("Dépôts"), el("span", { class: "nb-gh" }, String(G.depots ? G.depots.length : "…"))),
-      puce("prs", "🔀 " + t("Pull requests"), compte(G.prs)),
-      puce("issues", "🐛 " + t("Issues"), compte(G.issues)),
-      puce("actions", "⚙️ " + t("Actions"), badgeActions, echecs > 0));
+      puce("depots", "Dépôts", el("span", { class: "nb-gh" }, String(G.depots ? G.depots.length : "…"))),
+      puce("prs", "Pull requests", compte(G.prs)),
+      puce("issues", "Issues", compte(G.issues)),
+      puce("actions", "Actions", badgeActions));
   }
 
   function dessinerListe() {
@@ -326,7 +374,7 @@
     if (G.sous === "actions") return zone.replaceChildren(...vueActions());
     const liste = visibles();
     zone.replaceChildren(liste.length
-      ? el("div", { class: "liste-gh" }, liste.map(carte))
+      ? el("div", { class: "lignes" }, liste.map(ligneDepot))
       : el("div", { class: "vide" }, G.depots.length ? "Aucun dépôt ne correspond." : "Aucun dépôt sur ce compte pour l'instant."));
   }
 
@@ -340,149 +388,165 @@
 
   /** En attente, ou l'erreur du serveur ; null quand les données sont là. */
   function etatChargement(donnees) {
-    if (!donnees) return [el("div", { class: "attente-gh" }, el("span", { class: "attente" }, "⏳"), " ", t("Lecture…"))];
-    if (donnees.erreur) return [el("div", { class: "vide" }, "😕 " + donnees.erreur)];
+    if (!donnees) return [el("div", { class: "attente-gh" }, attente("Lecture…"))];
+    if (donnees.erreur) return [erreur(donnees.erreur)];
     return null;
   }
 
-  // -- dépôts --------------------------------------------------------------------
-  function carte(d, i) {
-    const actions = [el("button", { class: "btn", title: "Ouvrir la page du dépôt", onclick: () => ouvrirPage(d.url) }, "🌐 GitHub")];
-    if (d.local) {
-      actions.push(el("button", { class: "btn", title: d.local, onclick: () => action("ouvrir_dossier", { chemin: d.local }, "📂 " + t("Dossier ouvert")) }, "📂 " + t("Dossier")),
-        el("button", { class: "btn", title: "Ouvrir dans VS Code", onclick: () => action("vscode", { chemin: d.local }, "💻 " + t("VS Code s'ouvre…")) }, "💻 VS Code"));
-    } else {
-      actions.push(el("button", { class: "btn", title: "Copier le dépôt sur ce PC", onclick: () => cloner(d) }, "⬇️ " + t("Cloner")));
-    }
-    const proprietaire = d.complet.split("/")[0];
-    return el("div", { class: "depot", style: `animation-delay:${Math.min(i, 20) * 25}ms` },
-      el("div", { class: "l1" },
-        el("div", { class: "t", title: d.complet }, brut(d.nom)),
-        d.archive ? el("span", { class: "badge-gh gris" }, "Archivé") : null,
-        d.fork ? el("span", { class: "badge-gh gris" }, "Fork") : null,
-        el("span", { class: "badge-gh " + (d.prive ? "prive" : "public") }, d.prive ? "🔒 " + t("Privé") : t("Public"))),
-      el("div", { class: "d" }, brut(d.description || "")),
-      el("div", { class: "meta" },
-        d.langue ? el("span", { class: "langue", style: `--c:${COULEURS_LANGUES[d.langue] || "var(--gris)"}` }, brut(d.langue)) : null,
-        d.etoiles ? el("span", {}, `⭐ ${d.etoiles}`) : null,
-        d.maj ? el("span", {}, brut(t("Mis à jour le {date}", { date: dateCourte(d.maj) }))) : null,
-        proprietaire.toLowerCase() !== (G.etat.login || "").toLowerCase() ? el("span", {}, brut("👥 " + proprietaire)) : null),
-      d.local ? el("div", { class: "local", title: d.local }, brut("✅ " + t("Sur ce PC : {chemin}", { chemin: d.local }))) : null,
-      el("div", { class: "actions-gh" }, actions));
+  /** « nom », précédé du propriétaire (atténué) quand ce n'est pas votre compte. */
+  function nomDepot(complet) {
+    const [proprio, nom] = complet.includes("/") ? complet.split("/") : ["", complet];
+    const autre = proprio && proprio.toLowerCase() !== (G.etat.login || "").toLowerCase();
+    return el("span", { title: complet }, autre ? el("span", { class: "proprio-gh" }, brut(proprio + " / ")) : null, brut(nom));
   }
+
+  /** Petit indicateur « sur ce PC » (le chemin au survol), ou une place vide
+     de même largeur : les dates restent alignées. */
+  const surCePC = chemin => chemin
+    ? el("span", { class: "local-gh", title: t("Sur ce PC : {chemin}", { chemin }) }, icone("laptop"))
+    : el("span", { class: "local-gh" });
+
+  const bouton = (nom, titre, faire) => el("button", { class: "icone-btn", title: titre, onclick: faire }, icone(nom));
+
+  // -- dépôts --------------------------------------------------------------------
+  function ligneDepot(d) {
+    const actions = d.local
+      ? [bouton("folder-open", "Ouvrir le dossier", () => action("ouvrir_dossier", { chemin: d.local }, t("Dossier ouvert"))),
+         bouton("code", "Ouvrir dans VS Code", () => action("vscode", { chemin: d.local }, t("VS Code s'ouvre…")))]
+      : [bouton("download", "Copier le dépôt sur ce PC", () => cloner(d))];
+    actions.push(bouton("external-link", "Ouvrir la page du dépôt sur GitHub", () => ouvrirPage(d.url)));
+    // Une seule information sous le nom : la description, sinon le langage.
+    const meta = d.description
+      ? el("div", { class: "ligne-meta", title: d.description }, brut(d.description))
+      : d.langue ? el("div", { class: "ligne-meta" }, langue(d.langue)) : null;
+    return el("div", { class: "ligne" },
+      el("span", { class: "ligne-ic", title: d.langue || "" }, icone("book-open")),
+      el("div", { class: "ligne-corps" },
+        el("div", { class: "ligne-titre" }, nomDepot(d.complet),
+          d.prive ? el("span", { class: "tag" }, "Privé") : null,
+          d.archive ? el("span", { class: "tag" }, "Archivé") : null,
+          d.fork ? el("span", { class: "tag" }, "Fork") : null),
+        meta),
+      el("div", { class: "ligne-cote" },
+        d.description && d.langue ? langue(d.langue, "col-langue") : el("span", { class: "col-langue" }),
+        surCePC(d.local),
+        quand(d.maj)),
+      el("div", { class: "ligne-actions depot-gh" }, actions));
+  }
+
+  const langue = (nom, classe = "") => el("span", { class: ("langue-gh " + classe).trim(), style: `--c:${COULEURS_LANGUES[nom] || "var(--gris)"}` }, brut(nom));
 
   // -- pull requests et issues -------------------------------------------------------
+  /** Étiquette GitHub : neutre, avec un petit point de sa couleur. */
   function etiquette(e) {
-    const c = /^[0-9a-f]{6}$/i.test(e.couleur) ? e.couleur : "999999";
-    const [r, v, b] = [0, 2, 4].map(i => parseInt(c.slice(i, i + 2), 16));
-    const clair = (r * 299 + v * 587 + b * 114) / 1000 > 150;
-    // Couleur choisie sur GitHub pour l'étiquette : texte noir ou blanc selon le fond.
-    return el("span", { class: "etiq-gh", style: `background:#${c};color:${clair ? "#1f1a3a" : "#fff"}` }, brut(e.nom));
+    const c = /^[0-9a-f]{6}$/i.test(e.couleur) ? "#" + e.couleur : "var(--gris)";
+    return el("span", { class: "tag" }, el("span", { class: "pt-gh", style: `background:${c}` }), brut(e.nom));
   }
 
-  function ligne(x, icone, i) {
-    return el("div", { class: "ligne-gh" + (x.brouillon ? " brouillon" : ""), style: `animation-delay:${Math.min(i, 20) * 20}ms` },
-      el("div", { class: "ic-gh" }, icone),
-      el("div", { class: "corps-gh" },
-        el("div", { class: "t-gh" },
-          el("span", { class: "titre-gh", title: x.titre }, brut(x.titre)),
+  function ligneSuivi(x, nomIcone) {
+    return el("div", { class: "ligne" + (x.brouillon ? " brouillon" : "") },
+      el("span", { class: "ligne-ic" }, icone(nomIcone)),
+      el("div", { class: "ligne-corps" },
+        el("div", { class: "ligne-titre" },
+          el("span", { title: x.titre }, brut(x.titre)),
           el("span", { class: "num-gh" }, brut("#" + x.numero)),
-          x.brouillon ? el("span", { class: "badge-gh gris" }, "Brouillon") : null,
-          (x.etiquettes || []).slice(0, 4).map(etiquette)),
-        el("div", { class: "meta-gh" },
-          el("span", {}, brut("📦 " + x.depot)),
-          el("span", {}, x.avatar ? el("img", { class: "av-gh", src: x.avatar, alt: "" }) : null, brut(t("par {auteur}", { auteur: x.auteur }))),
-          quand(x.date),
-          x.commentaires ? el("span", {}, brut("💬 " + x.commentaires)) : null)),
-      el("button", { class: "btn petit", title: "Ouvrir sur GitHub", onclick: () => ouvrirPage(x.url) }, "🌐 " + t("Ouvrir")));
+          x.brouillon ? el("span", { class: "tag" }, "Brouillon") : null,
+          (x.etiquettes || []).slice(0, 3).map(etiquette)),
+        el("div", { class: "ligne-meta" }, nomDepot(x.depot), sep(), brut(t("par {auteur}", { auteur: x.auteur })))),
+      el("div", { class: "ligne-cote" },
+        el("span", { class: "info-gh col-com" }, x.commentaires ? [icone("message-square"), String(x.commentaires)] : null),
+        quand(x.date)),
+      el("div", { class: "ligne-actions" }, bouton("external-link", "Ouvrir sur GitHub", () => ouvrirPage(x.url))));
   }
 
-  function bloc(titre, liste, total, vide, icone) {
+  function bloc(titre, liste, total, vide, nomIcone) {
     const filtres = liste.filter(x => correspond(x.depot, x.titre, x.auteur, ...(x.etiquettes || []).map(e => e.nom)));
-    return [
-      el("div", { class: "section-gh" }, titre, el("span", { class: "nb-gh" }, String(total)),
-        total > liste.length ? el("span", {}, brut(t("{n} affichées sur {total}", { n: liste.length, total }))) : null),
-      el("div", { class: "lignes-gh" }, filtres.length ? filtres.map((x, i) => ligne(x, x.brouillon ? "📝" : icone, i))
-        : el("div", { class: "vide" }, liste.length ? "Rien ne correspond." : vide))];
+    return el("div", { class: "lignes" },
+      el("div", { class: "titre-lignes" }, titre, el("span", { class: "nb-gh" }, String(total)),
+        total > liste.length ? el("span", { class: "plus-gh-n" }, brut(t("{n} affichées sur {total}", { n: liste.length, total }))) : null),
+      filtres.length ? filtres.map(x => ligneSuivi(x, nomIcone))
+        : el("div", { class: "rien-gh" }, liste.length ? "Rien ne correspond." : vide));
   }
 
   function vuePRs() {
     const p = G.prs;
     return etatChargement(p) || [
-      ...bloc("👀 " + t("Revue demandée"), p.revues, p.nb_revues, "Aucune revue en attente.", "👀"),
-      ...bloc("🙋 " + t("Mes pull requests ouvertes"), p.miennes, p.nb_miennes, "Aucune pull request ouverte.", "🔀")];
+      bloc("Revue demandée", p.revues, p.nb_revues, "Aucune revue en attente.", "eye"),
+      bloc("Mes pull requests ouvertes", p.miennes, p.nb_miennes, "Aucune pull request ouverte.", "git-pull-request")];
   }
 
   function vueIssues() {
     const r = G.issues;
-    return etatChargement(r) || bloc("🐛 " + t("Issues ouvertes qui vous sont assignées"), r.issues, r.nombre, "Aucune issue ne vous est assignée.", "🐛");
+    return etatChargement(r) || [bloc("Issues ouvertes qui vous sont assignées", r.issues, r.nombre, "Aucune issue ne vous est assignée.", "target")];
   }
 
   // -- GitHub Actions ------------------------------------------------------------------
-  function carteRun(d, i) {
+  function ligneRun(d) {
     const e = infoEtat(d.etat);
     const autres = (d.workflows || []).filter(w => w.workflow !== d.workflow);
-    return el("div", { class: "run-gh " + d.etat, style: `animation-delay:${Math.min(i, 20) * 25}ms` },
-      el("div", { class: "l1" },
-        el("span", { class: "ic-run", title: t(e.libelle) }, e.icone),
-        el("div", { class: "t", title: d.complet }, brut(d.complet)),
-        el("span", { class: "badge-gh " + e.badge }, e.libelle)),
-      el("div", { class: "wf" }, brut(`${d.workflow}${d.numero ? " #" + d.numero : ""}`)),
-      d.titre ? el("div", { class: "commit", title: d.titre }, brut(d.titre)) : null,
-      el("div", { class: "meta-gh" }, el("span", {}, brut("🌿 " + t("branche {branche}", { branche: d.branche }))), quand(d.date),
-        d.local ? el("span", { title: d.local }, "💻 " + t("Sur ce PC")) : null),
-      autres.length ? el("div", { class: "autres" }, autres.map(w => el("button", {
-        title: `${t(infoEtat(w.etat).libelle)} · ${dateLongue(w.date)}`, onclick: () => ouvrirPage(w.lien) },
-        brut(`${infoEtat(w.etat).icone} ${w.workflow}`)))) : null,
-      el("div", { class: "actions-gh" },
-        el("button", { class: "btn petit" + (d.etat === "echec" ? " principal" : ""), onclick: () => ouvrirPage(d.lien) }, "🌐 " + t("Voir le run")),
-        el("button", { class: "btn petit discret", onclick: () => ouvrirPage(d.url) }, "📦 " + t("Dépôt"))));
+    return el("div", { class: "ligne" },
+      el("span", { class: "ligne-ic etat-txt " + e.couleur, title: e.libelle }, icone(e.icone, d.etat === "en_cours" ? "tourne-gh" : "")),
+      el("div", { class: "ligne-corps" },
+        el("div", { class: "ligne-titre" }, nomDepot(d.complet)),
+        el("div", { class: "ligne-meta", title: d.titre || "" },
+          brut(`${d.workflow}${d.numero ? " #" + d.numero : ""}`), sep(), brut(t("branche {branche}", { branche: d.branche })))),
+      el("div", { class: "ligne-cote" },
+        // Les autres workflows du dépôt : une petite icône d'état chacun.
+        autres.map(w => el("button", { class: "wf-gh etat-txt " + infoEtat(w.etat).couleur,
+          title: `${w.workflow} · ${t(infoEtat(w.etat).libelle)} · ${dateLongue(w.date)}`, onclick: () => ouvrirPage(w.lien) }, icone(infoEtat(w.etat).icone))),
+        surCePC(d.local),
+        quand(d.date)),
+      el("div", { class: "ligne-actions" },
+        el("button", { class: "btn petit discret", onclick: () => ouvrirPage(d.lien) }, ic("external-link"), t("Voir le run")),
+        bouton("book-open", "Ouvrir la page du dépôt", () => ouvrirPage(d.url))));
   }
 
   function vueActions() {
     const a = G.actions;
-    const attente = etatChargement(a);
-    if (attente) return attente;
+    const chargement = etatChargement(a);
+    if (chargement) return chargement;
     const filtres = a.depots.filter(d => correspond(d.complet, d.workflow, d.titre));
     const avecRuns = filtres.filter(d => !["aucun", "inconnu"].includes(d.etat));
     const sans = filtres.filter(d => d.etat === "aucun").map(d => d.complet);
     const illisibles = filtres.filter(d => d.etat === "inconnu").map(d => d.complet);
     const enCours = a.depots.filter(d => d.etat === "en_cours").length;
     const n = a.nombre_echecs;
-    const alerte = n
-      ? el("div", { class: "alerte-ci echec" }, brut("❌ " + t(n > 1 ? "{n} dépôts en échec : {depots}" : "{n} dépôt en échec : {depots}", { n, depots: a.echecs.join(", ") })))
-      : enCours ? el("div", { class: "alerte-ci en_cours" }, brut("⏳ " + t(enCours > 1 ? "{n} runs en cours…" : "{n} run en cours…", { n: enCours })))
-      : avecRuns.length ? el("div", { class: "alerte-ci succes" }, "✅ " + t("Tous les derniers runs ont réussi.")) : null;
+    // Une seule ligne discrète en haut : échecs, sinon runs en cours, sinon tout va bien.
+    const bandeau = (couleur, nom, texte) => el("div", { class: "bandeau-gh etat-txt " + couleur }, icone(nom), brut(texte));
+    const resume = n ? bandeau("rouge", "circle-x", t(n > 1 ? "{n} dépôts en échec : {depots}" : "{n} dépôt en échec : {depots}", { n, depots: a.echecs.join(", ") }))
+      : enCours ? bandeau("ambre", "loader", t(enCours > 1 ? "{n} runs en cours…" : "{n} run en cours…", { n: enCours }))
+      : avecRuns.length ? bandeau("vert", "circle-check", t("Tous les derniers runs ont réussi.")) : null;
     const heure = a.heure ? new Date(a.heure).toLocaleTimeString(I18N.locale(), { hour: "2-digit", minute: "2-digit" }) : "";
     return [
-      alerte,
-      avecRuns.length ? el("div", { class: "liste-gh" }, avecRuns.map(carteRun))
+      resume,
+      avecRuns.length ? el("div", { class: "lignes" }, avecRuns.map(ligneRun))
         : el("div", { class: "vide" }, a.depots.length && G.recherche.trim() ? "Rien ne correspond." : "Aucun run GitHub Actions sur vos dépôts récents."),
-      sans.length ? el("div", { class: "note-gh" }, brut("➖ " + t("Sans workflow : {depots}", { depots: sans.join(", ") }))) : null,
-      illisibles.length ? el("div", { class: "note-gh" }, brut("❔ " + t("Illisibles (Actions désactivé ou accès refusé) : {depots}", { depots: illisibles.join(", ") }))) : null,
-      el("div", { class: "note-gh" }, brut("ℹ️ " + t("Dernier run de la branche par défaut, pour vos 15 dépôts les plus récents et ceux de ce PC. Vérifié à {heure}.", { heure })))]
+      el("div", { class: "notes-gh" },
+        sans.length ? el("div", { class: "note-gh" }, brut(t("Sans workflow : {depots}", { depots: sans.join(", ") }))) : null,
+        illisibles.length ? el("div", { class: "note-gh" }, brut(t("Illisibles (Actions désactivé ou accès refusé) : {depots}", { depots: illisibles.join(", ") }))) : null,
+        el("div", { class: "note-gh" }, brut(t("Dernier run de la branche par défaut, pour vos 15 dépôts les plus récents et ceux de ce PC. Vérifié à {heure}.", { heure }))))]
       .filter(Boolean);
   }
 
   async function action(nom, donnees, message) {
     try { await api("/api/github/" + nom, donnees); if (message) toast(message, "succes"); }
-    catch (e) { toast("😕 " + e.message, "erreur", 6000); }
+    catch (e) { toast(e.message, "erreur", 6000); }
   }
   const ouvrirPage = url => action("ouvrir_page", { url });
 
   // -- connexion ---------------------------------------------------------------
   function ecranConnexion() {
     G.depots = null; G.prs = G.issues = G.actions = null;
-    const bouton = el("button", { class: "btn principal", onclick: () => connecter(bouton) }, "🐙 " + t("Connecter GitHub"));
-    racine().replaceChildren(el("div", { class: "connexion" },
-      el("div", { style: "font-size:48px" }, "🐙"),
+    const bouton = el("button", { class: "btn principal", onclick: () => connecter(bouton) }, ic("git-branch"), t("Connecter GitHub"));
+    racine().replaceChildren(el("div", { class: "carte connexion-gh" },
+      el("div", { class: "gros-gh" }, icone("git-branch")),
       el("h3", {}, "Connecter votre compte GitHub"),
       el("p", { style: "color:var(--doux);margin-top:0" }, "Une seule fois. Aucun mot de passe à saisir ici : GitHub vous montre une page où valider un code."),
       el("ol", {},
         el("li", {}, "Cliquez sur « Connecter GitHub » : un code de 8 caractères s'affiche et est copié."),
         el("li", {}, "La page github.com/login/device s'ouvre : collez le code, puis cliquez sur ", el("b", {}, "Authorize"), "."),
         el("li", {}, "Revenez ici : vos dépôts s'affichent tout seuls.")),
-      el("p", { style: "color:var(--doux);font-size:13px" }, "🔒 " + t("L'accès est rangé dans le coffre de Windows (Gestionnaire d'identification), jamais dans un fichier.")),
+      el("p", { class: "cx-note" }, icone("lock"), t("L'accès est rangé dans le coffre de Windows (Gestionnaire d'identification), jamais dans un fichier.")),
       el("div", { class: "actions" }, bouton)));
   }
 
@@ -490,19 +554,20 @@
     bouton.disabled = true;
     let r;
     try { r = await api("/api/github/connexion/debut", {}); }
-    catch (e) { toast("😕 " + e.message, "erreur", 9000); bouton.disabled = false; return; }
+    catch (e) { toast(e.message, "erreur", 9000); bouton.disabled = false; return; }
     finally { bouton.disabled = false; }
     try { await navigator.clipboard.writeText(r.code); } catch {}
-    const etat = el("p", {}, el("span", { class: "attente" }, "⏳"), " ", t("En attente de votre validation sur GitHub…"));
+    const etat = el("p", { class: "etat-attente-gh" }, attente("En attente de votre validation sur GitHub…"));
+    const finir = (nom, texte) => etat.replaceChildren(icone(nom), brut(texte));
     fenetre([
-      el("div", { class: "gros" }, "🐙"),
+      el("div", { class: "gros" }, icone("key-round")),
       el("h3", {}, "Validez ce code sur GitHub"),
       el("div", { class: "code-gh" }, brut(r.code)),
       el("p", {}, "Il est déjà copié : collez-le sur la page github.com/login/device qui vient de s'ouvrir, puis cliquez sur Authorize."),
       etat,
       el("div", { class: "actions" },
-        el("button", { class: "btn", onclick: async () => { try { await navigator.clipboard.writeText(r.code); toast("📋 " + t("Code copié"), "succes"); } catch {} } }, "📋 " + t("Copier")),
-        el("button", { class: "btn", onclick: () => ouvrirPage(r.adresse) }, "🌐 " + t("Rouvrir la page")),
+        el("button", { class: "btn", onclick: async () => { try { await navigator.clipboard.writeText(r.code); toast(t("Code copié"), "succes"); } catch {} } }, ic("clipboard"), t("Copier")),
+        el("button", { class: "btn", onclick: () => ouvrirPage(r.adresse) }, ic("external-link"), t("Rouvrir la page")),
         el("button", { class: "btn", onclick: fermer }, "Annuler"))], true);
     const fin = Date.now() + r.expire_dans * 1000;
     while (Date.now() < fin && $("#voile").classList.contains("visible")) {
@@ -510,18 +575,18 @@
       if (!$("#voile").classList.contains("visible")) return;
       let s;
       try { s = await api("/api/github/connexion/suite", {}); }
-      catch (e) { etat.textContent = "❌ " + e.message; return; }
-      if (s.etat === "connecte") { fermer(); toast("🎉 " + t("GitHub connecté : {login}", { login: s.login }), "succes"); afficher(true); return; }
-      if (s.etat === "refuse") { etat.textContent = "❌ " + t("Accès refusé sur GitHub."); return; }
-      if (s.etat === "expire" || s.etat === "aucune") { etat.textContent = "⌛ " + t("Le code a expiré : fermez et recommencez."); return; }
+      catch (e) { finir("circle-x", e.message); return; }
+      if (s.etat === "connecte") { fermer(); toast(t("GitHub connecté : {login}", { login: s.login }), "succes"); afficher(true); return; }
+      if (s.etat === "refuse") { finir("circle-x", t("Accès refusé sur GitHub.")); return; }
+      if (s.etat === "expire" || s.etat === "aucune") { finir("clock", t("Le code a expiré : fermez et recommencez.")); return; }
     }
   }
 
   async function deconnecter() {
-    const oui = await confirmer("🔌", "Déconnecter GitHub ?",
+    const oui = await confirmer(icone("log-out"), "Déconnecter GitHub ?",
       "L'accès est retiré de ce PC. Pour le révoquer aussi chez GitHub : Settings > Applications > Authorized OAuth Apps.", "Déconnecter");
     if (!oui) return;
-    await action("deconnexion", {}, "🔌 " + t("GitHub déconnecté"));
+    await action("deconnexion", {}, t("GitHub déconnecté"));
     afficher(true);
   }
 
@@ -530,8 +595,8 @@
     let dossiers = [...G.dossiers];
     const liste = el("div", { class: "dossiers-gh" });
     const dessinerDossiers = () => liste.replaceChildren(...(dossiers.length
-      ? dossiers.map((c, i) => el("div", {}, "📁", el("span", { title: c }, brut(c)),
-          el("button", { class: "icone-btn", title: "Retirer", onclick: () => { dossiers.splice(i, 1); dessinerDossiers(); } }, "✕")))
+      ? dossiers.map((c, i) => el("div", {}, icone("folder"), el("span", { title: c }, brut(c)),
+          el("button", { class: "icone-btn", title: "Retirer", onclick: () => { dossiers.splice(i, 1); dessinerDossiers(); } }, icone("x"))))
       : [el("p", {}, "Aucun dossier pour l'instant.")]));
     const champ = el("input", { placeholder: "ex. D:\\Projets", spellcheck: "false" });
     const ajouter = () => {
@@ -544,12 +609,13 @@
       if (champ.value.trim()) ajouter();
       try {
         const r = await api("/api/github/dossiers", { dossiers });
-        G.dossiers = r.dossiers; fermer(); toast("📁 " + t("Dossiers enregistrés"), "succes"); afficher(true);
-      } catch (e) { toast("😕 " + e.message, "erreur", 6000); }
+        G.dossiers = r.dossiers; fermer(); toast(t("Dossiers enregistrés"), "succes"); afficher(true);
+      } catch (e) { toast(e.message, "erreur", 6000); }
     } }, "Enregistrer");
     dessinerDossiers();
     fenetre([
-      el("h3", {}, "📁 " + t("Dossiers de projets")),
+      el("div", { class: "gros" }, icone("folders")),
+      el("h3", {}, "Dossiers de projets"),
       el("p", {}, "L'outil y cherche vos dépôts déjà présents sur ce PC (le dossier et ses sous-dossiers directs), et y clone les nouveaux."),
       liste,
       el("div", { class: "ajout-gh" }, champ, el("button", { class: "btn", onclick: ajouter }, "Ajouter")),
@@ -564,17 +630,18 @@
     const destination = el("small", {});
     const maj = () => { destination.textContent = t("Destination : {chemin}", { chemin: `${choix.value.replace(/[\\/]+$/, "")}\\${d.nom}` }); };
     choix.addEventListener("change", maj); maj();
-    const libelle = "⬇️ " + t("Cloner");
+    const libelle = () => [ic("download"), t("Cloner")];
     const bouton = el("button", { class: "btn principal", onclick: async () => {
       bouton.disabled = true;
-      bouton.replaceChildren(el("span", { class: "attente" }, "⏳"), " ", t("Clonage…"));
+      bouton.replaceChildren(...attente("Clonage…"));
       try {
         const r = await api("/api/github/cloner", { complet: d.complet, dossier: choix.value });
-        fermer(); toast("⬇️ " + t("{nom} cloné dans {chemin}", { nom: d.nom, chemin: r.chemin }), "succes", 5000); afficher(true);
-      } catch (e) { toast("😕 " + e.message, "erreur", 8000); bouton.disabled = false; bouton.textContent = libelle; }
-    } }, libelle);
+        fermer(); toast(t("{nom} cloné dans {chemin}", { nom: d.nom, chemin: r.chemin }), "succes", 5000); afficher(true);
+      } catch (e) { toast(e.message, "erreur", 8000); bouton.disabled = false; bouton.replaceChildren(...libelle()); }
+    } }, libelle());
     fenetre([
-      el("h3", {}, brut("⬇️ " + t("Cloner « {nom} »", { nom: d.nom }))),
+      el("div", { class: "gros" }, icone("download")),
+      el("h3", {}, brut(t("Cloner « {nom} »", { nom: d.nom }))),
       el("label", { class: "champ" }, "Dans le dossier", choix, destination),
       el("div", { class: "actions" }, el("button", { class: "btn", onclick: fermer }, "Annuler"), bouton)]);
   }
@@ -595,16 +662,16 @@
     const bilan = el("div");
     let apercu = null;
     const accord = el("input", { type: "checkbox" });
-    const libelleEnvoyer = "🚀 " + t("Créer et envoyer");
-    const envoyer = el("button", { class: "btn principal", disabled: "", onclick: creer }, libelleEnvoyer);
-    const verifier = el("button", { class: "btn", onclick: lireApercu }, "🔍 " + t("Vérifier le contenu"));
+    const libelleEnvoyer = () => [ic("send"), t("Créer et envoyer")];
+    const envoyer = el("button", { class: "btn principal", disabled: "", onclick: creer }, libelleEnvoyer());
+    const verifier = el("button", { class: "btn", onclick: lireApercu }, ic("search"), t("Vérifier le contenu"));
     dossier.addEventListener("input", () => { apercu = null; envoyer.disabled = true; bilan.replaceChildren(); });
     accord.addEventListener("change", () => { envoyer.disabled = !apercu || !accord.checked; });
     const listeFichiers = fichiers => el("ul", {}, fichiers.map(f => el("li", {}, el("code", {}, brut(f)))));
 
     async function lireApercu() {
       verifier.disabled = true; envoyer.disabled = true;
-      bilan.replaceChildren(el("p", {}, el("span", { class: "attente" }, "⏳"), " ", t("Lecture du dossier…")));
+      bilan.replaceChildren(el("p", { class: "etat-attente-gh" }, attente("Lecture du dossier…")));
       try {
         const a = await api("/api/github/apercu", { dossier: dossier.value });
         if (a.deja_relie) {
@@ -619,11 +686,11 @@
           el("b", {}, brut(t(a.nombre > 1 ? "{n} fichiers · {taille}" : "{n} fichier · {taille}", { n: a.nombre, taille: taille(a.taille) }))),
           " (les fichiers listés dans .gitignore sont exclus)",
           el("ul", {}, a.exemples.map(f => el("li", {}, el("code", {}, brut(f)))), a.nombre > a.exemples.length ? el("li", {}, "…") : null))];
-        if (a.modifs_non_enregistrees) blocs.push(el("div", { class: "bilan-gh" }, "ℹ️ " + t("Ce dossier a des modifications non enregistrées (commit) : elles ne seront pas envoyées.")));
-        if (a.lourds.length) blocs.push(el("div", { class: "bilan-gh" }, "⚠️ " + t("Fichiers lourds (plus de 50 Mo) :"), listeFichiers(a.lourds)));
-        if (a.trop_gros.length) blocs.push(el("div", { class: "bilan-gh danger" }, "⛔ " + t("GitHub refuse les fichiers de plus de 100 Mo. Ajoutez-les à .gitignore :"), listeFichiers(a.trop_gros)));
+        if (a.modifs_non_enregistrees) blocs.push(el("div", { class: "bilan-gh" }, ic("info"), t("Ce dossier a des modifications non enregistrées (commit) : elles ne seront pas envoyées.")));
+        if (a.lourds.length) blocs.push(el("div", { class: "bilan-gh" }, ic("triangle-alert"), t("Fichiers lourds (plus de 50 Mo) :"), listeFichiers(a.lourds)));
+        if (a.trop_gros.length) blocs.push(el("div", { class: "bilan-gh danger" }, ic("octagon-x"), t("GitHub refuse les fichiers de plus de 100 Mo. Ajoutez-les à .gitignore :"), listeFichiers(a.trop_gros)));
         const risque = a.sensibles.length > 0;
-        if (risque) blocs.push(el("div", { class: "bilan-gh danger" }, "🔐 " + t("Fichiers qui contiennent souvent des mots de passe ou des clés :"),
+        if (risque) blocs.push(el("div", { class: "bilan-gh danger" }, ic("lock"), t("Fichiers qui contiennent souvent des mots de passe ou des clés :"),
           listeFichiers(a.sensibles),
           "Ajoutez-les à .gitignore puis vérifiez à nouveau, ou cochez ci-dessous si vous êtes sûr."));
         if (risque) blocs.push(el("label", { class: "choix-gh" }, accord, "J'ai vérifié : ces fichiers peuvent être envoyés"));
@@ -632,7 +699,7 @@
         envoyer.disabled = a.trop_gros.length > 0 || risque;
       } catch (e) {
         apercu = null;
-        bilan.replaceChildren(el("div", { class: "bilan-gh danger" }, "❌ " + e.message));
+        bilan.replaceChildren(el("div", { class: "bilan-gh danger" }, ic("circle-x"), brut(e.message)));
       } finally { verifier.disabled = false; }
     }
 
@@ -640,19 +707,19 @@
       if (!apercu) return;
       if (public_.checked && !(await confirmerPublic())) return;
       envoyer.disabled = true; verifier.disabled = true;
-      envoyer.replaceChildren(el("span", { class: "attente" }, "⏳"), " ", t("Envoi…"));
+      envoyer.replaceChildren(...attente("Envoi…"));
       try {
         const r = await api("/api/github/creer", { dossier: dossier.value, nom: nom.value, description: description.value, prive: prive.checked });
         fenetre([
-          el("div", { class: "gros" }, "🎉"),
+          el("div", { class: "gros" }, icone("circle-check")),
           el("h3", {}, "Dépôt créé et envoyé"),
           el("p", {}, brut(t(r.nombre > 1 ? "{n} fichiers envoyés sur {depot}." : "{n} fichier envoyé sur {depot}.", { n: r.nombre, depot: r.complet }))),
           el("div", { class: "actions" },
-            el("button", { class: "btn", onclick: () => ouvrirPage(r.url) }, "🌐 " + t("Voir sur GitHub")),
+            el("button", { class: "btn", onclick: () => ouvrirPage(r.url) }, ic("external-link"), t("Voir sur GitHub")),
             el("button", { class: "btn principal", onclick: () => { fermer(); afficher(true); } }, "OK"))], true);
       } catch (e) {
-        toast("😕 " + e.message, "erreur", 12000);
-        envoyer.disabled = false; verifier.disabled = false; envoyer.textContent = libelleEnvoyer;
+        toast(e.message, "erreur", 12000);
+        envoyer.disabled = false; verifier.disabled = false; envoyer.replaceChildren(...libelleEnvoyer());
       }
     }
 
@@ -660,25 +727,26 @@
     // éléments pour la réafficher ensuite.
     let formulaire;
     async function confirmerPublic() {
-      const oui = await confirmer("🌍", "Dépôt public ?", "Tout le monde pourra voir ces fichiers sur GitHub.", "Oui, public");
+      const oui = await confirmer(icone("globe"), "Dépôt public ?", "Tout le monde pourra voir ces fichiers sur GitHub.", "Oui, public");
       fenetre(formulaire);
       return oui;
     }
 
     formulaire = [
-      el("h3", {}, "＋ " + t("Nouveau dépôt GitHub")),
+      el("div", { class: "gros" }, icone("plus")),
+      el("h3", {}, "Nouveau dépôt GitHub"),
       el("p", {}, "Crée le dépôt sur votre compte et y envoie le contenu d'un dossier de ce PC."),
       el("label", { class: "champ" }, "Dossier à envoyer", dossier),
       el("label", { class: "champ" }, "Nom du dépôt", nom),
       el("label", { class: "champ" }, "Description", description),
       el("div", { class: "choix-gh" },
-        el("label", {}, prive, "🔒 " + t("Privé")),
-        el("label", {}, public_, "🌍 " + t("Public"))),
+        el("label", {}, prive, icone("lock"), t("Privé")),
+        el("label", {}, public_, icone("globe"), t("Public"))),
       bilan,
       el("div", { class: "actions" }, el("button", { class: "btn", onclick: fermer }, "Annuler"), verifier, envoyer)];
     fenetre(formulaire);
     dossier.focus();
   }
 
-  VUES.github = { afficher, titre: "GitHub", icone: "🐙", groupe: "dev", ordre: 20 };
+  VUES.github = { afficher, titre: "GitHub", icone: icone("git-branch"), groupe: "dev", ordre: 20 };
 })();

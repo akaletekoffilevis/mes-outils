@@ -105,6 +105,11 @@ La section `<section id="vue-<nom>">` est créée pour lui.
   `t("Port {port} libéré", { port })`, et la clé `"Port {port} libéré"` dans le
   dictionnaire. Messages d'erreur du serveur : les ajouter aussi au
   dictionnaire (`I18N.motifs([[/^…$/, "…"]])` pour les messages variables).
+- **Listes** : en lignes compactes, classes communes de hub.html : `.lignes` >
+  `.ligne` (`.ligne-ic`, `.ligne-corps` > `.ligne-titre` + `.ligne-meta`,
+  `.ligne-cote`, `.ligne-actions` visibles au survol), `.ligne-detail` pour un
+  contenu déplié, `.tag` (étiquette neutre), `.etat-txt.vert|rouge|ambre|gris`
+  (état en texte coloré). La couleur est réservée aux états.
 - **Pas d'emoji dans l'interface.** Icônes au trait seulement : `icone("folder")`
   renvoie un `<svg>` (taille du texte, couleur du texte). Les noms sont ceux de
   [Lucide](https://lucide.dev/icons) présents dans `outil/web/icones.js` ; pour

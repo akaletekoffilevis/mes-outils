@@ -395,4 +395,4 @@ Tout est expliqué dans [MODULES.md](MODULES.md).
 
 ---
 
-Anciennes versions de ce guide : [version 1.3](archives/v1.3/GUIDE.md).
+Anciennes versions de ce guide : [version 1.4](archives/v1.4/GUIDE.md) · [version 1.3](archives/v1.3/GUIDE.md).
