@@ -34,12 +34,12 @@ import io
 import os
 import re
 import shutil
-import subprocess
 import threading
 import uuid
 from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
 
 import config
+import systeme
 
 NOM = "depenses"
 CENT = Decimal("0.01")
@@ -74,7 +74,6 @@ NOMS_EPARGNE = ("épargne", "epargne", "épargnes", "epargnes")
 RATTRAPAGE_MOIS = 24
 EXTENSIONS_JUSTIFICATIF = (".pdf", ".png", ".jpg", ".jpeg", ".webp", ".gif", ".heic", ".bmp", ".tif", ".tiff")
 TAILLE_MAX_JUSTIFICATIF = 25 * 1024 * 1024
-CREATE_NO_WINDOW = 0x08000000
 
 _verrou = threading.RLock()
 
@@ -692,7 +691,7 @@ def retirer_justificatif(identifiant):
 
 
 def _ouvrir(chemin):
-    os.startfile(chemin)  # noqa: S606 (fichier de notre dossier, ouvert par Windows)
+    systeme.ouvrir(chemin)  # fichier de notre dossier, ouvert par le programme habituel
 
 
 def ouvrir_justificatif(identifiant):
@@ -708,35 +707,26 @@ def ouvrir_justificatif(identifiant):
     return {"ok": True}
 
 
-SCRIPT_FICHIER = r"""
-Add-Type -AssemblyName System.Windows.Forms
-$p = New-Object System.Windows.Forms.Form
-$p.TopMost = $true
-$d = New-Object System.Windows.Forms.OpenFileDialog
-$d.Title = $env:MO_TITRE
-$d.Filter = $env:MO_FILTRE
-$d.Multiselect = $false
-$d.CheckFileExists = $true
-if ($d.ShowDialog($p) -eq [System.Windows.Forms.DialogResult]::OK) {
-  [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-  Write-Output $d.FileName
-}
-"""
+def motifs_justificatif():
+    """Les motifs du filtre de la fenêtre « Ouvrir ». Sous Linux, les noms de
+    fichiers distinguent les majuscules : « *.JPG » est ajouté à « *.jpg »."""
+    motifs = ["*" + e for e in EXTENSIONS_JUSTIFICATIF]
+    if not systeme.WINDOWS:
+        motifs += ["*" + e.upper() for e in EXTENSIONS_JUSTIFICATIF]
+    return ";".join(motifs)
 
 
 def choisir_fichier(d=None):
-    """Ouvre la fenêtre « Ouvrir » de Windows (photo ou PDF), au premier plan.
+    """Ouvre la fenêtre « Ouvrir » du système (photo ou PDF), au premier plan.
     Renvoie {"chemin", "nom"} ou {"chemin": None} si annulé."""
     d = d or {}
-    motifs = ";".join("*" + e for e in EXTENSIONS_JUSTIFICATIF)
     libelle = "Receipts" if config.langue() == "en" else "Justificatifs"
-    env = dict(os.environ, MO_TITRE=str(d.get("titre") or "Choisir un justificatif")[:120],
-               MO_FILTRE=f"{libelle} (photo, PDF)|{motifs}")
-    r = subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-STA", "-Command", SCRIPT_FICHIER],
-                       env=env, capture_output=True, text=True, encoding="utf-8", errors="replace",
-                       timeout=600, creationflags=CREATE_NO_WINDOW)
-    lignes = (r.stdout or "").strip().splitlines()
-    chemin = lignes[-1].strip() if lignes else ""
+    try:
+        chemins = systeme.choisir_fichiers(str(d.get("titre") or "Choisir un justificatif")[:120], "", multi=False,
+                                           filtre=f"{libelle} (photo, PDF)|{motifs_justificatif()}")
+    except RuntimeError as erreur:  # Linux sans zenity ni kdialog
+        raise ValueError(str(erreur)) from None
+    chemin = chemins[-1] if chemins else ""
     if not chemin or not os.path.isfile(chemin):
         return {"chemin": None}
     return {"chemin": chemin, "nom": os.path.basename(chemin)}

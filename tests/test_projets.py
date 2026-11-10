@@ -19,6 +19,13 @@ from aide import ConfigTemporaire, ServeurTest  # noqa: E402
 import coffre  # noqa: E402
 import config  # noqa: E402
 import projets  # noqa: E402
+import systeme  # noqa: E402
+
+LINUX = sys.platform.startswith("linux")
+# Contenu réel de /proc/<pid>/stat (Ubuntu) : champ 22 (starttime) = 8231457.
+# Le nom contient une espace et une parenthèse : il faut lire après la dernière « ) ».
+STAT = ("48213 (node (dev) x) S 48200 48213 48213 0 -1 4194304 12000 0 0 0 150 30 0 0 20 0 11 0 "
+        "8231457 1100000000 25000 18446744073709551615 1 1 0 0 0 0 0 4096 134234626 0 0 0 17 3 0 0 0 0 0\n")
 
 SERVEUR = """import http.server, sys
 port = int(sys.argv[1])
@@ -112,16 +119,38 @@ class TestDetection(Base):
         npm = self.projet("api", {"package.json": json.dumps({"scripts": {"start": "nest start"}})})
         self.assertEqual(projets.commandes_proposees(npm)[0]["commande"], "npm run start")
 
-        dj = self.projet("dj", {"manage.py": "", ".venv/Scripts/python.exe": ""})
+        dj = self.projet("dj", {"manage.py": "", ".venv/Scripts/python.exe": "", ".venv/bin/python": ""})
         c = projets.commandes_proposees(dj)[0]
-        self.assertEqual((c["commande"], c["port"]), (".venv\\Scripts\\python.exe manage.py runserver", 8000))
+        venv = ".venv\\Scripts\\python.exe" if systeme.WINDOWS else ".venv/bin/python"
+        self.assertEqual((c["commande"], c["port"]), (f"{venv} manage.py runserver", 8000))
 
         infra = self.projet("infra", {"docker-compose.yml": "services:\n  w:\n    ports:\n      - 8081:80\n"})
         c = projets.commandes_proposees(infra)[0]
         self.assertEqual((c["commande"], c["port"]), ("docker compose up", 8081))
 
         odoo = self.projet("odoo", {"odoo-bin": "", "odoo.conf": ""})
-        self.assertEqual(projets.commandes_proposees(odoo)[0]["commande"], "python odoo-bin -c odoo.conf")
+        python = "python" if systeme.WINDOWS else "python3"
+        self.assertEqual(projets.commandes_proposees(odoo)[0]["commande"], f"{python} odoo-bin -c odoo.conf")
+
+    def test_commandes_proposees_linux(self):
+        with mock.patch.object(systeme, "WINDOWS", False):
+            dj = self.projet("dj", {"manage.py": "", "venv/bin/python": "", "venv/Scripts/python.exe": ""})
+            self.assertEqual(projets.commandes_proposees(dj)[0]["commande"], "venv/bin/python manage.py runserver")
+            seul = self.projet("seul", {"manage.py": ""})
+            self.assertEqual(projets.commandes_proposees(seul)[0]["commande"], "python3 manage.py runserver",
+                             "Ubuntu n'a pas de commande « python »")
+            mvn = self.projet("mvn", {"pom.xml": "<artifactId>spring-boot</artifactId>", "mvnw": "", "mvnw.cmd": ""})
+            self.assertEqual(projets.commandes_proposees(mvn)[0]["commande"], "./mvnw spring-boot:run")
+            gradle = self.projet("gradle", {"build.gradle": "", "gradlew": "", "gradlew.bat": ""})
+            self.assertEqual(projets.commandes_proposees(gradle)[0]["commande"], "./gradlew bootRun")
+            sans = self.projet("sans", {"build.gradle": "", "gradlew.bat": ""})
+            self.assertEqual(projets.commandes_proposees(sans)[0]["commande"], "gradle bootRun")
+            rails = self.projet("rails", {"Gemfile": "", "bin/rails": ""})
+            self.assertEqual(projets.commandes_proposees(rails)[0]["commande"], "ruby bin/rails server")
+        with mock.patch.object(systeme, "WINDOWS", True):
+            self.assertEqual(projets.commandes_proposees(mvn)[0]["commande"], "mvnw.cmd spring-boot:run")
+            self.assertEqual(projets.commandes_proposees(gradle)[0]["commande"], "gradlew.bat bootRun")
+            self.assertEqual(projets.commandes_proposees(rails)[0]["commande"], "ruby bin\\rails server")
 
     def test_ajout_manuel_et_masque(self):
         ailleurs = tempfile.mkdtemp(prefix="mo-ailleurs-")
@@ -223,6 +252,104 @@ class TestCommandes(Base):
         finally:
             etranger.kill()
             etranger.wait()
+
+
+class TestLinux(Base):
+    """Branches Linux, simulées (passent aussi sous Windows)."""
+
+    def test_debut_stat(self):
+        self.assertEqual(projets.debut_stat_linux(STAT), 8231457)
+        self.assertIsNone(projets.debut_stat_linux(STAT.replace(") S ", ") Z ")), "zombie : terminé")
+        self.assertIsNone(projets.debut_stat_linux(""))
+        self.assertIsNone(projets.debut_stat_linux(None))
+        self.assertIsNone(projets.debut_stat_linux("12 (x) S 1 2"), "texte tronqué")
+        with mock.patch.object(systeme, "WINDOWS", False), \
+                mock.patch.object(projets, "_lire_stat_linux", return_value=STAT) as lire:
+            self.assertEqual(projets.heure_creation(48213), 8231457)
+            lire.assert_called_once_with(48213)
+            self.assertIsNone(projets.heure_creation("abc"))
+            self.assertIsNone(projets.heure_creation(1), "jamais le PID 1")
+        with mock.patch.object(systeme, "WINDOWS", False), \
+                mock.patch.object(projets, "_lire_stat_linux", return_value=None):
+            self.assertIsNone(projets.heure_creation(48213), "processus disparu")
+
+    def test_demarrer_et_arreter(self):
+        dossier = self.projet("web", {"package.json": "{}"})
+        pid = projets.identifiant(dossier)
+        cid = projets.enregistrer_commandes({"projet": pid, "commandes": [
+            {"nom": "Dev", "commande": "source .env && npm run dev"}]})["commandes"][0]["id"]
+        faux = mock.Mock(pid=48213)
+        with mock.patch.object(systeme, "WINDOWS", False), \
+                mock.patch.object(projets.shutil, "which", return_value="/usr/bin/bash"), \
+                mock.patch.object(projets.subprocess, "Popen", return_value=faux) as popen, \
+                mock.patch.object(projets, "heure_creation", return_value=8231457):
+            r = projets.demarrer(pid, cid)
+            self.assertEqual((r["etat"], r["pid"]), ("marche", 48213))
+            args, kw = popen.call_args
+            self.assertEqual(args[0], ["/usr/bin/bash", "-c", "source .env && npm run dev"],
+                             "bash -c avec la commande telle quelle")
+            self.assertTrue(kw["start_new_session"], "nouvelle session : groupe = PID")
+            self.assertNotIn("creationflags", kw, "jamais de drapeaux Windows sous Linux")
+            self.assertEqual(kw["cwd"], dossier)
+            self.assertEqual(projets._donnees()["lances"][f"{pid}/{cid}"]["cree"], 8231457)
+
+            # Arrêt : le groupe, puis l'arbre par systeme.arreter_processus.
+            faux.wait.return_value = -15
+            with mock.patch.object(projets.os, "getpgid", create=True, return_value=48213), \
+                    mock.patch.object(projets.os, "killpg", create=True) as killpg, \
+                    mock.patch.object(systeme, "arreter_processus", return_value=(True, "")) as arret:
+                projets.arreter(pid, cid)
+            arret.assert_called_once_with(48213, arbre=True, delai=5.0)
+            self.assertEqual([c.args for c in killpg.call_args_list],
+                             [(48213, projets.signal.SIGTERM), (48213, getattr(projets.signal, "SIGKILL", 9))])
+            self.assertEqual(projets._donnees()["lances"], {})
+
+    def test_sh_sans_bash(self):
+        with mock.patch.object(projets.shutil, "which", return_value=None):
+            self.assertEqual(projets._shell_linux(), "/bin/sh")
+
+    def test_jamais_un_processus_etranger(self):
+        with mock.patch.object(systeme, "WINDOWS", False), \
+                mock.patch.object(projets, "heure_creation", return_value=8231457), \
+                mock.patch.object(projets.os, "killpg", create=True) as killpg, \
+                mock.patch.object(systeme, "arreter_processus") as arret:
+            with self.assertRaises(projets.ErreurProjets):
+                projets._tuer_arbre(48213)
+            d = projets._donnees()
+            d["lances"]["0123456789/x"] = {"pid": 48213, "cree": 111, "journal": ""}
+            projets._ecrire(d)
+            with self.assertRaises(projets.ErreurProjets, msg="PID réutilisé : autre heure de création"):
+                projets._tuer_arbre(48213)
+        arret.assert_not_called()
+        killpg.assert_not_called()
+        d = projets._donnees()
+        d["lances"] = {}
+        projets._ecrire(d)
+
+    def test_ouvrir(self):
+        dossier = self.projet("app", {"package.json": "{}"})
+        pid = projets.identifiant(dossier)
+        with mock.patch.object(systeme, "WINDOWS", False), \
+                mock.patch.object(systeme, "ouvrir_terminal", return_value=True) as terminal, \
+                mock.patch.object(systeme, "ouvrir") as ouvrir, \
+                mock.patch.object(projets.subprocess, "Popen") as popen:
+            projets.ouvrir_terminal({"projet": pid})
+            projets.ouvrir_dossier({"projet": pid})
+            self.assertEqual(projets.lister()["terminal"], "Terminal")
+        terminal.assert_called_once_with(dossier=dossier)
+        ouvrir.assert_called_once_with(dossier)
+        popen.assert_not_called()
+        with mock.patch.object(systeme, "WINDOWS", False), \
+                mock.patch.object(systeme, "ouvrir_terminal", return_value=False), \
+                self.assertRaisesRegex(projets.ErreurProjets, "Aucun terminal"):
+            projets.ouvrir_terminal({"projet": pid})
+
+    @unittest.skipUnless(LINUX, "vrai Linux seulement")
+    def test_heure_creation_reelle(self):
+        self.assertIsInstance(projets.heure_creation(os.getpid()), int)
+        p = subprocess.Popen([sys.executable, "-c", "pass"])
+        p.wait()
+        self.assertIsNone(projets.heure_creation(p.pid), "processus terminé")
 
 
 class TestGit(Base):

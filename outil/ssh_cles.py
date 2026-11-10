@@ -1,41 +1,55 @@
 # -*- coding: utf-8 -*-
 """Serveurs SSH de « Mes outils » : une clé par serveur, posée en un clic.
 
-- La clé (ed25519, sans phrase de passe) est créée par le ssh-keygen de
-  Windows dans %USERPROFILE%\\.ssh, nommée « mesoutils_<alias> ».
+- La clé (ed25519, sans phrase de passe) est créée par ssh-keygen (celui de
+  Windows, ou celui d'OpenSSH sous Linux) dans ~/.ssh (%USERPROFILE%\\.ssh),
+  nommée « mesoutils_<alias> ».
 - Le mot de passe du serveur ne sert qu'une fois, pour déposer la clé dans
   ~/.ssh/authorized_keys. Il passe à ssh par un petit programme intermédiaire
-  (ssh_askpass.cmd) et une variable d'environnement du seul processus ssh : il
-  n'est ni enregistré, ni journalisé, ni écrit sur la ligne de commande.
-- Chaque serveur reçoit un bloc dans %USERPROFILE%\\.ssh\\config, encadré par
-  des repères « Mes outils » : « ssh <alias> » suffit ensuite. Le reste du
-  fichier n'est jamais touché.
+  (ssh_askpass.cmd sous Windows, ssh_askpass.sh, droits 700, sous Linux) et
+  une variable d'environnement du seul processus ssh : il n'est ni
+  enregistré, ni journalisé, ni écrit sur la ligne de commande.
+- Chaque serveur reçoit un bloc dans ~/.ssh/config, encadré par des repères
+  « Mes outils » : « ssh <alias> » suffit ensuite. Le reste du fichier n'est
+  jamais touché (sous Linux, ses droits sont ramenés à 600 : ssh refuse un
+  fichier modifiable par d'autres).
 - La liste (sans aucun secret) est dans donnees/ssh.json.
 """
 import datetime
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import threading
 
 import config  # noqa: E402
+import systeme
 
 FICHIER = os.path.join(config.DONNEES, "ssh.json")
 DOSSIER_SSH = os.path.join(os.path.expanduser("~"), ".ssh")
 CONFIG_SSH = os.path.join(DOSSIER_SSH, "config")
-OPENSSH = os.path.join(os.environ.get("WINDIR", r"C:\Windows"), "System32", "OpenSSH")
-SSH = os.path.join(OPENSSH, "ssh.exe")
-SSH_KEYGEN = os.path.join(OPENSSH, "ssh-keygen.exe")
+if systeme.WINDOWS:
+    OPENSSH = os.path.join(os.environ.get("WINDIR", r"C:\Windows"), "System32", "OpenSSH")
+    SSH = os.path.join(OPENSSH, "ssh.exe")
+    SSH_KEYGEN = os.path.join(OPENSSH, "ssh-keygen.exe")
+else:
+    OPENSSH = "/usr/bin"
+    SSH = shutil.which("ssh") or "/usr/bin/ssh"
+    SSH_KEYGEN = shutil.which("ssh-keygen") or "/usr/bin/ssh-keygen"
 ASKPASS_CMD = os.path.join(config.DONNEES, "ssh_askpass.cmd")
+ASKPASS_SH = os.path.join(config.DONNEES, "ssh_askpass.sh")
 # Rend à ssh le mot de passe placé dans l'environnement de ce seul processus
 # ssh. PowerShell lit la variable sans l'interpréter (caractères spéciaux
 # sans risque) ; pas besoin de Python, donc aussi dans le programme installé.
 CONTENU_ASKPASS = ('@powershell -NoProfile -NonInteractive -Command '
                    '"[Console]::OutputEncoding = [Text.Encoding]::UTF8; '
                    '[Console]::Out.WriteLine($env:MESOUTILS_SSH_SECRET)"\n')
-CREATE_NO_WINDOW = 0x08000000
+# Linux : même rôle, en sh. printf '%s\n' écrit la variable telle quelle
+# (ni « - » ni « \ » interprétés, contrairement à echo).
+CONTENU_ASKPASS_SH = "#!/bin/sh\nprintf '%s\\n' \"$MESOUTILS_SSH_SECRET\"\n"
+CREATE_NO_WINDOW = systeme.SANS_FENETRE  # 0 hors de Windows
 DELAI = 25  # secondes pour une connexion
 _verrou = threading.Lock()
 
@@ -123,10 +137,13 @@ def _lire_config():
 
 
 def _ecrire_config(texte):
-    os.makedirs(DOSSIER_SSH, exist_ok=True)
+    os.makedirs(DOSSIER_SSH, mode=0o700, exist_ok=True)
     tmp = CONFIG_SSH + ".tmp"
     with open(tmp, "w", encoding="utf-8", newline="\n") as f:
         f.write(texte)
+    if not systeme.WINDOWS:
+        # ssh refuse un config modifiable par le groupe (umask 002 d'Ubuntu).
+        os.chmod(tmp, 0o600)
     os.replace(tmp, CONFIG_SSH)
 
 
@@ -156,18 +173,27 @@ def _poser_bloc(serveur):
 # ---------------------------------------------------------------------------
 # Commandes ssh
 # ---------------------------------------------------------------------------
+def _chemin_askpass():
+    return ASKPASS_CMD if systeme.WINDOWS else ASKPASS_SH
+
+
 def _preparer_askpass():
     """Le petit programme que ssh appelle pour obtenir le mot de passe : il
-    le lit dans son environnement et l'écrit pour ssh, rien de plus."""
-    contenu = CONTENU_ASKPASS
-    os.makedirs(os.path.dirname(ASKPASS_CMD), exist_ok=True)
+    le lit dans son environnement et l'écrit pour ssh, rien de plus.
+    Rend son chemin."""
+    chemin = _chemin_askpass()
+    contenu = CONTENU_ASKPASS if systeme.WINDOWS else CONTENU_ASKPASS_SH
+    os.makedirs(os.path.dirname(chemin), exist_ok=True)
     actuel = None
-    if os.path.exists(ASKPASS_CMD):
-        with open(ASKPASS_CMD, encoding="utf-8") as f:
+    if os.path.exists(chemin):
+        with open(chemin, encoding="utf-8") as f:
             actuel = f.read()
     if actuel != contenu:
-        with open(ASKPASS_CMD, "w", encoding="utf-8", newline="\r\n") as f:
+        with open(chemin, "w", encoding="utf-8", newline="\r\n" if systeme.WINDOWS else "\n") as f:
             f.write(contenu)
+    if not systeme.WINDOWS:
+        os.chmod(chemin, 0o700)  # exécutable, et lisible par vous seul
+    return chemin
 
 
 def _executer(commande, secret=None, delai=DELAI):
@@ -175,14 +201,15 @@ def _executer(commande, secret=None, delai=DELAI):
     env.pop("MESOUTILS_SSH_SECRET", None)
     if secret is not None:
         # Le mot de passe ne vit que dans l'environnement de ce processus ssh,
-        # qui le demande à ssh_askpass.cmd au moment de se connecter.
-        _preparer_askpass()
-        env.update(SSH_ASKPASS=ASKPASS_CMD, SSH_ASKPASS_REQUIRE="force", DISPLAY="mes-outils",
-                   MESOUTILS_SSH_SECRET=secret)
+        # qui le demande à ssh_askpass au moment de se connecter.
+        askpass = _preparer_askpass()
+        env.update(SSH_ASKPASS=askpass, SSH_ASKPASS_REQUIRE="force", MESOUTILS_SSH_SECRET=secret)
+        if systeme.WINDOWS:
+            env["DISPLAY"] = "mes-outils"
     try:
         return subprocess.run(commande, env=env, stdin=subprocess.DEVNULL, capture_output=True,
                               text=True, encoding="utf-8", errors="replace", timeout=delai,
-                              creationflags=CREATE_NO_WINDOW)
+                              **systeme.options_sans_fenetre())
     except subprocess.TimeoutExpired:
         raise ErreurSSH("Le serveur ne répond pas (délai dépassé). Vérifiez l'adresse et le port.") from None
 
@@ -327,6 +354,10 @@ def retirer(alias):
 
 def ouvrir_terminal(alias):
     serveur = _trouver(alias)
+    if not systeme.WINDOWS:
+        if not systeme.ouvrir_terminal(commande=[SSH, alias], titre=serveur["nom"]):
+            raise ErreurSSH("Aucun terminal trouvé sur ce PC (par exemple : sudo apt install gnome-terminal).")
+        return {"ok": True}
     wt = os.path.join(os.environ.get("LOCALAPPDATA", ""), "Microsoft", "WindowsApps", "wt.exe")
     if os.path.exists(wt):
         subprocess.Popen([wt, "new-tab", "--title", serveur["nom"], SSH, alias], close_fds=True)

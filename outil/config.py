@@ -11,7 +11,7 @@ modules.
 Où sont les données ?
 - installé avec Setup.exe (programme « gelé » par PyInstaller) : dans
   %APPDATA%\\Mes outils (elles survivent aux mises à jour et à la
-  désinstallation) ;
+  désinstallation) ; sous Linux (AppImage) : ~/.config/mes-outils ;
 - lancé depuis le code source (git clone) : à côté du code, comme avant ;
 - la variable d'environnement MES_OUTILS_DONNEES force un autre dossier.
 
@@ -23,7 +23,7 @@ import shutil
 import sys
 import threading
 
-VERSION = "1.6.1"
+VERSION = "1.7.0"
 DEPOT = "https://github.com/rarianaAina/mes-outils"
 API_VERSIONS = "https://api.github.com/repos/rarianaAina/mes-outils/releases/latest"
 # Vrai dans le programme installé (Mes outils.exe) : pas de Python sur le PC.
@@ -39,7 +39,8 @@ def dossier_utilisateur():
     if choisi:
         return choisi
     if GELE:
-        return os.path.join(os.environ.get("APPDATA") or os.path.expanduser("~"), "Mes outils")
+        import systeme  # noqa: PLC0415 (évite un import circulaire au chargement)
+        return systeme.dossier_donnees_utilisateur()
     return RACINE
 
 

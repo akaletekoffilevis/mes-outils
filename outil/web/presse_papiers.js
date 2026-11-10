@@ -30,6 +30,10 @@
     "50 éléments épinglés au plus : désépinglez-en un d'abord.": "50 pinned items max: unpin one first.",
     "Le presse-papiers est occupé par un autre programme.": "The clipboard is in use by another program.",
     "Copie dans le presse-papiers impossible.": "Could not copy to the clipboard.",
+    // Linux sans outil de presse-papiers (MESSAGE_INDISPONIBLE de presse_papiers.py)
+    "Presse-papiers indisponible : installez wl-clipboard (Wayland) ou xclip (sudo apt install wl-clipboard xclip).":
+      "Clipboard unavailable: install wl-clipboard (Wayland) or xclip (sudo apt install wl-clipboard xclip).",
+    "Le presse-papiers ne répond pas.": "The clipboard is not responding.",
   });
 
   const P = { r: null, recherche: "", empreinte: "" };
@@ -85,19 +89,27 @@
       oninput: e => { P.recherche = e.target.value; clearTimeout(minuterie); minuterie = setTimeout(() => recharger(), 200); } });
     const elements = [...r.elements].sort((a, b) => (b.epingle ? 1 : 0) - (a.epingle ? 1 : 0));
     const libres = r.elements.filter(e => !e.epingle).length;
+    // Aucun moyen de lire le presse-papiers (Linux sans wl-clipboard ni xclip) :
+    // un message clair à la place de l'historique.
+    const indisponible = r.disponible === false;
+    const bandeau = indisponible
+      ? el("div", { class: "pp-bandeau pause" }, el("span", {}, "⏸"), el("span", {}, r.message || "Le presse-papiers ne répond pas."))
+      : el("div", { class: "pp-bandeau" + (r.actif ? "" : " pause") }, el("span", {}, r.actif ? "🔒" : "⏸"),
+        el("span", {}, r.actif
+          ? "Gardé seulement en mémoire, effacé à la fermeture de Mes outils. Les mots de passe copiés depuis le coffre (et depuis la plupart des gestionnaires de mots de passe) n'y entrent pas."
+          : "En pause : les textes copiés ne sont pas gardés."));
     racine().replaceChildren(
       el("div", { class: "barre-vue" },
         el("h2", {}, "📋 " + t("Historique du presse-papiers") + " ",
           el("span", { class: "compte", title: t("{n} / {max} éléments", { n: libres, max: r.limite }) }, String(r.elements.length))),
         el("div", { class: "espace" }),
         el("div", { class: "champ-recherche" }, el("span", {}, "🔎"), recherche),
-        el("button", { class: "btn" + (r.actif ? "" : " actif"), onclick: basculerPause }, r.actif ? "⏸ Pause" : "▶ Reprendre"),
+        el("button", { class: "btn" + (r.actif ? "" : " actif"), onclick: basculerPause, disabled: indisponible ? "" : null },
+          r.actif ? "⏸ Pause" : "▶ Reprendre"),
         el("button", { class: "btn", onclick: toutEffacer, disabled: r.elements.length ? null : "" }, "🧹 Tout effacer")),
-      el("div", { class: "pp-bandeau" + (r.actif ? "" : " pause") }, el("span", {}, r.actif ? "🔒" : "⏸"),
-        el("span", {}, r.actif
-          ? "Gardé seulement en mémoire, effacé à la fermeture de Mes outils. Les mots de passe copiés depuis le coffre (et depuis la plupart des gestionnaires de mots de passe) n'y entrent pas."
-          : "En pause : les textes copiés ne sont pas gardés.")),
-      elements.length ? el("div", { class: "pp-liste" }, elements.map((e, i) => ligne(e, i)))
+      bandeau,
+      indisponible && !elements.length ? null
+        : elements.length ? el("div", { class: "pp-liste" }, elements.map((e, i) => ligne(e, i)))
         : el("div", { class: "vide" }, P.recherche ? "🔍 " + t("Aucun élément ne correspond.")
           : "📋 " + t("Rien pour l'instant : copiez un texte (Ctrl + C), il apparaîtra ici.")));
     if (avaitFocus) { recherche.focus(); recherche.setSelectionRange(recherche.value.length, recherche.value.length); }

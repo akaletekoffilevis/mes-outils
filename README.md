@@ -1,12 +1,12 @@
 # Mes outils
 
-**[Télécharger Mes outils pour Windows (Setup.exe)](https://github.com/rarianaAina/mes-outils/releases/latest/download/Mes-outils-Setup.exe)** · rien d'autre à installer
+**[Télécharger pour Windows (Setup.exe)](https://github.com/rarianaAina/mes-outils/releases/latest/download/Mes-outils-Setup.exe)** · **[Télécharger pour Linux (AppImage)](https://github.com/rarianaAina/mes-outils/releases/latest/download/Mes-outils-x86_64.AppImage)** · rien d'autre à installer
 
 **[Guide d'utilisation illustré](docs/GUIDE.md)** · **[Illustrated guide (English)](docs/GUIDE.en.md)**
 
 ![Accueil de Mes outils](docs/images/fr/accueil.webp)
 
-Un tableau de bord de travail pour Windows, pour tous ceux qui gèrent leur
+Un tableau de bord de travail pour Windows et Linux, pour tous ceux qui gèrent leur
 activité seuls : freelances, assistants virtuels, assistants de direction,
 développeurs. Une petite bulle flotte sur l'écran et ouvre, d'un clic, vos
 tâches, contacts, devis et factures, dépenses, mails, agenda et le reste.
@@ -70,6 +70,12 @@ lancez-le. Python et tout le nécessaire sont inclus, sans droits
 administrateur. Windows peut afficher « Windows a protégé votre ordinateur »
 (installateur non signé) : **Informations complémentaires › Exécuter quand
 même**. Vos réglages et données sont dans `%APPDATA%\Mes outils`.
+
+**Linux** (Ubuntu 24.04 et autres) : téléchargez
+**[Mes-outils-x86_64.AppImage](https://github.com/rarianaAina/mes-outils/releases/latest/download/Mes-outils-x86_64.AppImage)**, rendez-le
+exécutable (`chmod +x`), puis double-cliquez. Données dans
+`~/.config/mes-outils`, secrets dans le trousseau du bureau. Google Chrome ou
+Chromium conseillé (fenêtre sans barre d'adresse, PDF des factures).
 
 **Depuis le code source** (pour contribuer) : Python 3.10+ avec tkinter, puis
 

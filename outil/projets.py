@@ -5,10 +5,12 @@
   qui ressemblent à un projet (.git, package.json, manage.py, compose…), plus
   les projets ajoutés à la main ; type détecté (Node, Django, Odoo…).
 - Commandes (serveurs de dev) : proposées d'après le projet, modifiables,
-  démarrées sans fenêtre noire ; la sortie va dans
+  démarrées sans fenêtre noire (cmd.exe /c sous Windows ; bash -c, ou sh -c,
+  dans une nouvelle session sous Linux) ; la sortie va dans
   donnees\\journaux\\<projet>-<commande>.log. Arrêter tue l'arbre du seul
   processus que l'outil a lancé (PID + heure de création mémorisés : un PID
-  réutilisé par un autre programme n'est jamais tué).
+  réutilisé par un autre programme n'est jamais tué). Heure de création :
+  GetProcessTimes sous Windows, champ 22 de /proc/<pid>/stat sous Linux.
 - État Git : branche, fichiers modifiés, commits à envoyer / à récupérer
   (git status, sans réseau) ; « fetch » à la demande.
 - Fichiers .env : sauvegarde dans le coffre chiffré (coffre.py), catégorie
@@ -18,12 +20,12 @@ Données : donnees\\projets.json (commandes, projets ajoutés, masqués, process
 lancés). Pour l'Accueil et la bulle : serveurs() et action_commande().
 """
 import concurrent.futures
-import ctypes
 import hashlib
 import json
 import os
 import re
 import shutil
+import signal
 import socket
 import subprocess
 import sys
@@ -31,15 +33,16 @@ import threading
 import time
 import uuid
 import webbrowser
-from ctypes import wintypes
 
 import config
+import systeme
 
 NOM = "projets"
-CREATE_NO_WINDOW = 0x08000000
-CREATE_NEW_PROCESS_GROUP = 0x00000200
-CREATE_NEW_CONSOLE = 0x00000010
-DETACHED = 0x00000008 | CREATE_NEW_PROCESS_GROUP
+# Drapeaux de Windows (0 ailleurs : subprocess refuse creationflags non nul hors Windows).
+CREATE_NO_WINDOW = systeme.SANS_FENETRE
+CREATE_NEW_PROCESS_GROUP = systeme.NOUVEAU_GROUPE
+CREATE_NEW_CONSOLE = systeme.NOUVELLE_CONSOLE
+DETACHED = systeme.DETACHE
 LIGNES_JOURNAL = 300
 MAX_COMMANDES = 20
 TAILLE_ENV_MAX = 256 * 1024
@@ -214,9 +217,12 @@ def detecter_types(dossier, noms=None):
 def _python(dossier, noms):
     """Le Python du projet : son environnement virtuel s'il en a un."""
     for venv in (".venv", "venv", "env"):
-        if venv in noms and os.path.isfile(os.path.join(dossier, venv, "Scripts", "python.exe")):
+        if not systeme.WINDOWS:
+            if venv in noms and os.path.isfile(os.path.join(dossier, venv, "bin", "python")):
+                return f"{venv}/bin/python"
+        elif venv in noms and os.path.isfile(os.path.join(dossier, venv, "Scripts", "python.exe")):
             return f"{venv}\\Scripts\\python.exe"
-    return "python"
+    return "python" if systeme.WINDOWS else "python3"  # Ubuntu n'a pas de commande « python »
 
 
 def _gestionnaire(noms):
@@ -297,16 +303,22 @@ def commandes_proposees(dossier, noms=None):
     if "Cargo.toml" in noms and "src-tauri" not in noms:
         proposees.append(_cmd("Cargo", "cargo run", None))
     if "pom.xml" in noms:
-        mvn = "mvnw.cmd" if "mvnw.cmd" in noms else "mvn"
+        if systeme.WINDOWS:
+            mvn = "mvnw.cmd" if "mvnw.cmd" in noms else "mvn"
+        else:
+            mvn = "./mvnw" if "mvnw" in noms else "mvn"
         spring = "spring-boot" in _lire_texte(os.path.join(dossier, "pom.xml"))
         proposees.append(_cmd("Maven", f"{mvn} spring-boot:run" if spring else f"{mvn} package", 8080 if spring else None))
     elif noms & {"build.gradle", "build.gradle.kts"}:
-        gradle = "gradlew.bat" if "gradlew.bat" in noms else "gradle"
+        if systeme.WINDOWS:
+            gradle = "gradlew.bat" if "gradlew.bat" in noms else "gradle"
+        else:
+            gradle = "./gradlew" if "gradlew" in noms else "gradle"
         proposees.append(_cmd("Gradle", f"{gradle} bootRun", 8080))
     if any(n.endswith(".csproj") for n in noms):
         proposees.append(_cmd(".NET", "dotnet watch run", None))
     if "Gemfile" in noms and os.path.isfile(os.path.join(dossier, "bin", "rails")):
-        proposees.append(_cmd("Rails", "ruby bin\\rails server", 3000))
+        proposees.append(_cmd("Rails", "ruby bin\\rails server" if systeme.WINDOWS else "ruby bin/rails server", 3000))
     # Identifiants uniques
     vus = set()
     for c in proposees:
@@ -382,8 +394,12 @@ def lister(_d=None):
     d = _oublier_morts()
     projets = [_decrire(c, m, d) for c, m in _candidats()]
     projets.sort(key=lambda p: p["nom"].lower())
+    if systeme.WINDOWS:
+        terminal = "Windows Terminal" if shutil.which("wt") else "PowerShell"
+    else:
+        terminal = "Terminal"
     return {"projets": projets, "dossiers": config.dossiers_projets(), "vscode": _vscode_present(),
-            "terminal": "Windows Terminal" if shutil.which("wt") else "PowerShell"}
+            "terminal": terminal}
 
 
 def _projet(pid):
@@ -448,7 +464,7 @@ def _vscode_present():
 
 
 def ouvrir_dossier(d):
-    os.startfile(_projet(d.get("projet")))
+    systeme.ouvrir(_projet(d.get("projet")))
     return {"ok": True}
 
 
@@ -459,8 +475,13 @@ def ouvrir_vscode(d):
 
 
 def ouvrir_terminal(d):
-    """Windows Terminal dans le dossier s'il est installé, sinon PowerShell."""
+    """Windows Terminal dans le dossier s'il est installé, sinon PowerShell.
+    Linux : le terminal du bureau (systeme.ouvrir_terminal)."""
     chemin = _projet(d.get("projet"))
+    if not systeme.WINDOWS:
+        if not systeme.ouvrir_terminal(dossier=chemin):
+            raise ErreurProjets("Aucun terminal trouvé sur ce PC (par exemple : sudo apt install gnome-terminal).")
+        return {"ok": True}
     wt = shutil.which("wt")
     if wt and ";" not in chemin:  # « ; » sépare les commandes de wt
         subprocess.Popen([wt, "-d", chemin], creationflags=DETACHED, close_fds=True,
@@ -565,16 +586,49 @@ def _commandes_lancees(d, pid):
 
 
 # ---------------------------------------------------------------------------
-# Processus (Windows)
+# Processus
 # ---------------------------------------------------------------------------
-_k32 = ctypes.WinDLL("kernel32", use_last_error=True)
-_k32.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
-_k32.OpenProcess.restype = wintypes.HANDLE
-_k32.GetExitCodeProcess.argtypes = [wintypes.HANDLE, ctypes.POINTER(wintypes.DWORD)]
-_k32.GetProcessTimes.argtypes = [wintypes.HANDLE] + [ctypes.POINTER(wintypes.FILETIME)] * 4
-_k32.CloseHandle.argtypes = [wintypes.HANDLE]
 PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
 STILL_ACTIVE = 259
+_k32_charge = None
+
+
+def _kernel32():
+    """kernel32 de Windows, préparé au premier appel (jamais sous Linux)."""
+    global _k32_charge
+    if _k32_charge is None:
+        import ctypes  # noqa: PLC0415
+        from ctypes import wintypes  # noqa: PLC0415
+        k32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        k32.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+        k32.OpenProcess.restype = wintypes.HANDLE
+        k32.GetExitCodeProcess.argtypes = [wintypes.HANDLE, ctypes.POINTER(wintypes.DWORD)]
+        k32.GetProcessTimes.argtypes = [wintypes.HANDLE] + [ctypes.POINTER(wintypes.FILETIME)] * 4
+        k32.CloseHandle.argtypes = [wintypes.HANDLE]
+        _k32_charge = (ctypes, wintypes, k32)
+    return _k32_charge
+
+
+def debut_stat_linux(texte):
+    """Le champ 22 (starttime, en tops d'horloge depuis le démarrage) d'un
+    contenu de /proc/<pid>/stat, ou None pour un zombie ou un texte illisible.
+    Le nom (champ 2, entre parenthèses) peut contenir espaces et « ) » : on
+    lit après la dernière parenthèse fermante (champ 3 = état)."""
+    try:
+        champs = (texte or "").rsplit(")", 1)[1].split()
+        if champs[0] in ("Z", "X"):  # zombie ou mort : déjà terminé
+            return None
+        return int(champs[22 - 3])
+    except (IndexError, ValueError):
+        return None
+
+
+def _lire_stat_linux(pid):
+    try:
+        with open(f"/proc/{int(pid)}/stat", encoding="utf-8", errors="replace") as f:
+            return f.read()
+    except (OSError, ValueError):
+        return None
 
 
 def heure_creation(pid):
@@ -586,6 +640,9 @@ def heure_creation(pid):
         return None
     if pid <= 4:
         return None
+    if not systeme.WINDOWS:
+        return debut_stat_linux(_lire_stat_linux(pid))
+    ctypes, wintypes, _k32 = _kernel32()
     h = _k32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
     if not h:
         return None
@@ -678,6 +735,25 @@ def _environnement():
     return env
 
 
+def _shell_linux():
+    """bash s'il est là (source, &&, ~ : comme dans un terminal), sinon sh."""
+    return shutil.which("bash") or "/bin/sh"
+
+
+def _lancer(commande, chemin, sortie):
+    """Lance la commande de l'utilisateur dans le dossier du projet, sortie
+    vers le journal. Windows : cmd.exe /c, sans fenêtre, nouveau groupe.
+    Linux : bash -c (ou sh -c) dans une nouvelle session (groupe = PID)."""
+    if systeme.WINDOWS:
+        ligne = f'cmd.exe /d /s /c "{commande}"'
+        return subprocess.Popen(ligne, cwd=chemin, env=_environnement(), stdin=subprocess.DEVNULL,
+                                stdout=sortie, stderr=subprocess.STDOUT,
+                                creationflags=CREATE_NO_WINDOW | CREATE_NEW_PROCESS_GROUP)
+    return subprocess.Popen([_shell_linux(), "-c", commande], cwd=chemin, env=_environnement(),
+                            stdin=subprocess.DEVNULL, stdout=sortie, stderr=subprocess.STDOUT,
+                            start_new_session=True, close_fds=True)
+
+
 def demarrer(pid, cid):
     with _verrou:
         d = _oublier_morts()
@@ -691,16 +767,14 @@ def demarrer(pid, cid):
         journal = chemin_journal(pid, cid, os.path.basename(chemin.rstrip("\\/")))
         os.makedirs(os.path.dirname(journal), exist_ok=True)
         # La commande a été saisie (ou acceptée) par l'utilisateur dans SA
-        # configuration : cmd /c l'exécute telle quelle, dans le dossier du projet.
-        ligne = f'cmd.exe /d /s /c "{c["commande"]}"'
+        # configuration : cmd /c (ou bash -c) l'exécute telle quelle, dans le
+        # dossier du projet.
         with open(journal, "wb") as sortie:
             entete = f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] > {c['commande']}\r\n"
             sortie.write(entete.encode("utf-8"))
             sortie.flush()
             try:
-                p = subprocess.Popen(ligne, cwd=chemin, env=_environnement(), stdin=subprocess.DEVNULL,
-                                     stdout=sortie, stderr=subprocess.STDOUT,
-                                     creationflags=CREATE_NO_WINDOW | CREATE_NEW_PROCESS_GROUP)
+                p = _lancer(c["commande"], chemin, sortie)
             except OSError as e:
                 raise ErreurProjets(f"Impossible de lancer la commande : {e}") from None
         cree = heure_creation(p.pid)
@@ -715,15 +789,41 @@ def demarrer(pid, cid):
         return {"etat": "demarrage" if c.get("port") else "marche", "pid": p.pid}
 
 
+def _signal_groupe(groupe, sig):
+    try:
+        os.killpg(groupe, sig)
+    except (ProcessLookupError, PermissionError, OSError):
+        pass
+
+
+def _tuer_arbre_linux(pid):
+    """Linux : SIGTERM au groupe de la session lancée par l'outil, puis
+    systeme.arreter_processus (descendants, SIGKILL si besoin), puis SIGKILL
+    aux restes du groupe (enfants orphelins rattachés à init)."""
+    try:
+        groupe = pid if os.getpgid(pid) == pid else None  # start_new_session : groupe = PID
+    except OSError:
+        groupe = None
+    if groupe:
+        _signal_groupe(groupe, signal.SIGTERM)
+    systeme.arreter_processus(pid, arbre=True, delai=5.0)
+    if groupe:
+        _signal_groupe(groupe, getattr(signal, "SIGKILL", 9))  # SIGKILL n'existe pas sous Windows
+
+
 def _tuer_arbre(pid_processus, cree=None):
-    """taskkill /T /F, seulement pour un processus lancé par l'outil (présent
-    dans la liste, même heure de création)."""
+    """taskkill /T /F (ou, sous Linux, le groupe et les descendants),
+    seulement pour un processus lancé par l'outil (présent dans la liste,
+    même heure de création)."""
     with _verrou:
         d = _donnees()
         info = next((i for i in d["lances"].values() if isinstance(i, dict) and i.get("pid") == pid_processus), None)
         if not info or (cree is not None and info.get("cree") != cree) \
                 or heure_creation(pid_processus) != info.get("cree"):
             raise ErreurProjets("Ce processus n'a pas été lancé par Mes outils : il n'est pas arrêté.")
+        if not systeme.WINDOWS:
+            _tuer_arbre_linux(int(pid_processus))
+            return
         subprocess.run(["taskkill", "/T", "/F", "/PID", str(int(pid_processus))], capture_output=True,
                        timeout=30, creationflags=CREATE_NO_WINDOW, stdin=subprocess.DEVNULL)
 
@@ -784,7 +884,7 @@ def lire_journal(pid, cid, lignes=LIGNES_JOURNAL):
             taille = f.tell()
             f.seek(max(0, taille - 256 * 1024))
             brut = f.read()
-        oem = f"cp{ctypes.windll.kernel32.GetOEMCP()}"
+        oem = systeme.encodage_console()
         morceaux = brut.replace(b"\r\n", b"\n").split(b"\n")
         if taille > 256 * 1024:
             morceaux = morceaux[1:]
@@ -854,7 +954,7 @@ def _env_git():
 def _git(args, dossier, delai):
     return subprocess.run(["git", "-c", "core.quotepath=false", *args], cwd=dossier, env=_env_git(),
                           stdin=subprocess.DEVNULL, capture_output=True, text=True, encoding="utf-8",
-                          errors="replace", timeout=delai, creationflags=CREATE_NO_WINDOW)
+                          errors="replace", timeout=delai, **systeme.options_sans_fenetre())
 
 
 def analyser_status(sortie):

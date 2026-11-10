@@ -37,12 +37,18 @@ Règles :
 - Erreur pour l'utilisateur : `raise ValueError("message en français")`, ou une
   classe `Erreur<Quelque chose>(Exception)` → réponse 400, message affiché.
   Toute autre exception → 500 et `outil/hub.log`.
-- Programmes externes : `subprocess.run([...], timeout=..., creationflags=0x08000000)`
-  (pas de fenêtre noire), **jamais `shell=True`** avec une donnée venue de la
-  page, toujours une liste d'arguments.
+- Windows et Linux : tout ce qui dépend du système passe par `outil/systeme.py`
+  (ouvrir un fichier, fenêtres « Ouvrir » et « Choisir un dossier », terminal,
+  navigateur, PDF, arrêt d'un processus, notifications, dossier Documents).
+  Jamais `os.startfile`, `ctypes.WinDLL` ni PowerShell directement dans un
+  module ; un module doit s'importer sur les deux systèmes.
+- Programmes externes : `subprocess.run([...], timeout=..., **systeme.options_sans_fenetre())`
+  (pas de fenêtre noire sous Windows ; `creationflags` est refusé sous Linux),
+  **jamais `shell=True`** avec une donnée venue de la page, toujours une liste
+  d'arguments.
 - Secrets (mots de passe, jetons) : jamais dans un fichier en clair.
-  `coffre_windows.ecrire/lire/supprimer` (coffre de Windows) ou le coffre
-  chiffré `coffre.py`.
+  `systeme.secret_ecrire/secret_lire/secret_supprimer` (coffre de Windows, ou
+  trousseau du bureau sous Linux) ou le coffre chiffré `coffre.py`.
 - Un chemin reçu de la page : `os.path.normpath`, vérifier qu'il existe.
 - Arrêter un processus, supprimer un fichier : la page demande d'abord une
   confirmation ; le serveur refuse les cibles dangereuses (processus système,

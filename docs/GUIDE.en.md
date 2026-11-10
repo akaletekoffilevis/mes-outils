@@ -49,6 +49,23 @@ and data are in `%APPDATA%\Mes outils` and stay on your PC: they are kept
 during updates, and even after uninstalling.
 To uninstall: Windows Settings › Apps › Mes outils.
 
+### On Linux (Ubuntu 24.04 and others)
+
+1. Download **[Mes-outils-x86_64.AppImage](https://github.com/rarianaAina/mes-outils/releases/latest/download/Mes-outils-x86_64.AppImage)**.
+2. Make it executable: right-click › Properties › "Executable as program",
+   or `chmod +x Mes-outils-x86_64.AppImage`.
+3. Double-click it. The bubble appears, along with an icon at the top right of
+   the screen; "Mes outils" is added to the applications menu.
+
+A single file, no installation and no administrator rights. Your settings and
+data are in `~/.config/mes-outils`. Email passwords and the GitHub access go
+into the desktop keyring (GNOME Keyring, KWallet). The window without an
+address bar and invoice PDFs need Google Chrome or Chromium
+(`sudo snap install chromium`); without them, Mes outils opens in the default
+browser. File pickers use zenity (already on Ubuntu). On GNOME with Wayland,
+the bubble may go behind other windows: the icon at the top right is always
+there (Settings › Linux: bubble and icon, bubble only or icon only).
+
 ### For developers: from the source code
 
 You need Python 3.10 or later (with tkinter) and Git.
@@ -64,6 +81,9 @@ creates the shortcuts and starts the bubble. The data then sits next to the
 code (`outils.json`, `donnees\`) and never goes to GitHub. If you later switch
 to the installer, your settings and data are picked up on first launch (they
 are copied; the original stays).
+
+On Linux: `sudo apt install python3-tk zenity`, then
+`pip install -r requirements.txt` and `python3 outil/bulle.py`.
 
 ## First launch: your role and your apps
 

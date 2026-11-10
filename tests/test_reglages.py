@@ -16,6 +16,18 @@ from aide import ConfigTemporaire, ServeurTest
 import config  # noqa: E402
 import installation  # noqa: E402
 import reglages  # noqa: E402
+import systeme  # noqa: E402
+
+WINDOWS_SEUL = unittest.skipUnless(sys.platform == "win32", "raccourcis Windows (PowerShell, dossiers spéciaux)")
+
+
+def sous_windows():
+    """La branche Windows de reglages (installateur Setup.exe), sur tout système."""
+    return mock.patch.multiple(systeme, WINDOWS=True, LINUX=False)
+
+
+def sous_linux():
+    return mock.patch.multiple(systeme, WINDOWS=False, LINUX=True)
 
 
 class TestSocle(ServeurTest):
@@ -78,11 +90,11 @@ class TestSocle(ServeurTest):
         sortie = {"tag_name": "v9.0.0", "html_url": "https://github.com/x/y/releases/tag/v9.0.0",
                   "assets": [{"name": "notes.txt", "browser_download_url": "https://github.com/x/y/n.txt"},
                              {"name": "Mes-outils-Setup.exe", "browser_download_url": "https://github.com/x/y/Setup.exe"}]}
-        with mock.patch.object(config, "GELE", True),                 mock.patch.object(reglages.urllib.request, "urlopen", return_value=self._reponse_github(sortie)):
+        with sous_windows(), mock.patch.object(config, "GELE", True),                 mock.patch.object(reglages.urllib.request, "urlopen", return_value=self._reponse_github(sortie)):
             r = reglages.mise_a_jour()
         self.assertEqual((r["nouvelle"], r["telecharger"]), ("9.0.0", "https://github.com/x/y/Setup.exe"))
         sortie["tag_name"] = "v" + config.VERSION
-        with mock.patch.object(config, "GELE", True),                 mock.patch.object(reglages.urllib.request, "urlopen", return_value=self._reponse_github(sortie)):
+        with sous_windows(), mock.patch.object(config, "GELE", True),                 mock.patch.object(reglages.urllib.request, "urlopen", return_value=self._reponse_github(sortie)):
             self.assertNotIn("nouvelle", reglages.mise_a_jour(), "même version : rien à proposer")
 
     def test_mise_a_jour_sans_version_publiee(self):
@@ -101,7 +113,7 @@ class TestSocle(ServeurTest):
             adresse = requete.full_url if hasattr(requete, "full_url") else requete
             return self._reponse_github(sortie) if "api.github.com" in adresse else self._fichier(programme)
 
-        with mock.patch.object(config, "GELE", True),                 mock.patch.object(reglages.urllib.request, "urlopen", side_effect=fausse_connexion),                 mock.patch.object(reglages.subprocess, "Popen") as lancer,                 mock.patch.object(reglages.threading, "Timer") as minuterie:
+        with sous_windows(), mock.patch.object(config, "GELE", True),                 mock.patch.object(reglages.urllib.request, "urlopen", side_effect=fausse_connexion),                 mock.patch.object(reglages.subprocess, "Popen") as lancer,                 mock.patch.object(reglages.threading, "Timer") as minuterie:
             r = reglages.installer_mise_a_jour()
         self.assertEqual(r, {"installation": True, "version": "9.0.0"})
         env = lancer.call_args.kwargs["env"]
@@ -137,9 +149,15 @@ class TestProgrammeInstalle(unittest.TestCase):
     le dossier « Mes outils » de %APPDATA%."""
 
     def test_donnees_dans_appdata(self):
-        with mock.patch.object(config, "GELE", True), mock.patch.dict(os.environ, {"APPDATA": r"C:\Profil\AppData"}):
+        with sous_windows(), mock.patch.object(config, "GELE", True), \
+                mock.patch.dict(os.environ, {"APPDATA": r"C:\Profil\AppData"}):
             os.environ.pop("MES_OUTILS_DONNEES", None)
             self.assertEqual(config.dossier_utilisateur(), os.path.join(r"C:\Profil\AppData", "Mes outils"))
+        with sous_linux(), mock.patch.object(config, "GELE", True), \
+                mock.patch.dict(os.environ, {"XDG_CONFIG_HOME": "/home/alex/.config"}):
+            os.environ.pop("MES_OUTILS_DONNEES", None)
+            self.assertEqual(config.dossier_utilisateur(), os.path.join("/home/alex/.config", "mes-outils"),
+                             "Linux : ~/.config/mes-outils")
         with mock.patch.object(config, "GELE", False), mock.patch.dict(os.environ, {}, clear=False):
             os.environ.pop("MES_OUTILS_DONNEES", None)
             self.assertEqual(config.dossier_utilisateur(), config.RACINE, "code source : données à côté du code")
@@ -279,6 +297,7 @@ class TestInstallation(unittest.TestCase):
     def test_dependances_presentes(self):
         self.assertEqual(installation.verifier(), [], "lancer les tests avec le Python de Mes outils")
 
+    @WINDOWS_SEUL
     def test_raccourci_cree_puis_retire(self):
         dossier = tempfile.mkdtemp()
         try:
@@ -292,9 +311,162 @@ class TestInstallation(unittest.TestCase):
         finally:
             shutil.rmtree(dossier, ignore_errors=True)
 
+    @WINDOWS_SEUL
     def test_vrais_dossiers_windows(self):
         for genre in ("bureau", "demarrage"):
             self.assertTrue(os.path.isdir(installation.dossier_special(genre)), genre)
+
+
+
+class TestReglagesLinux(unittest.TestCase):
+    """Onglet Réglages sous Linux (branche simulée) : raccourcis du bureau
+    Linux, bulle et icône, fenêtre « Choisir un dossier »."""
+
+    def setUp(self):
+        self.dossier = tempfile.mkdtemp(prefix="mes-outils-xdg-")
+        self.patchs = [sous_linux(), mock.patch.dict(os.environ, {
+            "XDG_DATA_HOME": os.path.join(self.dossier, "share"), "XDG_CONFIG_HOME": os.path.join(self.dossier, "config")})]
+        for p in self.patchs:
+            p.start()
+        os.environ.pop("APPIMAGE", None)
+
+    def tearDown(self):
+        for p in reversed(self.patchs):
+            p.stop()
+        shutil.rmtree(self.dossier, ignore_errors=True)
+
+    def test_lire(self):
+        with ConfigTemporaire({"outils": []}):
+            r = reglages.lire()
+        self.assertEqual((r["systeme"], r["presence"], r["appimage"]), ("linux", "bulle_icone", False))
+        self.assertEqual(r["raccourcis"], {"menu": False, "demarrage": False})
+        self.assertIn("icone_possible", r)
+
+    def test_choix_bulle_icone(self):
+        with ConfigTemporaire({"outils": []}) as cfg:
+            self.assertEqual(reglages.enregistrer({"presence": "icone"})["presence"], "icone")
+            self.assertEqual(cfg.lire()["presence"], "icone")
+            with self.assertRaisesRegex(ValueError, "Affichage inconnu"):
+                reglages.enregistrer({"presence": "partout"})
+            self.assertEqual(cfg.lire()["presence"], "icone")
+
+    def test_raccourcis_linux(self):
+        with ConfigTemporaire({"outils": []}):
+            r = reglages.raccourci({"genre": "menu", "actif": True})
+            self.assertTrue(r["raccourcis"]["menu"])
+            self.assertTrue(os.path.isfile(os.path.join(self.dossier, "share", "applications", "mes-outils.desktop")))
+            r = reglages.raccourci({"genre": "demarrage", "actif": True})
+            self.assertTrue(os.path.isfile(os.path.join(self.dossier, "config", "autostart", "mes-outils.desktop")))
+            r = reglages.raccourci({"genre": "menu", "actif": False})
+            self.assertEqual(r["raccourcis"], {"menu": False, "demarrage": True})
+            with self.assertRaisesRegex(ValueError, "inconnu"):
+                reglages.raccourci({"genre": "bureau", "actif": True})
+
+    def test_choisir_dossier(self):
+        with mock.patch.object(systeme, "choisir_dossier", return_value="/home/alex/Projets") as choisir:
+            self.assertEqual(reglages.choisir_dossier({"titre": "Projets", "depart": "/home"}), {"chemin": "/home/alex/Projets"})
+        choisir.assert_called_once_with("Projets", "/home")
+        with mock.patch.object(systeme, "choisir_dossier", side_effect=RuntimeError("installez zenity")), \
+                self.assertRaisesRegex(ValueError, "zenity"):
+            reglages.choisir_dossier({})
+
+
+ELF_APPIMAGE = b"\x7fELF\x02\x01\x01\x00AI\x02" + b"\0" * 1_200_000
+
+
+class TestMiseAJourLinux(unittest.TestCase):
+    """AppImage : la nouvelle version remplace l'ancienne puis est relancée."""
+
+    def setUp(self):
+        self.dossier = tempfile.mkdtemp(prefix="mes-outils-appimage-")
+        self.appimage = os.path.join(self.dossier, "Mes-outils-x86_64.AppImage")
+        with open(self.appimage, "wb") as f:
+            f.write(b"ancienne")
+        self.url = config.DEPOT + "/releases/download/v9.0.0/Mes-outils-x86_64.AppImage"
+        self.sortie = {"tag_name": "v9.0.0", "html_url": "x", "assets": [
+            {"name": "Mes-outils-Setup.exe", "browser_download_url": config.DEPOT + "/releases/download/v9.0.0/Mes-outils-Setup.exe"},
+            {"name": "Mes-outils-x86_64.AppImage", "browser_download_url": self.url}]}
+        self.patchs = [sous_linux(), mock.patch.object(config, "GELE", True)]
+        for p in self.patchs:
+            p.start()
+
+    def tearDown(self):
+        for p in reversed(self.patchs):
+            p.stop()
+        shutil.rmtree(self.dossier, ignore_errors=True)
+
+    def _reponse(self, contenu):
+        r = mock.MagicMock()
+        r.__enter__.return_value = io.BytesIO(contenu)
+        return r
+
+    def connexion(self, fichier):
+        def fausse(requete, timeout=0):
+            adresse = requete.full_url if hasattr(requete, "full_url") else requete
+            return self._reponse(json.dumps(self.sortie).encode() if "api.github.com" in adresse else fichier)
+        return fausse
+
+    def test_lien_de_l_appimage(self):
+        with mock.patch.object(reglages.urllib.request, "urlopen", side_effect=self.connexion(b"")):
+            with mock.patch.dict(os.environ, {"APPIMAGE": self.appimage}):
+                r = reglages.mise_a_jour()
+            self.assertEqual((r["nouvelle"], r["telecharger"], r["automatique"]), ("9.0.0", self.url, True))
+            os.environ.pop("APPIMAGE", None)
+            r = reglages.mise_a_jour()
+        self.assertFalse(r["automatique"], "hors AppImage : lien de téléchargement seulement")
+        self.assertEqual(r["telecharger"], self.url)
+
+    def test_installation_automatique(self):
+        with mock.patch.dict(os.environ, {"APPIMAGE": self.appimage, "LD_LIBRARY_PATH": "/tmp/_MEIx",
+                                          "LD_LIBRARY_PATH_ORIG": "/usr/local/lib", "_PYI_APPLICATION_HOME_DIR": "/tmp/x",
+                                          "APPDIR": "/tmp/.mount_x"}), \
+                mock.patch.object(reglages.urllib.request, "urlopen", side_effect=self.connexion(ELF_APPIMAGE)), \
+                mock.patch.object(systeme, "lancer_detache") as lancer, \
+                mock.patch.object(reglages.threading, "Timer") as minuterie:
+            r = reglages.installer_mise_a_jour()
+        self.assertEqual(r, {"installation": True, "version": "9.0.0"})
+        with open(self.appimage, "rb") as f:
+            self.assertEqual(f.read(11), ELF_APPIMAGE[:11], "la nouvelle AppImage a pris la place de l'ancienne")
+        self.assertFalse(os.path.exists(self.appimage + ".new"))
+        if sys.platform.startswith("linux"):
+            self.assertTrue(os.access(self.appimage, os.X_OK), "la nouvelle AppImage est exécutable")
+        commande = lancer.call_args.args[0]
+        self.assertEqual(commande[:2], ["/bin/sh", "-c"])
+        self.assertEqual(commande[-1], self.appimage, "le chemin est un argument, pas du texte de commande")
+        env = lancer.call_args.kwargs["env"]
+        self.assertEqual(env["LD_LIBRARY_PATH"], "/usr/local/lib", "bibliothèques du système, pas celles de l'AppImage")
+        for cle in ("APPIMAGE", "APPDIR", "_PYI_APPLICATION_HOME_DIR", "LD_LIBRARY_PATH_ORIG"):
+            self.assertNotIn(cle, env)
+        self.assertEqual(env["PYINSTALLER_RESET_ENVIRONMENT"], "1")
+        minuterie.return_value.start.assert_called_once()
+
+    def test_fichier_refuse(self):
+        with mock.patch.dict(os.environ, {"APPIMAGE": self.appimage}), \
+                mock.patch.object(reglages.urllib.request, "urlopen", side_effect=self.connexion(b"<html>" * 300_000)), \
+                mock.patch.object(systeme, "lancer_detache") as lancer, \
+                self.assertRaisesRegex(ValueError, "pas une AppImage valide"):
+            reglages.installer_mise_a_jour()
+        lancer.assert_not_called()
+        with open(self.appimage, "rb") as f:
+            self.assertEqual(f.read(), b"ancienne", "l'AppImage en place n'est pas touchée")
+        self.assertFalse(os.path.exists(self.appimage + ".new"))
+        with self.assertRaisesRegex(ValueError, "introuvable"):
+            reglages.telecharger_appimage("https://exemple.com/x.AppImage", self.appimage)
+
+    def test_sans_appimage(self):
+        os.environ.pop("APPIMAGE", None)
+        with self.assertRaisesRegex(ValueError, "AppImage"):
+            reglages.installer_mise_a_jour()
+        with mock.patch.object(config, "GELE", False), self.assertRaisesRegex(ValueError, "programme installé"):
+            reglages.installer_mise_a_jour()
+
+    def test_appimage_valide(self):
+        chemin = os.path.join(self.dossier, "essai")
+        for contenu, attendu in ((ELF_APPIMAGE, True), (b"\x7fELF" + b"\0" * 1_200_000, False),
+                                 (ELF_APPIMAGE[:20], False), (b"MZ" + b"\0" * 1_200_000, False)):
+            with open(chemin, "wb") as f:
+                f.write(contenu)
+            self.assertEqual(reglages.appimage_valide(chemin), attendu, contenu[:12])
 
 
 if __name__ == "__main__":

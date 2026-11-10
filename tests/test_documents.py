@@ -184,30 +184,89 @@ class TestFiches(BaseDocuments):
     def test_ouvrir_et_ouvrir_le_dossier(self):
         chemin = self.fichier("Facture fournisseur.pdf")
         f = self.ajouter_un(chemin, type="facture_fournisseur")
-        with mock.patch.object(documents.os, "startfile", create=True) as ouvre:
+        with mock.patch.object(documents.systeme, "ouvrir") as ouvre:
             documents.ouvrir({"id": f["id"]})
         ouvre.assert_called_once_with(chemin)
-        with mock.patch.object(documents.subprocess, "Popen") as explorer:
+        with mock.patch.object(documents.systeme, "montrer_dans_dossier") as montrer:
             documents.ouvrir_dossier({"id": f["id"]})
-        self.assertEqual(explorer.call_args[0][0], f'explorer.exe /select,"{chemin}"')
+        montrer.assert_called_once_with(chemin)
         # Fichier disparu : on ouvre au moins son dossier.
         os.remove(chemin)
-        with mock.patch.object(documents.os, "startfile", create=True) as ouvre:
+        with mock.patch.object(documents.systeme, "ouvrir") as ouvre:
             documents.ouvrir_dossier({"id": f["id"]})
         ouvre.assert_called_once_with(os.path.dirname(chemin))
 
+    @unittest.skipUnless(sys.platform == "win32", "Explorateur de Windows")
+    def test_ouvrir_le_dossier_sous_windows(self):
+        chemin = self.fichier("Contrat.pdf")
+        f = self.ajouter_un(chemin)
+        with mock.patch.object(documents.systeme.subprocess, "Popen") as explorer:
+            documents.ouvrir_dossier({"id": f["id"]})
+        self.assertEqual(explorer.call_args[0][0], f'explorer.exe /select,"{chemin}"')
+        with mock.patch.object(documents.systeme.os, "startfile", create=True) as ouvre:
+            documents.ouvrir({"id": f["id"]})
+        ouvre.assert_called_once_with(chemin)
+
+    def test_ouvrir_le_dossier_sous_linux(self):
+        """Branche Linux simulée : Nautilus sélectionne le fichier, sinon xdg-open sur le dossier."""
+        chemin = self.fichier("Contrat.pdf")
+        f = self.ajouter_un(chemin)
+        trouve = {"nautilus": "/usr/bin/nautilus", "xdg-open": "/usr/bin/xdg-open"}
+        with mock.patch.object(documents.systeme, "WINDOWS", False), \
+                mock.patch.object(documents.systeme.shutil, "which", side_effect=trouve.get), \
+                mock.patch.object(documents.systeme, "lancer_detache") as lancer:
+            documents.ouvrir_dossier({"id": f["id"]})
+            documents.ouvrir({"id": f["id"]})
+        self.assertEqual(lancer.call_args_list[0][0][0], ["nautilus", "--select", os.path.abspath(chemin)])
+        self.assertEqual(lancer.call_args_list[1][0][0], ["xdg-open", chemin])
+
     def test_choisir_fichiers(self):
         present = self.fichier("présent.pdf")
+        with mock.patch.object(documents.systeme, "choisir_fichiers", return_value=[present]) as choisir:
+            r = documents.choisir_fichiers({"titre": "Choisir", "depart": os.path.join(self.dossier, "pc", "x", "y")})
+        self.assertEqual(r["chemins"], [present])
+        titre, depart = choisir.call_args[0]
+        self.assertEqual((titre, depart), ("Choisir", os.path.join(self.dossier, "pc", "x", "y")))
+        self.assertTrue(choisir.call_args.kwargs["multi"])
+        self.assertEqual(choisir.call_args.kwargs["filtre"], "Tous les fichiers (*.*)|*.*")
+        with mock.patch.object(documents.systeme, "choisir_fichiers", return_value=[]) as choisir:
+            self.assertEqual(documents.choisir_fichiers({"multi": False})["chemins"], [])
+        self.assertFalse(choisir.call_args.kwargs["multi"])
+
+    def test_choisir_fichiers_fenetre_windows(self):
+        """La fenêtre de Windows (PowerShell simulé) : départ = dossier existant le plus proche."""
+        present = self.fichier("présent.pdf")
         sortie = mock.Mock(stdout=f"{present}\r\n{os.path.join(self.dossier, 'absent.pdf')}\r\n")
-        with mock.patch.object(documents.subprocess, "run", return_value=sortie) as run:
+        with mock.patch.object(documents.systeme, "WINDOWS", True), \
+                mock.patch.object(documents.systeme.subprocess, "run", return_value=sortie) as run:
             r = documents.choisir_fichiers({"titre": "Choisir", "depart": os.path.join(self.dossier, "pc", "x", "y")})
         self.assertEqual(r["chemins"], [present], "seuls les fichiers qui existent sont rendus")
+        self.assertEqual(run.call_args[0][0][0], "powershell")
         env = run.call_args.kwargs["env"]
         self.assertEqual(env["MO_MULTI"], "1")
         self.assertEqual(env["MO_DEPART"], os.path.join(self.dossier, "pc"), "départ : le dossier existant le plus proche")
         self.assertNotIn("shell", run.call_args.kwargs)
-        with mock.patch.object(documents.subprocess, "run", return_value=mock.Mock(stdout="")):
-            self.assertEqual(documents.choisir_fichiers({"multi": False})["chemins"], [])
+
+    def test_choisir_fichiers_linux(self):
+        """Branche Linux simulée : zenity, et un message clair s'il n'y a aucune fenêtre."""
+        present = self.fichier("présent.pdf")
+        with mock.patch.object(documents.systeme, "WINDOWS", False), \
+                mock.patch.object(documents.systeme, "outil_de_fenetres", return_value="zenity"), \
+                mock.patch.object(documents.systeme.subprocess, "run", return_value=mock.Mock(stdout=present + "\n")) as run:
+            r = documents.choisir_fichiers({"titre": "Choisir"})
+        self.assertEqual(r["chemins"], [present])
+        args = run.call_args[0][0]
+        self.assertEqual(args[:2], ["zenity", "--file-selection"])
+        self.assertIn("--multiple", args)
+        self.assertNotIn("creationflags", run.call_args.kwargs, "jamais de creationflags hors de Windows")
+        with mock.patch.object(documents.systeme, "WINDOWS", False), \
+                mock.patch.object(documents.systeme, "outil_de_fenetres", return_value=None):
+            with self.assertRaisesRegex(ValueError, "zenity"):
+                documents.choisir_fichiers({"titre": "Choisir"})
+
+    def test_dossier_documents_du_systeme(self):
+        with mock.patch.object(documents.systeme, "dossier_documents", return_value="/home/moi/Documents"):
+            self.assertEqual(documents.dossier_documents(), "/home/moi/Documents")
 
 
 class TestAlertes(BaseDocuments):

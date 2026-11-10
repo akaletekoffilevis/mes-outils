@@ -86,6 +86,10 @@
     "Le mot de passe maître doit faire au moins 10 caractères. Une phrase de quelques mots est idéale.":
       "The master password must be at least 10 characters long. A sentence of a few words is ideal.",
     "Le presse-papiers est occupé par un autre programme.": "The clipboard is being used by another program.",
+    // Linux sans outil de presse-papiers (MESSAGE_INDISPONIBLE de presse_papiers.py)
+    "Presse-papiers indisponible : installez wl-clipboard (Wayland) ou xclip (sudo apt install wl-clipboard xclip).":
+      "Clipboard unavailable: install wl-clipboard (Wayland) or xclip (sudo apt install wl-clipboard xclip).",
+    "Le presse-papiers ne répond pas.": "The clipboard is not responding.",
   });
 
   const CATEGORIES = ["Clients Odoo", "Serveurs", "Mails", "Banque", "Travail", "Personnel", "env"];

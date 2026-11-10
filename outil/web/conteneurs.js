@@ -14,6 +14,7 @@
     "Démarrez-le pour voir vos conteneurs. Le premier démarrage peut prendre une minute.":
       "Start it to see your containers. The first start can take a minute.",
     "Lancez Docker Desktop depuis le menu Démarrer, puis réessayez.": "Start Docker Desktop from the Start menu, then try again.",
+    "Démarrez Docker (sudo systemctl start docker) ou Docker Desktop, puis réessayez.": "Start Docker (sudo systemctl start docker) or Docker Desktop, then try again.",
     "Démarrer Docker Desktop": "Start Docker Desktop",
     "Réessayer": "Try again",
     "Docker Desktop démarre…": "Docker Desktop is starting…",
@@ -182,7 +183,8 @@
         el("div", { class: "gros" }, "💤"),
         el("h3", {}, "Docker Desktop n'est pas démarré"),
         el("p", {}, D.donnees.desktop ? "Démarrez-le pour voir vos conteneurs. Le premier démarrage peut prendre une minute."
-          : "Lancez Docker Desktop depuis le menu Démarrer, puis réessayez."),
+          : selonSysteme("Lancez Docker Desktop depuis le menu Démarrer, puis réessayez.",
+              "Démarrez Docker (sudo systemctl start docker) ou Docker Desktop, puis réessayez.")),
         el("div", { class: "boutons" }, boutons)));
   }
 

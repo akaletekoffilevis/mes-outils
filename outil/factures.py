@@ -11,7 +11,8 @@
 - Montants : Decimal uniquement (jamais de float), arrondis à la devise
   (centime, ou unité pour l'ariary), arrondi commercial (0,5 → au-dessus).
   Remise globale répartie au prorata entre les taux de TVA, au centime près.
-- PDF : HTML imprimable converti par Microsoft Edge sans fenêtre, enregistré
+- PDF : HTML imprimable converti sans fenêtre par Microsoft Edge (Windows) ou
+  Google Chrome / Chromium (Linux), enregistré
   dans Documents\\Mes outils\\Factures\\<année>\\.
 - Heures : importées de l'application Temps (sessions par projet).
 - Bulle : alertes_dues() signale une fois chaque facture qui passe en retard.
@@ -32,6 +33,7 @@ import uuid
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 
 import config
+import systeme
 
 NOM = "factures"
 TYPES = ("devis", "facture", "avoir")
@@ -45,7 +47,6 @@ MAX_LOGO = 1024 * 1024
 MAX_LIGNES = 200
 MAX_DOCUMENTS = 20000
 LIMITE = Decimal("1e12")
-CREATION_SANS_FENETRE = 0x08000000
 
 _verrou = threading.RLock()
 
@@ -1284,34 +1285,15 @@ def apercu(identifiant=None, brut=None):
 
 
 def dossier_documents():
-    """Le dossier « Documents » réel de Windows (il peut être déplacé ou dans OneDrive)."""
-    try:
-        import ctypes
-        tampon = ctypes.create_unicode_buffer(1024)
-        if ctypes.windll.shell32.SHGetFolderPathW(None, 5, None, 0, tampon) == 0 and tampon.value:
-            return tampon.value
-    except (AttributeError, OSError):
-        pass
-    return os.path.join(os.path.expanduser("~"), "Documents")
+    """Le dossier « Documents » réel (Windows : il peut être déplacé ou dans
+    OneDrive ; Linux : celui du bureau, XDG)."""
+    return systeme.dossier_documents()
 
 
 def dossier_pdf(annee):
     return os.path.join(dossier_documents(), "Mes outils", "Factures", str(annee))
 
 
-def chemin_edge():
-    """msedge.exe aux emplacements habituels, ou None."""
-    candidats = []
-    for variable in ("ProgramFiles(x86)", "ProgramFiles", "LOCALAPPDATA"):
-        racine = os.environ.get(variable)
-        if racine:
-            candidats.append(os.path.join(racine, "Microsoft", "Edge", "Application", "msedge.exe"))
-    candidats += [r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
-                  r"C:\Program Files\Microsoft\Edge\Application\msedge.exe"]
-    for c in candidats:
-        if os.path.isfile(c):
-            return c
-    return shutil.which("msedge")
 
 
 def _nom_fichier(doc):
@@ -1322,23 +1304,15 @@ def _nom_fichier(doc):
 
 
 def html_vers_pdf(contenu_html, destination):
-    """Convertit l'HTML en PDF avec Edge sans fenêtre (profil temporaire)."""
-    edge = chemin_edge()
-    if not edge:
-        raise ValueError("Microsoft Edge est introuvable : impossible de créer le PDF.")
+    """Convertit l'HTML en PDF sans fenêtre (profil temporaire) : Edge sous
+    Windows, Chrome ou Chromium sous Linux (voir systeme.html_vers_pdf)."""
     travail = tempfile.mkdtemp(prefix="mes-outils-pdf-")
     try:
         source = os.path.join(travail, "document.html")
         with open(source, "w", encoding="utf-8") as f:
             f.write(contenu_html)
         sortie = os.path.join(travail, "document.pdf")
-        commande = [edge, "--headless", "--disable-gpu", "--no-first-run", "--no-default-browser-check",
-                    "--disable-extensions", f"--user-data-dir={os.path.join(travail, 'profil')}",
-                    "--no-pdf-header-footer", "--print-to-pdf-no-header", f"--print-to-pdf={sortie}",
-                    "file:///" + source.replace("\\", "/")]
-        subprocess.run(commande, timeout=90, capture_output=True, creationflags=CREATION_SANS_FENETRE)
-        if not os.path.isfile(sortie) or os.path.getsize(sortie) == 0:
-            raise ValueError("Edge n'a pas pu créer le PDF.")
+        systeme.html_vers_pdf(source, sortie, os.path.join(travail, "profil"), delai=90)
         os.makedirs(os.path.dirname(destination), exist_ok=True)
         try:
             if os.path.exists(destination):
@@ -1370,7 +1344,7 @@ def generer_pdf(identifiant):
 
 
 def _ouvrir(chemin):
-    os.startfile(chemin)  # noqa: S606 (chemin construit ici, jamais reçu de la page)
+    systeme.ouvrir(chemin)  # chemin construit ici, jamais reçu de la page
 
 
 def ouvrir_pdf(identifiant):

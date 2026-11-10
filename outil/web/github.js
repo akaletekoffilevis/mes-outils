@@ -2,7 +2,7 @@
 /* Onglet « GitHub » : tous vos dépôts, clonés ou ouverts en un clic, création
    d'un dépôt à partir d'un dossier, vos pull requests et issues, et l'état de
    GitHub Actions (voir github.py). Le jeton GitHub reste dans le coffre de
-   Windows : il ne passe jamais par la page. */
+   Windows (ou le trousseau du bureau sous Linux) : il ne passe jamais par la page. */
 (() => {
   I18N.ajouter({
     // Barre et sous-onglets
@@ -108,6 +108,10 @@
       "The GitHub connection is not configured yet: the application ID (client_id) is missing.",
     "GitHub a donné un accès qui ne fonctionne pas : réessayez.": "GitHub granted an access that does not work: try again.",
     "Impossible de ranger l'accès GitHub dans le coffre de Windows.": "Could not store the GitHub access in the Windows vault.",
+    // Linux : le trousseau du bureau (GNOME Keyring, KWallet) remplace le coffre de Windows.
+    "L'accès est rangé dans le trousseau du bureau (GNOME Keyring, KWallet), jamais dans un fichier.":
+      "Access is stored in the desktop keyring (GNOME Keyring, KWallet), never in a file.",
+    "Impossible de ranger l'accès GitHub dans le trousseau du bureau.": "Could not store the GitHub access in the desktop keyring.",
     "GitHub refuse l'accès : reconnectez GitHub.": "GitHub denies access: reconnect GitHub.",
     "Le dossier de destination existe déjà.": "The destination folder already exists.",
     "git a échoué.": "git failed.",
@@ -546,7 +550,8 @@
         el("li", {}, "Cliquez sur « Connecter GitHub » : un code de 8 caractères s'affiche et est copié."),
         el("li", {}, "La page github.com/login/device s'ouvre : collez le code, puis cliquez sur ", el("b", {}, "Authorize"), "."),
         el("li", {}, "Revenez ici : vos dépôts s'affichent tout seuls.")),
-      el("p", { class: "cx-note" }, icone("lock"), t("L'accès est rangé dans le coffre de Windows (Gestionnaire d'identification), jamais dans un fichier.")),
+      el("p", { class: "cx-note" }, icone("lock"), t(selonSysteme("L'accès est rangé dans le coffre de Windows (Gestionnaire d'identification), jamais dans un fichier.",
+        "L'accès est rangé dans le trousseau du bureau (GNOME Keyring, KWallet), jamais dans un fichier."))),
       el("div", { class: "actions" }, bouton)));
   }
 

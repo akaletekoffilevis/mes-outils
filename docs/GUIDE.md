@@ -51,6 +51,25 @@ et vos données sont dans `%APPDATA%\Mes outils` et restent sur votre PC : ils
 sont gardés lors des mises à jour, et même après une désinstallation.
 Désinstaller : Paramètres de Windows › Applications › Mes outils.
 
+### Sous Linux (Ubuntu 24.04 et autres)
+
+1. Téléchargez **[Mes-outils-x86_64.AppImage](https://github.com/rarianaAina/mes-outils/releases/latest/download/Mes-outils-x86_64.AppImage)**.
+2. Rendez-le exécutable : clic droit › Propriétés › « Exécutable comme
+   programme », ou `chmod +x Mes-outils-x86_64.AppImage`.
+3. Double-cliquez dessus. La bulle apparaît, ainsi qu'une icône en haut à
+   droite de l'écran ; « Mes outils » s'ajoute au menu des applications.
+
+Un seul fichier, sans installation ni droits administrateur. Vos réglages et
+vos données sont dans `~/.config/mes-outils`. Les mots de passe des mails et
+l'accès GitHub vont dans le trousseau du bureau (GNOME Keyring, KWallet).
+Pour la fenêtre sans barre d'adresse et les PDF des factures, il faut Google
+Chrome ou Chromium (`sudo snap install chromium`) ; sans eux, Mes outils
+s'ouvre dans le navigateur par défaut. Les fenêtres de choix de fichiers
+utilisent zenity (déjà présent sous Ubuntu). Sous GNOME avec Wayland, la bulle
+peut passer derrière les autres fenêtres : l'icône en haut à droite reste
+toujours accessible (Réglages › Linux : bulle et icône, bulle seule ou icône
+seule).
+
 ### Pour les développeurs : depuis le code source
 
 Il faut Python 3.10 ou plus récent (avec tkinter) et Git.
@@ -66,6 +85,9 @@ installer.bat
 alors à côté du code (`outils.json`, `donnees\`) et ne partent jamais sur
 GitHub. Si vous passez ensuite à l'installateur, vos réglages et données sont
 repris au premier lancement (ils sont copiés, l'original reste).
+
+Sous Linux : `sudo apt install python3-tk zenity`, puis
+`pip install -r requirements.txt` et `python3 outil/bulle.py`.
 
 ## Premier lancement : votre métier et vos applications
 

@@ -237,7 +237,7 @@ class TestDocuments(Base):
 
     def test_ouvrir_seulement_les_documents_lies(self):
         d = reunions.enregistrer_deplacement(deplacement(documents=[self.fichier]))
-        with mock.patch.object(reunions.os, "startfile", create=True) as ouvrir:
+        with mock.patch.object(reunions.systeme, "ouvrir") as ouvrir:
             reunions.ouvrir_document(d["id"], self.fichier)
             ouvrir.assert_called_once_with(os.path.normpath(self.fichier))
             with self.assertRaisesRegex(ValueError, "pas lié"):
@@ -247,19 +247,62 @@ class TestDocuments(Base):
                 reunions.ouvrir_document(d["id"], self.fichier)
             self.assertEqual(ouvrir.call_count, 1)
 
+    def test_montrer_dans_le_gestionnaire_de_fichiers(self):
+        d = reunions.enregistrer_deplacement(deplacement(documents=[self.fichier]))
+        with mock.patch.object(reunions.systeme, "montrer_dans_dossier") as montrer:
+            reunions.montrer_document(d["id"], self.fichier)
+        montrer.assert_called_once_with(os.path.normpath(self.fichier))
+
+    @unittest.skipUnless(sys.platform == "win32", "Explorateur de Windows")
     def test_montrer_dans_l_explorateur(self):
         d = reunions.enregistrer_deplacement(deplacement(documents=[self.fichier]))
-        with mock.patch.object(reunions.subprocess, "Popen") as popen:
+        with mock.patch.object(reunions.systeme.subprocess, "Popen") as popen:
             reunions.montrer_document(d["id"], self.fichier)
-        self.assertEqual(popen.call_args[0][0], ["explorer", "/select,", os.path.normpath(self.fichier)])
+        self.assertEqual(popen.call_args[0][0], f'explorer.exe /select,"{os.path.normpath(self.fichier)}"')
+
+    def test_montrer_sous_linux(self):
+        """Branche Linux simulée : sans Nautilus ni autre, xdg-open sur le dossier."""
+        d = reunions.enregistrer_deplacement(deplacement(documents=[self.fichier]))
+        trouve = {"xdg-open": "/usr/bin/xdg-open"}
+        with mock.patch.object(reunions.systeme, "WINDOWS", False), \
+                mock.patch.object(reunions.systeme.shutil, "which", side_effect=trouve.get), \
+                mock.patch.object(reunions.systeme, "lancer_detache") as lancer:
+            reunions.montrer_document(d["id"], self.fichier)
+        self.assertEqual(lancer.call_args[0][0], ["xdg-open", os.path.dirname(os.path.abspath(self.fichier))])
 
     def test_choisir_fichiers(self):
         sortie = subprocess.CompletedProcess([], 0, stdout=f"{self.fichier}\r\nC:\\absent\\x.pdf\r\n", stderr="")
-        with mock.patch.object(reunions.subprocess, "run", return_value=sortie) as run:
+        with mock.patch.object(reunions.systeme, "WINDOWS", True), \
+                mock.patch.object(reunions.systeme.subprocess, "run", return_value=sortie) as run:
             r = reunions.choisir_fichiers("Billets")
         self.assertEqual(r, {"chemins": [self.fichier]}, "seuls les fichiers qui existent")
         self.assertEqual(run.call_args.kwargs["env"]["MO_TITRE"], "Billets")
+        self.assertEqual(run.call_args.kwargs["env"]["MO_MULTI"], "1")
         self.assertNotIn("shell", run.call_args.kwargs)
+
+    def test_choisir_fichiers_linux(self):
+        """Branche Linux simulée : kdialog, et un message clair s'il n'y a aucune fenêtre."""
+        with mock.patch.object(reunions.systeme, "WINDOWS", False), \
+                mock.patch.object(reunions.systeme, "outil_de_fenetres", return_value="kdialog"), \
+                mock.patch.object(reunions.systeme.subprocess, "run",
+                                  return_value=mock.Mock(stdout=self.fichier + "\n")) as run:
+            self.assertEqual(reunions.choisir_fichiers("Billets"), {"chemins": [self.fichier]})
+        args = run.call_args[0][0]
+        self.assertEqual(args[:3], ["kdialog", "--title", "Billets"])
+        self.assertIn("--multiple", args)
+        self.assertNotIn("creationflags", run.call_args.kwargs)
+        with mock.patch.object(reunions.systeme, "WINDOWS", False), \
+                mock.patch.object(reunions.systeme, "outil_de_fenetres", return_value=None):
+            with self.assertRaisesRegex(ValueError, "zenity"):
+                reunions.choisir_fichiers("Billets")
+
+    def test_extensions_refusees_linux(self):
+        self.assertIn(".exe", reunions.EXTENSIONS_REFUSEES)
+        self.assertTrue(reunions.EXTENSIONS_REFUSEES_LINUX.isdisjoint({".pdf", ".png", ".docx"}))
+        if sys.platform == "win32":
+            self.assertNotIn(".sh", reunions.EXTENSIONS_REFUSEES, "Windows : liste inchangée")
+        else:
+            self.assertIn(".desktop", reunions.EXTENSIONS_REFUSEES)
 
 
 class TestAgenda(Base):

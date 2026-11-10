@@ -1,9 +1,19 @@
 "use strict";
 /* Onglet « Mails » : boîte mail par IMAP / SMTP (Gmail, Yahoo, iCloud, Zoho,
    Fastmail, GMX, OVH, Orange, Free, La Poste ou réglages manuels). Le mot de
-   passe est rangé dans le coffre Windows (voir mail.py). */
+   passe est rangé dans le coffre Windows, ou dans le trousseau du bureau sous
+   Linux (voir mail.py). */
 (() => {
   I18N.ajouter({
+    // Linux : le trousseau du bureau (GNOME Keyring, KWallet) remplace le coffre de Windows.
+    "Une seule fois. Le mot de passe est rangé dans le trousseau du bureau, jamais dans un fichier.":
+      "Only once. The password is stored in the desktop keyring, never in a file.",
+    "🔒 Il est rangé dans le trousseau du bureau (GNOME Keyring, KWallet), jamais dans un fichier.":
+      "🔒 It is stored in the desktop keyring (GNOME Keyring, KWallet), never in a file.",
+    "Le mot de passe est retiré du trousseau du bureau. Vos mails ne sont pas touchés.":
+      "The password is removed from the desktop keyring. Your emails are not affected.",
+    "Impossible d'enregistrer le mot de passe dans le trousseau du bureau.":
+      "Unable to save the password in the desktop keyring.",
     "Modèle": "Template",
     "Mails": "Mail",
     "✉️ Mails": "✉️ Mail",
@@ -234,7 +244,8 @@
     const guide = el("div");
     const libelleSecret = el("span");
     const zoneSecret = el("label", { class: "champ" }, libelleSecret, secret,
-      el("small", {}, "🔒 Il est rangé dans le coffre de Windows (Gestionnaire d'identification), jamais dans un fichier."));
+      el("small", {}, selonSysteme("🔒 Il est rangé dans le coffre de Windows (Gestionnaire d'identification), jamais dans un fichier.",
+        "🔒 Il est rangé dans le trousseau du bureau (GNOME Keyring, KWallet), jamais dans un fichier.")));
     const bouton = el("button", { class: "btn principal", onclick: connecter }, "Connecter");
     const actions = el("div", { class: "actions" }, bouton);
 
@@ -301,7 +312,8 @@
     racine().replaceChildren(el("div", { class: "connexion" },
       el("div", { style: "font-size:48px" }, "✉️"),
       el("h3", {}, "Connecter votre boîte mail"),
-      el("p", { style: "color:var(--doux);margin-top:0" }, "Une seule fois. Le mot de passe est rangé dans le coffre de Windows, jamais dans un fichier."),
+      el("p", { style: "color:var(--doux);margin-top:0" }, selonSysteme("Une seule fois. Le mot de passe est rangé dans le coffre de Windows, jamais dans un fichier.",
+        "Une seule fois. Le mot de passe est rangé dans le trousseau du bureau, jamais dans un fichier.")),
       el("div", { class: "grille-mail", style: "grid-template-columns:1fr 220px" },
         el("label", { class: "champ" }, "Adresse mail", adresse),
         el("label", { class: "champ" }, "Fournisseur", liste)),
@@ -322,7 +334,8 @@
         el("div", { class: "espace" }),
         el("button", { class: "btn principal", onclick: () => composer({}) }, "✏️ Nouveau mail"),
         el("button", { class: "btn discret", title: "Déconnecter la boîte (le mot de passe est retiré du coffre)", onclick: async () => {
-          if (!(await confirmer("🔌", "Déconnecter la boîte mail ?", "Le mot de passe est retiré du coffre Windows. Vos mails ne sont pas touchés.", "Déconnecter"))) return;
+          if (!(await confirmer("🔌", "Déconnecter la boîte mail ?", selonSysteme("Le mot de passe est retiré du coffre Windows. Vos mails ne sont pas touchés.",
+            "Le mot de passe est retiré du trousseau du bureau. Vos mails ne sont pas touchés."), "Déconnecter"))) return;
           await api("/api/mail/deconnexion", {}); M.etat.configuree = false; ecranConnexion(); compterMails();
         } }, "🔌")),
       el("div", { class: "boite" },

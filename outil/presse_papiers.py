@@ -19,18 +19,37 @@
 - Pause / Reprendre : en mémoire, et réglage persistant
   config.section("presse_papiers")["actif"] (vrai par défaut).
 
+Sous Linux, il n'y a pas de numéro de séquence : le « numéro » est une
+empreinte du texte (calculée avec une clé tirée au hasard au démarrage, et
+jamais écrite). Source choisie dans cet ordre :
+1. Wayland (WAYLAND_DISPLAY) avec wl-paste et wl-copy (paquet wl-clipboard) ;
+2. X11 ou XWayland (DISPLAY) avec xclip, sinon xsel ;
+3. Tk, par la fenêtre de la bulle (utiliser_tk(racine), appelé par bulle.py).
+Sous GNOME, Wayland passe en dernier (voir choisir_source_linux).
+La variable d'environnement MES_OUTILS_PRESSE_PAPIERS (wayland, xclip, xsel,
+tk) impose une source, pour les essais. Sans aucune source, l'onglet reste
+utilisable : historique vide et message clair (etat()["message"]).
+Ignorés aussi sous Linux : les secrets copiés par le coffre de Mes outils
+(ecrire_secret) et les contenus marqués « x-kde-passwordManagerHint »
+(KeePassXC et autres gestionnaires de mots de passe).
+
 Pour la bulle : demarrer_surveillance(), lister(), recopier(id), supprimer(id),
-vider(), pause(bool), epingler(id, bool), etat(). Pour les autres modules :
-ecrire_texte(texte).
+vider(), pause(bool), epingler(id, bool), etat(), utiliser_tk(racine). Pour
+les autres modules : ecrire_texte(texte), ecrire_secret(texte), effacer_si(empreinte).
 """
 import ctypes
 import datetime
+import hashlib
 import itertools
+import os
+import secrets
+import shutil
+import subprocess
 import threading
 import time
-from ctypes import wintypes
 
 import config
+import systeme
 
 LIMITE = 50
 MAX_EPINGLES = 50
@@ -48,6 +67,7 @@ class SourceWindows:
     """Lecture et écriture du presse-papiers Windows par ctypes."""
 
     def __init__(self):
+        from ctypes import wintypes  # noqa: PLC0415 — Windows seulement
         u32 = ctypes.WinDLL("user32", use_last_error=True)
         k32 = ctypes.WinDLL("kernel32", use_last_error=True)
         u32.OpenClipboard.argtypes = [wintypes.HWND]
@@ -150,6 +170,302 @@ class SourceWindows:
 
 
 # ---------------------------------------------------------------------------
+# Linux : empreintes, secrets du coffre, sources Wayland / X11 / Tk
+# ---------------------------------------------------------------------------
+_CLE_EMPREINTE = secrets.token_bytes(32)   # tirée au démarrage, jamais écrite
+_secrets = []                              # empreintes des secrets copiés par le coffre
+_verrou_secrets = threading.Lock()
+MAX_SECRETS = 20
+INDICES_MOT_DE_PASSE = ("x-kde-passwordManagerHint",)
+DELAI_COMMANDE = 2        # secondes pour lire avec wl-paste, xclip, xsel
+DELAI_TK = 1.0            # secondes d'attente d'une réponse du fil de Tk
+MESSAGE_INDISPONIBLE = ("Presse-papiers indisponible : installez wl-clipboard (Wayland) ou xclip "
+                        "(sudo apt install wl-clipboard xclip).")
+
+
+def empreinte(texte):
+    """Empreinte d'un texte (sert de numéro de séquence sous Linux) ; None
+    pour « pas de texte »."""
+    if texte is None:
+        return None
+    return hashlib.blake2b(str(texte).encode("utf-8", "surrogatepass"), key=_CLE_EMPREINTE,
+                           digest_size=16).hexdigest()
+
+
+def _noter_secret(e):
+    with _verrou_secrets:
+        if e in _secrets:
+            _secrets.remove(e)
+        _secrets.append(e)
+        del _secrets[:-MAX_SECRETS]
+
+
+def est_secret(e):
+    with _verrou_secrets:
+        return e is not None and e in _secrets
+
+
+class SourceLinux:
+    """Base des sources Linux. Les sous-classes donnent _lire_texte() → texte
+    ou None, _types() → types annoncés, ecrire(texte) et effacer()."""
+
+    nom = "linux"
+
+    def __init__(self):
+        self._dernier_lu = (None, None)    # (empreinte, texte) du dernier coup d'œil
+
+    def _lire_texte(self):
+        raise NotImplementedError
+
+    def _types(self):
+        return ()
+
+    def texte_actuel(self):
+        return self._lire_texte()
+
+    def numero(self):
+        texte = self._lire_texte()
+        e = empreinte(texte)
+        self._dernier_lu = (e, texte)
+        return e
+
+    def lire(self):
+        """(texte, raison), comme SourceWindows.lire()."""
+        e, texte = self._dernier_lu
+        if e is None:
+            texte = self._lire_texte()
+            e = empreinte(texte)
+        self._dernier_lu = (None, None)    # le texte ne reste pas en mémoire ici
+        if texte is None or texte == "":
+            return None, "pas_de_texte"
+        if est_secret(e):
+            return None, "exclu"
+        try:
+            if any(t in INDICES_MOT_DE_PASSE for t in self._types()):
+                return None, "exclu"
+        except Exception:  # noqa: BLE001 — types illisibles : le texte reste pris
+            pass
+        if len(texte) > TAILLE_MAX:
+            return None, "trop_long"
+        return texte, None
+
+    def ecrire(self, texte):
+        raise NotImplementedError
+
+    def effacer(self):
+        raise NotImplementedError
+
+
+def _lancer(args, delai=DELAI_COMMANDE):
+    """Lance une commande de lecture ; renvoie (code, sortie en octets)."""
+    r = subprocess.run(args, capture_output=True, timeout=delai, stdin=subprocess.DEVNULL,
+                       **systeme.options_sans_fenetre())
+    return r.returncode, r.stdout or b""
+
+
+def _donner(args, texte):
+    """Lance une commande d'écriture (wl-copy, xclip, xsel). Ces commandes
+    restent en arrière-plan pour servir le presse-papiers : leurs sorties ne
+    sont pas lues (sinon on attendrait leur fin)."""
+    try:
+        r = subprocess.run(args, input=str(texte).encode("utf-8"), stdout=subprocess.DEVNULL,
+                           stderr=subprocess.DEVNULL, timeout=10, **systeme.options_sans_fenetre())
+    except (OSError, subprocess.SubprocessError):
+        raise RuntimeError("Copie dans le presse-papiers impossible.") from None
+    if r.returncode != 0:
+        raise RuntimeError("Copie dans le presse-papiers impossible.")
+
+
+def _texte(code, sortie):
+    return sortie.decode("utf-8", "replace") if code == 0 else None
+
+
+class SourceWayland(SourceLinux):
+    """wl-paste / wl-copy (paquet wl-clipboard)."""
+
+    nom = "wayland"
+
+    def _lire_texte(self):
+        return _texte(*_lancer(["wl-paste", "--no-newline", "--type", "text"]))
+
+    def _types(self):
+        code, sortie = _lancer(["wl-paste", "--list-types"])
+        return sortie.decode("utf-8", "replace").split() if code == 0 else ()
+
+    def ecrire(self, texte):
+        _donner(["wl-copy", "--type", "text/plain;charset=utf-8"], texte)
+
+    def effacer(self):
+        _donner(["wl-copy", "--clear"], "")
+
+
+class SourceXclip(SourceLinux):
+    """xclip (X11, ou XWayland sous GNOME)."""
+
+    nom = "xclip"
+
+    def _lire_texte(self):
+        return _texte(*_lancer(["xclip", "-selection", "clipboard", "-o"]))
+
+    def _types(self):
+        code, sortie = _lancer(["xclip", "-selection", "clipboard", "-o", "-t", "TARGETS"])
+        return sortie.decode("utf-8", "replace").split() if code == 0 else ()
+
+    def ecrire(self, texte):
+        _donner(["xclip", "-selection", "clipboard", "-i"], texte)
+
+    def effacer(self):
+        _donner(["xclip", "-selection", "clipboard", "-i"], "")
+
+
+class SourceXsel(SourceLinux):
+    """xsel (X11) ; il ne donne pas les types : pas de détection des
+    gestionnaires de mots de passe."""
+
+    nom = "xsel"
+
+    def _lire_texte(self):
+        texte = _texte(*_lancer(["xsel", "--clipboard", "--output"]))
+        return texte or None
+
+    def ecrire(self, texte):
+        _donner(["xsel", "--clipboard", "--input"], texte)
+
+    def effacer(self):
+        _donner(["xsel", "--clipboard", "--clear"], "")
+
+
+class SourceTk(SourceLinux):
+    """Le presse-papiers de Tk, par la fenêtre de la bulle. Tk n'est pas sûr
+    entre fils : chaque appel est fait dans le fil de Tk (racine.after), et
+    on attend sa réponse au plus DELAI_TK secondes."""
+
+    nom = "tk"
+
+    def __init__(self, racine, fil=None):
+        super().__init__()
+        self.racine = racine
+        self.fil = fil if fil is not None else threading.get_ident()
+
+    def _dans_tk(self, fonction):
+        if threading.get_ident() == self.fil:
+            return fonction()
+        fini = threading.Event()
+        resultat = {}
+
+        def tache():
+            try:
+                resultat["valeur"] = fonction()
+            except BaseException as erreur:  # noqa: BLE001 — renvoyée au fil appelant
+                resultat["erreur"] = erreur
+            finally:
+                fini.set()
+
+        try:
+            self.racine.after(0, tache)
+        except Exception:  # noqa: BLE001 — fenêtre fermée, boucle de Tk arrêtée
+            raise RuntimeError("Le presse-papiers ne répond pas.") from None
+        if not fini.wait(DELAI_TK):
+            raise RuntimeError("Le presse-papiers ne répond pas.")
+        if "erreur" in resultat:
+            raise resultat["erreur"]
+        return resultat.get("valeur")
+
+    def _lire_texte(self):
+        def lire():
+            for options in ({"type": "UTF8_STRING"}, {}):
+                try:
+                    return self.racine.clipboard_get(**options)
+                except Exception:  # noqa: BLE001 — TclError : vide, ou pas du texte
+                    continue
+            return None
+        return self._dans_tk(lire)
+
+    def _types(self):
+        def types():
+            try:
+                return str(self.racine.clipboard_get(type="TARGETS")).split()
+            except Exception:  # noqa: BLE001
+                return []
+        return self._dans_tk(types)
+
+    def ecrire(self, texte):
+        def ecrire():
+            self.racine.clipboard_clear()
+            self.racine.clipboard_append(str(texte))
+            self.racine.update_idletasks()
+        try:
+            self._dans_tk(ecrire)
+        except RuntimeError:
+            raise
+        except Exception:  # noqa: BLE001
+            raise RuntimeError("Copie dans le presse-papiers impossible.") from None
+
+    def effacer(self):
+        self._dans_tk(self.racine.clipboard_clear)
+
+
+class SourceAbsente:
+    """Aucun presse-papiers utilisable : rien n'est lu, la copie explique
+    quoi installer. L'onglet reste utilisable (historique vide)."""
+
+    nom = "aucune"
+
+    def numero(self):
+        return None
+
+    def lire(self):
+        return None, "pas_de_texte"
+
+    def texte_actuel(self):
+        return None
+
+    def ecrire(self, texte):
+        raise RuntimeError(MESSAGE_INDISPONIBLE)
+
+    def effacer(self):
+        pass
+
+
+_racine_tk = None      # (racine, identifiant du fil de Tk), donné par utiliser_tk()
+
+
+def choisir_source_linux():
+    """La meilleure source disponible (voir l'ordre en tête du module), ou
+    SourceAbsente."""
+    force = (os.environ.get("MES_OUTILS_PRESSE_PAPIERS") or "").strip().lower()
+    wayland = bool(os.environ.get("WAYLAND_DISPLAY")) and bool(shutil.which("wl-paste")) \
+        and bool(shutil.which("wl-copy"))
+    x11 = bool(os.environ.get("DISPLAY"))
+    tk = _racine_tk is not None
+    candidates = [
+        ("wayland", wayland, lambda: SourceWayland()),
+        ("xclip", x11 and bool(shutil.which("xclip")), lambda: SourceXclip()),
+        ("xsel", x11 and bool(shutil.which("xsel")), lambda: SourceXsel()),
+        ("tk", tk, lambda: SourceTk(*_racine_tk)),
+    ]
+    # GNOME (Mutter) n'a pas le protocole « data-control » : wl-paste y crée
+    # une fenêtre furtive pour lire le presse-papiers, ce qui peut voler le
+    # focus toutes les 0,7 s. Sous GNOME, Wayland passe donc en dernier
+    # (XWayland partage le presse-papiers avec les applications Wayland).
+    if "GNOME" in (os.environ.get("XDG_CURRENT_DESKTOP") or "").upper():
+        candidates.append(candidates.pop(0))
+    if force:
+        candidates = [c for c in candidates if c[0] == force]
+    for _nom, possible, fabrique in candidates:
+        if possible:
+            return fabrique()
+    return SourceAbsente()
+
+
+def nouvelle_source():
+    """La source du système : SourceWindows, ou la meilleure source Linux."""
+    if systeme.WINDOWS:
+        return SourceWindows()
+    return choisir_source_linux()
+
+
+# ---------------------------------------------------------------------------
 # L'historique (en mémoire)
 # ---------------------------------------------------------------------------
 def _heure():
@@ -244,7 +560,7 @@ class Surveillance:
     """Regarde le presse-papiers à intervalle régulier et remplit l'historique.
 
     source : objet avec numero(), lire() → (texte, raison) et ecrire(texte)
-    (SourceWindows, ou une fausse source dans les tests)."""
+    (SourceWindows, une source Linux, ou une fausse source dans les tests)."""
 
     def __init__(self, historique, source, intervalle=INTERVALLE):
         self.historique = historique
@@ -313,10 +629,52 @@ _verrou_module = threading.Lock()
 
 def _la_surveillance():
     global _surveillance
+    remplacee = False
     with _verrou_module:
         if _surveillance is None:
-            _surveillance = Surveillance(_historique, SourceWindows())
-        return _surveillance
+            _surveillance = Surveillance(_historique, nouvelle_source())
+        elif isinstance(_surveillance.source, SourceAbsente):
+            # Un outil a pu être installé depuis, ou la bulle a donné Tk.
+            source = nouvelle_source()
+            if not isinstance(source, SourceAbsente):
+                _surveillance.source = source
+                remplacee = True
+        s = _surveillance
+    if remplacee:
+        _oublier(s)     # hors du verrou : la source Tk peut attendre son fil
+    return s
+
+
+def _oublier(s):
+    try:
+        s.oublier_contenu_actuel()
+    except Exception:  # noqa: BLE001 — le prochain coup d'œil réessaiera
+        pass
+
+
+def utiliser_tk(racine):
+    """Donne la fenêtre Tk de la bulle (à appeler depuis le fil de Tk). Sous
+    Linux, elle sert de presse-papiers quand ni wl-clipboard ni xclip/xsel ne
+    sont là ; sans effet sous Windows."""
+    global _racine_tk
+    if systeme.WINDOWS:
+        return
+    with _verrou_module:
+        _racine_tk = (racine, threading.get_ident())
+    _la_surveillance()      # remplace une SourceAbsente déjà créée
+
+
+def source_disponible():
+    return not isinstance(_la_surveillance().source, SourceAbsente)
+
+
+def ecrire_secret(texte):
+    """Copie d'un secret (coffre) sous Linux : il n'entre pas dans
+    l'historique. Renvoie l'empreinte, pour effacer_si()."""
+    e = empreinte(str(texte))
+    _noter_secret(e)            # avant la copie : la surveillance ne doit jamais le prendre
+    _la_surveillance().source.ecrire(texte)
+    return e
 
 
 def actif_par_reglage():
@@ -334,10 +692,15 @@ def demarrer_surveillance():
 
 def etat():
     s = _surveillance
-    return {"actif": bool(s.actif) if s else actif_par_reglage(),
-            "surveille": bool(s and s.en_marche()),
-            "nombre": len(_la_surveillance().historique),
-            "limite": LIMITE}
+    disponible = source_disponible()
+    r = {"actif": bool(s.actif) if s else actif_par_reglage(),
+         "surveille": bool(s and s.en_marche()) and disponible,
+         "nombre": len(_la_surveillance().historique),
+         "limite": LIMITE,
+         "disponible": disponible}
+    if not disponible:
+        r["message"] = MESSAGE_INDISPONIBLE
+    return r
 
 
 def lister(recherche=""):
@@ -380,6 +743,16 @@ def pause(valeur=True):
 def ecrire_texte(texte):
     """Copie ordinaire d'un texte (utilisée aussi par l'onglet Extraits)."""
     _la_surveillance().source.ecrire(texte)
+
+
+def effacer_si(e):
+    """Vide le presse-papiers s'il contient encore le texte d'empreinte e
+    (effacement d'un secret au bout de 30 s, Linux)."""
+    source = _la_surveillance().source
+    if e is not None and empreinte(source.texte_actuel()) == e:
+        source.effacer()
+        return True
+    return False
 
 
 # ---------------------------------------------------------------------------

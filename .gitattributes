@@ -1,0 +1,4 @@
+# Scripts Linux : fins de ligne LF, quel que soit le système qui les envoie.
+*.sh text eol=lf
+AppRun text eol=lf
+*.desktop text eol=lf

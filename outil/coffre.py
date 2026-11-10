@@ -9,10 +9,11 @@
 - Le fichier (donnees/coffre.json) ne contient que du chiffré : sans le mot de
   passe maître, il est illisible. Mot de passe maître oublié = coffre perdu.
 - Copie dans le presse-papiers : exclue de l'historique Windows (Win + V) et
-  de la synchronisation, puis effacée au bout de 30 secondes.
+  de la synchronisation, puis effacée au bout de 30 secondes. Sous Linux, la
+  copie passe par presse_papiers.py : elle n'entre pas dans l'historique de
+  Mes outils et est effacée de même au bout de 30 secondes.
 """
 import base64
-import ctypes
 import hashlib
 import json
 import os
@@ -20,12 +21,12 @@ import secrets
 import threading
 import time
 import uuid
-from ctypes import wintypes
 
 from cryptography.exceptions import InvalidTag
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 import config  # noqa: E402
+import systeme  # noqa: E402
 
 FICHIER = os.path.join(config.DONNEES, "coffre.json")
 DELAI_VERROU = 5 * 60          # secondes sans usage avant verrouillage
@@ -228,65 +229,108 @@ def _verifier_maitre(maitre):
 
 
 # ---------------------------------------------------------------------------
-# Presse-papiers Windows
+# Presse-papiers
 # ---------------------------------------------------------------------------
-_u32 = ctypes.WinDLL("user32", use_last_error=True)
-_k32 = ctypes.WinDLL("kernel32", use_last_error=True)
-_u32.OpenClipboard.argtypes = [wintypes.HWND]
-_u32.SetClipboardData.argtypes = [wintypes.UINT, wintypes.HANDLE]
-_u32.SetClipboardData.restype = wintypes.HANDLE
-_u32.RegisterClipboardFormatW.argtypes = [wintypes.LPCWSTR]
-_u32.RegisterClipboardFormatW.restype = wintypes.UINT
-_u32.GetClipboardSequenceNumber.restype = wintypes.DWORD
-_k32.GlobalAlloc.argtypes = [wintypes.UINT, ctypes.c_size_t]
-_k32.GlobalAlloc.restype = wintypes.HGLOBAL
-_k32.GlobalLock.argtypes = [wintypes.HGLOBAL]
-_k32.GlobalLock.restype = wintypes.LPVOID
-_k32.GlobalUnlock.argtypes = [wintypes.HGLOBAL]
 CF_UNICODETEXT, GMEM_MOVEABLE = 13, 0x0002
+_win = None
+
+
+def _api_windows():
+    """(ctypes, user32, kernel32) du presse-papiers Windows, chargés une fois."""
+    global _win
+    if _win is None:
+        import ctypes  # noqa: PLC0415
+        from ctypes import wintypes  # noqa: PLC0415
+        u32 = ctypes.WinDLL("user32", use_last_error=True)
+        k32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        u32.OpenClipboard.argtypes = [wintypes.HWND]
+        u32.SetClipboardData.argtypes = [wintypes.UINT, wintypes.HANDLE]
+        u32.SetClipboardData.restype = wintypes.HANDLE
+        u32.RegisterClipboardFormatW.argtypes = [wintypes.LPCWSTR]
+        u32.RegisterClipboardFormatW.restype = wintypes.UINT
+        u32.GetClipboardSequenceNumber.restype = wintypes.DWORD
+        k32.GlobalAlloc.argtypes = [wintypes.UINT, ctypes.c_size_t]
+        k32.GlobalAlloc.restype = wintypes.HGLOBAL
+        k32.GlobalLock.argtypes = [wintypes.HGLOBAL]
+        k32.GlobalLock.restype = wintypes.LPVOID
+        k32.GlobalUnlock.argtypes = [wintypes.HGLOBAL]
+        _win = (ctypes, u32, k32)
+    return _win
 
 
 def _ouvrir_presse_papiers():
+    _, u32, _ = _api_windows()
     for _ in range(20):
-        if _u32.OpenClipboard(None):
+        if u32.OpenClipboard(None):
             return True
         time.sleep(0.05)
     return False
 
 
 def _donnees_globales(octets):
-    h = _k32.GlobalAlloc(GMEM_MOVEABLE, len(octets))
-    p = _k32.GlobalLock(h)
+    ctypes, _, k32 = _api_windows()
+    h = k32.GlobalAlloc(GMEM_MOVEABLE, len(octets))
+    p = k32.GlobalLock(h)
     ctypes.memmove(p, octets, len(octets))
-    _k32.GlobalUnlock(h)
+    k32.GlobalUnlock(h)
     return h
 
 
-def copier_presse_papiers(texte, effacer_apres=None):
+def _copier_windows(texte, effacer_apres=None):
+    _, u32, _ = _api_windows()
     if not _ouvrir_presse_papiers():
         raise ErreurCoffre("Le presse-papiers est occupé par un autre programme.")
     try:
-        _u32.EmptyClipboard()
-        _u32.SetClipboardData(CF_UNICODETEXT, _donnees_globales((texte + "\0").encode("utf-16-le")))
+        u32.EmptyClipboard()
+        u32.SetClipboardData(CF_UNICODETEXT, _donnees_globales((texte + "\0").encode("utf-16-le")))
         # Ni historique (Win + V), ni synchronisation entre appareils.
         for nom in ("ExcludeClipboardContentFromMonitorProcessing", "CanIncludeInClipboardHistory", "CanUploadToCloudClipboard"):
-            fmt = _u32.RegisterClipboardFormatW(nom)
-            _u32.SetClipboardData(fmt, _donnees_globales(b"\0\0\0\0"))
+            fmt = u32.RegisterClipboardFormatW(nom)
+            u32.SetClipboardData(fmt, _donnees_globales(b"\0\0\0\0"))
     finally:
-        _u32.CloseClipboard()
+        u32.CloseClipboard()
     if effacer_apres:
-        numero = _u32.GetClipboardSequenceNumber()
+        numero = u32.GetClipboardSequenceNumber()
 
         def effacer():
             time.sleep(effacer_apres)
             # Seulement si rien d'autre n'a été copié entre-temps.
-            if _u32.GetClipboardSequenceNumber() == numero and _ouvrir_presse_papiers():
+            if u32.GetClipboardSequenceNumber() == numero and _ouvrir_presse_papiers():
                 try:
-                    _u32.EmptyClipboard()
+                    u32.EmptyClipboard()
                 finally:
-                    _u32.CloseClipboard()
+                    u32.CloseClipboard()
 
         threading.Thread(target=effacer, daemon=True).start()
+
+
+def _copier_linux(texte, effacer_apres=None):
+    """Linux : la source du presse-papiers de presse_papiers.py (Wayland, X11
+    ou Tk). Le secret est marqué pour ne pas entrer dans l'historique."""
+    import presse_papiers  # noqa: PLC0415
+    try:
+        empreinte = presse_papiers.ecrire_secret(texte)
+    except RuntimeError as erreur:
+        raise ErreurCoffre(str(erreur)) from None
+    if effacer_apres:
+        def effacer():
+            time.sleep(effacer_apres)
+            # Seulement si le secret est toujours dans le presse-papiers.
+            try:
+                presse_papiers.effacer_si(empreinte)
+            except Exception:  # noqa: BLE001 — rien à signaler à personne
+                pass
+
+        threading.Thread(target=effacer, daemon=True).start()
+
+
+def copier_presse_papiers(texte, effacer_apres=None):
+    """Copie un secret : hors historique, effacé après effacer_apres secondes
+    si rien d'autre n'a été copié entre-temps."""
+    if systeme.WINDOWS:
+        _copier_windows(texte, effacer_apres)
+    else:
+        _copier_linux(texte, effacer_apres)
 
 
 # ---------------------------------------------------------------------------

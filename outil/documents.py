@@ -16,20 +16,17 @@ Données : donnees\\documents.json = {"fiches": [...], "alertes_vues": [...],
 "dernier_dossier": "..."}. Dates ISO « YYYY-MM-DD ».
 Routes POST /api/documents/<action>.
 """
-import ctypes
 import datetime
 import os
 import re
 import shutil
-import subprocess
 import threading
 import uuid
 
 import config
+import systeme
 
 NOM = "documents"
-CREATE_NO_WINDOW = 0x08000000
-CSIDL_DOCUMENTS = 0x0005
 
 # Types de documents : clé → libellé (traduit dans la page).
 TYPES = {
@@ -113,14 +110,9 @@ def _trouver(d, identifiant):
 # Dossier du classeur (copies)
 # ---------------------------------------------------------------------------
 def dossier_documents():
-    """Le vrai dossier « Documents » de Windows (il peut être dans OneDrive)."""
-    try:
-        tampon = ctypes.create_unicode_buffer(260)
-        if ctypes.windll.shell32.SHGetFolderPathW(None, CSIDL_DOCUMENTS, None, 0, tampon) == 0 and tampon.value:
-            return tampon.value
-    except (AttributeError, OSError):
-        pass
-    return os.path.join(os.path.expanduser("~"), "Documents")
+    """Le vrai dossier « Documents » (Windows : il peut être dans OneDrive ;
+    Linux : celui du bureau, XDG)."""
+    return systeme.dossier_documents()
 
 
 def dossier_classeur():
@@ -297,7 +289,7 @@ def lister(_d=None):
 
 def ajouter(d):
     """Ajoute un ou plusieurs fichiers (ou dossiers) choisis dans la fenêtre
-    Windows, avec les mêmes champs. d = {chemins, genre, copier, titre, type,
+    « Ouvrir » du système, avec les mêmes champs. d = {chemins, genre, copier, titre, type,
     client, projet, etiquettes, date_document, expiration, rappel_jours, note}.
     Le titre n'est repris que pour un seul fichier ; sinon, le nom du fichier."""
     chemins = d.get("chemins")
@@ -367,7 +359,7 @@ def retirer(d):
 
 
 def retrouver(d):
-    """Nouvel emplacement d'un document déplacé (choisi dans la fenêtre Windows)."""
+    """Nouvel emplacement d'un document déplacé (choisi dans la fenêtre « Ouvrir »)."""
     with _verrou:
         donnees = _lire()
         f = _trouver(donnees, d.get("id"))
@@ -390,76 +382,47 @@ def _fiche_existante(identifiant):
 
 
 def ouvrir(d):
-    """Ouvre le fichier (ou le dossier) avec le programme de Windows."""
+    """Ouvre le fichier (ou le dossier) avec le programme habituel du système."""
     f = _fiche_existante(d.get("id"))
-    os.startfile(f["chemin"])  # noqa: S606 — chemin enregistré dans les fiches
+    systeme.ouvrir(f["chemin"])  # chemin enregistré dans les fiches
     return {"ok": True}
 
 
 def ouvrir_dossier(d):
-    """Ouvre l'Explorateur sur le dossier du document, fichier sélectionné."""
+    """Ouvre le gestionnaire de fichiers (l'Explorateur sous Windows) sur le
+    dossier du document, fichier sélectionné."""
     with _verrou:
         f = _trouver(_lire(), d.get("id"))
     chemin = f.get("chemin") or ""
     if f.get("genre") == "dossier" and os.path.isdir(chemin):
-        os.startfile(chemin)  # noqa: S606
+        systeme.ouvrir(chemin)
     elif os.path.isfile(chemin):
-        # « /select,"chemin" » : l'Explorateur demande ce format exact. Le
-        # chemin vient des fiches et existe (un nom Windows n'a pas de « " »).
-        subprocess.Popen(f'explorer.exe /select,"{chemin}"', creationflags=CREATE_NO_WINDOW)
+        # Le chemin vient des fiches et existe.
+        systeme.montrer_dans_dossier(chemin)
     elif os.path.isdir(os.path.dirname(chemin)):
-        os.startfile(os.path.dirname(chemin))  # noqa: S606
+        systeme.ouvrir(os.path.dirname(chemin))
     else:
         raise ValueError("Introuvable : le dossier du document n'existe plus.")
     return {"ok": True}
 
 
 # ---------------------------------------------------------------------------
-# Fenêtre Windows « Ouvrir » (choix de fichiers)
+# Fenêtre « Ouvrir » du système (choix de fichiers)
 # ---------------------------------------------------------------------------
-SCRIPT_FICHIERS = r"""
-Add-Type -AssemblyName System.Windows.Forms
-$p = New-Object System.Windows.Forms.Form
-$p.TopMost = $true
-$d = New-Object System.Windows.Forms.OpenFileDialog
-$d.Title = $env:MO_TITRE
-$d.Multiselect = ($env:MO_MULTI -eq "1")
-$d.CheckFileExists = $true
-$d.Filter = $env:MO_FILTRE
-if ($env:MO_DEPART -and (Test-Path -LiteralPath $env:MO_DEPART)) { $d.InitialDirectory = $env:MO_DEPART }
-if ($d.ShowDialog($p) -eq [System.Windows.Forms.DialogResult]::OK) {
-  [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-  foreach ($f in $d.FileNames) { Write-Output $f }
-}
-"""
-
-
-def _depart(chemin):
-    """Le dossier existant le plus proche (pour ouvrir la fenêtre au bon endroit)."""
-    chemin = os.path.normpath(str(chemin or "")) if chemin else ""
-    while chemin and not os.path.isdir(chemin):
-        parent = os.path.dirname(chemin)
-        if parent == chemin:
-            return ""
-        chemin = parent
-    return chemin
-
-
 def choisir_fichiers(d):
-    """Ouvre la fenêtre « Ouvrir » de Windows (plusieurs fichiers possibles).
+    """Ouvre la fenêtre « Ouvrir » du système (plusieurs fichiers possibles).
     Renvoie {"chemins": [...]} (liste vide si annulé)."""
     depart = d.get("depart")
     if not depart:
         with _verrou:
             depart = _lire().get("dernier_dossier") or ""
-    env = dict(os.environ, MO_TITRE=str(d.get("titre") or "Choisir des documents")[:120],
-               MO_DEPART=_depart(depart), MO_MULTI="0" if d.get("multi") is False else "1",
-               MO_FILTRE=str(d.get("filtre") or "Tous les fichiers (*.*)|*.*")[:200])
-    r = subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-STA", "-Command", SCRIPT_FICHIERS],
-                       env=env, capture_output=True, text=True, encoding="utf-8", errors="replace",
-                       timeout=600, creationflags=CREATE_NO_WINDOW)
-    lignes = [x.strip() for x in (r.stdout or "").splitlines() if x.strip()]
-    return {"chemins": [x for x in lignes if os.path.isfile(x)]}
+    try:
+        chemins = systeme.choisir_fichiers(str(d.get("titre") or "Choisir des documents")[:120], depart,
+                                           multi=d.get("multi") is not False,
+                                           filtre=str(d.get("filtre") or systeme.TOUS_LES_FICHIERS)[:200])
+    except RuntimeError as erreur:  # Linux sans zenity ni kdialog
+        raise ValueError(str(erreur)) from None
+    return {"chemins": chemins}
 
 
 # ---------------------------------------------------------------------------

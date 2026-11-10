@@ -155,7 +155,7 @@
       if (P.filtre === "dev" && !(l.dev || l.web)) return false;
       if (!q) return true;
       if (numero !== null) return String(l.port).startsWith(String(numero));
-      return `${l.port} ${l.nom} ${l.commande} ${l.pid} ${l.dev}`.toLowerCase().includes(q);
+      return `${l.port} ${l.nom} ${l.commande ?? ""} ${l.pid ?? ""} ${l.dev ?? ""}`.toLowerCase().includes(q);
     });
   }
 
@@ -201,7 +201,7 @@
       el("td", {}, el("span", { class: "pt-nom" }, l.nom),
         l.commande ? el("span", { class: "pt-cmd", title: t("Cliquer pour copier la ligne de commande") + "\n" + l.commande,
           onclick: () => copier(l.commande, "📋 " + t("Ligne de commande copiée")) }, l.commande) : null),
-      el("td", { class: "pt-num" }, String(l.pid)),
+      el("td", { class: "pt-num" }, l.pid == null ? "—" : String(l.pid)),
       el("td", { class: "pt-num" }, memoire(l.memoire_ko)),
       el("td", {}, el("div", { class: "pt-actions" }, actions)));
   }
@@ -226,7 +226,7 @@
     fenetre([
       el("div", { class: "gros" }, "⛔"),
       el("h3", {}, "Arrêter ce programme ?"),
-      el("p", {}, `${l.nom} · PID ${l.pid} · ${t("Port")} ${l.port}`),
+      el("p", {}, `${l.nom} · PID ${l.pid ?? "—"} · ${t("Port")} ${l.port}`),
       l.commande ? el("div", { class: "pt-detail" }, l.commande) : null,
       el("p", {}, "Les données non enregistrées de ce programme seront perdues."),
       el("label", { class: "pt-choix" }, arbre, "Arrêter aussi les programmes qu'il a lancés"),

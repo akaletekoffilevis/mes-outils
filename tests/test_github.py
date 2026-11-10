@@ -23,6 +23,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # aide.py
 import coffre_windows  # noqa: E402
 from aide import ConfigTemporaire, ServeurTest  # noqa: E402
 import github  # noqa: E402
+import systeme  # noqa: E402
 
 PROFIL_API = {"login": "testeur", "name": "Testeur", "avatar_url": "https://exemple/a.png", "id": 42}
 
@@ -560,6 +561,42 @@ class TestRoutesNouvelles(ServeurTest):
         with FauxCoffre(), ConfigTemporaire({"github": {}}):
             statut, r = self.post("/api/github/echecs_ci", {})
         self.assertEqual((statut, r), (200, {"nombre": 0, "depots": []}))
+
+
+class TestOuvrirPortable(unittest.TestCase):
+    """Dossier et VS Code par la couche systeme (branches Linux simulées)."""
+
+    def setUp(self):
+        self.dossier = tempfile.mkdtemp(prefix="mo-gh-")
+
+    def tearDown(self):
+        shutil.rmtree(self.dossier, ignore_errors=True)
+
+    def test_dossier(self):
+        with mock.patch.object(systeme, "ouvrir") as ouvrir:
+            github.ouvrir_dossier(self.dossier)
+        ouvrir.assert_called_once_with(self.dossier)
+        with self.assertRaises(github.ErreurGitHub):
+            github.ouvrir_dossier(os.path.join(self.dossier, "absent"))
+
+    def test_vscode_linux(self):
+        with mock.patch.object(systeme, "WINDOWS", False), \
+                mock.patch.object(systeme, "code_vscode", return_value="/usr/bin/code"), \
+                mock.patch.object(systeme, "lancer_detache") as lancer, \
+                mock.patch.object(github.subprocess, "Popen") as popen:
+            github.ouvrir_vscode(self.dossier)
+        lancer.assert_called_once_with(["/usr/bin/code", self.dossier])
+        popen.assert_not_called()
+        with mock.patch.object(systeme, "code_vscode", return_value=None), \
+                self.assertRaisesRegex(github.ErreurGitHub, "VS Code est introuvable"):
+            github.ouvrir_vscode(self.dossier)
+
+    def test_git_sans_drapeaux_windows(self):
+        fini = subprocess.CompletedProcess([], 0, "ok", "")
+        with mock.patch.object(systeme, "WINDOWS", False), \
+                mock.patch.object(github.subprocess, "run", return_value=fini) as run:
+            self.assertEqual(github._git(["status"], self.dossier), "ok")
+        self.assertNotIn("creationflags", run.call_args.kwargs, "jamais creationflags hors de Windows")
 
 
 if __name__ == "__main__":

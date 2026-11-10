@@ -14,7 +14,6 @@ ils ne reviennent que si on le demande (route « exemples »).
 
 Routes POST /api/modeles/<action>.
 """
-import os
 import re
 import threading
 import time
@@ -23,6 +22,7 @@ import uuid
 from urllib.parse import quote
 
 import config
+import systeme
 
 NOM = "modeles"
 FORMAT_EXPORT = "mes-outils/modeles"
@@ -33,7 +33,7 @@ MAX_CATEGORIE = 40
 MAX_OBJET = 250
 MAX_TEXTE = 20_000
 MAX_IMPORT = 2_000
-# Au-delà, Windows et les logiciels de messagerie coupent le lien mailto :
+# Au-delà, le système et les logiciels de messagerie coupent le lien mailto :
 # le texte est alors copié à part, le lien ne garde que l'objet.
 MAX_LIEN_MAIL = 1_900
 
@@ -477,7 +477,7 @@ def importer(contenu):
 
 
 # ---------------------------------------------------------------------------
-# Écrire le mail (lien mailto: ouvert par la messagerie de Windows)
+# Écrire le mail (lien mailto: ouvert par la messagerie du système)
 # ---------------------------------------------------------------------------
 def adresses(texte):
     """Les adresses d'un champ « À » (séparées par , ou ;). Lève ValueError."""
@@ -508,11 +508,11 @@ def lien_mail(a="", objet="", texte=""):
 
 
 def ecrire_mail(a="", objet="", texte=""):
-    """Ouvre un nouveau mail dans la messagerie de Windows."""
+    """Ouvre un nouveau mail dans la messagerie du système."""
     lien, retire = lien_mail(a, objet, texte)
     try:
-        os.startfile(lien)  # lien construit ici : toujours « mailto: », tout encodé
-    except OSError:
+        systeme.ouvrir(lien)  # lien construit ici : toujours « mailto: », tout encodé
+    except (OSError, RuntimeError):
         raise ValueError("Aucune messagerie n'est associée aux liens e-mail sur ce PC.")
     return {"lien": lien, "texte_retire": retire}
 

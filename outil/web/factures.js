@@ -1024,6 +1024,8 @@
     "Choisissez au moins une session.": "Select at least one session.", "Sessions introuvables.": "Sessions not found.",
     "Microsoft Edge est introuvable": "Microsoft Edge was not found", "impossible de créer le PDF.": "the PDF cannot be created.",
     "Edge n'a pas pu créer le PDF.": "Edge could not create the PDF.",
+    // Linux : le PDF est créé par Chrome ou Chromium
+    "Google Chrome ou Chromium est introuvable": "Google Chrome or Chromium was not found",
     "Le PDF est ouvert dans un autre programme": "The PDF is open in another program", "fermez-le puis recommencez.": "close it and try again.",
     "Émettez d'abord le document (un brouillon n'a pas de numéro).": "Issue the document first (a draft has no number).",
     "Émettez d'abord le document.": "Issue the document first.",
@@ -1039,5 +1041,7 @@
     [/^entre (\d+) et (\d+)\.$/, "between $1 and $2."],
     [/^(\d+) lignes au plus\.$/, "$1 lines at most."],
     [/^Le montant dépasse le reste à payer \((.*)\)\.$/, "The amount exceeds the outstanding balance ($1)."],
+    [/^Chrome ou Chromium n'a pas pu créer le PDF\.$/, "Chrome or Chromium could not create the PDF."],
+    [/^(Chrome|Chromium|Brave|Edge) n'a pas pu créer le PDF\.$/, "$1 could not create the PDF."],
   ]);
 })();

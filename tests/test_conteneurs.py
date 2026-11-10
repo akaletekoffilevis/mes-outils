@@ -9,6 +9,7 @@ from unittest import mock
 from aide import ServeurTest
 
 import conteneurs  # noqa: E402
+import systeme  # noqa: E402
 
 DOCKER = r"C:\Docker\docker.exe"
 
@@ -144,6 +145,7 @@ class TestEtats(unittest.TestCase):
                 self.assertRaisesRegex(conteneurs.ErreurDocker, "introuvable"):
             conteneurs.lancer_desktop({})
         with mock.patch.object(conteneurs, "chemin_desktop", return_value=r"C:\Docker\Docker Desktop.exe"), \
+                mock.patch.object(systeme, "WINDOWS", True), \
                 mock.patch.object(conteneurs.os, "startfile", create=True) as startfile:
             conteneurs.lancer_desktop({})
         startfile.assert_called_once_with(r"C:\Docker\Docker Desktop.exe")
@@ -212,6 +214,70 @@ class TestActions(unittest.TestCase):
                 mock.patch.object(conteneurs.subprocess, "run", side_effect=echec), \
                 self.assertRaisesRegex(conteneurs.ErreurDocker, "No such container"):
             conteneurs.ROUTES["demarrer"]({"id": "x1"})
+
+
+class TestLinux(unittest.TestCase):
+    """Branches Linux, simulées (passent aussi sous Windows)."""
+
+    def setUp(self):
+        self.linux = mock.patch.object(systeme, "WINDOWS", False)
+        self.linux.start()
+
+    def tearDown(self):
+        self.linux.stop()
+
+    def test_chemins(self):
+        with mock.patch.object(conteneurs.shutil, "which", return_value=None), \
+                mock.patch.object(conteneurs.os.path, "isfile", side_effect=lambda c: c == "/snap/bin/docker"):
+            self.assertEqual(conteneurs.chemin_docker(), "/snap/bin/docker")
+        with mock.patch.object(conteneurs.os.path, "isfile", side_effect=lambda c: c == conteneurs.DESKTOP_LINUX):
+            self.assertEqual(conteneurs.chemin_desktop(), "/opt/docker-desktop/bin/docker-desktop")
+        with mock.patch.object(conteneurs.os.path, "isfile", return_value=False):
+            self.assertIsNone(conteneurs.chemin_desktop())
+
+    def test_sans_drapeaux_windows(self):
+        faux = FauxDocker()
+        options = []
+
+        def run(commande, **kw):
+            options.append(kw)
+            return faux(commande, **kw)
+
+        with mock.patch.object(conteneurs, "chemin_docker", return_value="/usr/bin/docker"), \
+                mock.patch.object(conteneurs.subprocess, "run", side_effect=run):
+            self.assertEqual(conteneurs.liste({})["nombre"], 3)
+        self.assertTrue(options and all("creationflags" not in kw for kw in options),
+                        "jamais creationflags hors de Windows")
+
+    def test_messages(self):
+        refus = ("permission denied while trying to connect to the Docker daemon socket at "
+                 "unix:///var/run/docker.sock: Get \"http://%2Fvar%2Frun%2Fdocker.sock/v1.45/version\"")
+
+        def run(commande, **kw):
+            return subprocess.CompletedProcess(commande, 1, b"", refus.encode())
+
+        with mock.patch.object(conteneurs, "chemin_docker", return_value="/usr/bin/docker"), \
+                mock.patch.object(conteneurs, "chemin_desktop", return_value=None), \
+                mock.patch.object(conteneurs.subprocess, "run", side_effect=run):
+            e = conteneurs.etat()
+            self.assertFalse(e["demarre"])
+            self.assertIn("groupe docker", e["erreur"])
+            with self.assertRaisesRegex(conteneurs.ErreurDocker, "groupe docker"):
+                conteneurs.ROUTES["arreter"]({"id": "abc123"})
+        self.assertIn("systemctl start docker", conteneurs.message_linux("Cannot connect to the Docker daemon"))
+        self.assertEqual(conteneurs.message_linux("", desktop=True), "Docker Desktop n'est pas démarré.")
+
+    def test_lancer_desktop(self):
+        with mock.patch.object(conteneurs, "chemin_desktop", return_value=conteneurs.DESKTOP_LINUX), \
+                mock.patch.object(conteneurs.shutil, "which", return_value="/usr/bin/systemctl"), \
+                mock.patch.object(systeme, "lancer_detache") as lancer:
+            conteneurs.lancer_desktop({})
+        lancer.assert_called_once_with(["systemctl", "--user", "start", "docker-desktop"])
+        with mock.patch.object(conteneurs, "chemin_desktop", return_value=conteneurs.DESKTOP_LINUX), \
+                mock.patch.object(conteneurs.shutil, "which", return_value=None), \
+                mock.patch.object(systeme, "lancer_detache") as lancer:
+            conteneurs.lancer_desktop({})
+        lancer.assert_called_once_with([conteneurs.DESKTOP_LINUX])
 
 
 class TestRoutes(ServeurTest):

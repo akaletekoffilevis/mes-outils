@@ -162,7 +162,7 @@
       await api("/api/extraits/copier", { id: x.id });
       toast("📋 Copié", "succes", 1400);
     } catch (e) {
-      // Presse-papiers Windows occupé : on essaie par le navigateur.
+      // Presse-papiers du système occupé (ou absent) : on essaie par le navigateur.
       await copier(x.contenu);
       api("/api/extraits/utiliser", { id: x.id }).catch(() => {});
     }

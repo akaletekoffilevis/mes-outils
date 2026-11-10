@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Tests de la boîte mail (mail.py) : fournisseurs, recherche, dossier des
 envoyés, envoi SSL / STARTTLS. Aucune vraie connexion : imaplib, smtplib et
-le coffre de Windows sont simulés."""
+le coffre du système (Windows ou trousseau Linux) sont simulés."""
 import imaplib
 import json
 import os
@@ -305,6 +305,38 @@ class TestEnvoi(BaseMail):
     def test_destinataire_obligatoire(self):
         with self.assertRaises(mail.ErreurMail):
             mail.Boite("x@exemple.org").envoyer("  ", "Objet", "Bonjour")
+
+
+class TestCoffreDuSysteme(unittest.TestCase):
+    """Le mot de passe passe par systeme.secret_* (Windows comme Linux)."""
+
+    def test_delegation(self):
+        with mock.patch.object(mail.systeme, "secret_ecrire", return_value=True) as ecrire, \
+                mock.patch.object(mail.systeme, "secret_lire", return_value="s3cret") as lire, \
+                mock.patch.object(mail.systeme, "secret_supprimer") as supprimer:
+            mail.coffre_ecrire("x@exemple.org", "s3cret")
+            self.assertEqual(mail.coffre_lire("x@exemple.org"), "s3cret")
+            mail.coffre_supprimer("x@exemple.org")
+        ecrire.assert_called_once_with("MesOutils:mail:x@exemple.org", "x@exemple.org", "s3cret")
+        lire.assert_called_once_with("MesOutils:mail:x@exemple.org")
+        supprimer.assert_called_once_with("MesOutils:mail:x@exemple.org")
+
+    def test_echec_message_selon_le_systeme(self):
+        with mock.patch.object(mail.systeme, "secret_ecrire", return_value=False):
+            with mock.patch.object(mail.systeme, "WINDOWS", True):
+                with self.assertRaises(mail.ErreurMail) as ctx:
+                    mail.coffre_ecrire("x@exemple.org", "s")
+                self.assertEqual(str(ctx.exception),
+                                 "Impossible d'enregistrer le mot de passe dans le coffre Windows.",
+                                 "texte Windows inchangé (la page le traduit tel quel)")
+            with mock.patch.object(mail.systeme, "WINDOWS", False):
+                with self.assertRaises(mail.ErreurMail) as ctx:
+                    mail.coffre_ecrire("x@exemple.org", "s")
+                self.assertIn("trousseau du bureau", str(ctx.exception))
+                self.assertNotIn("Windows", str(ctx.exception))
+
+    def test_sans_ctypes_au_chargement(self):
+        self.assertFalse(hasattr(mail, "_advapi"), "plus aucun appel Windows au chargement du module")
 
 
 if __name__ == "__main__":

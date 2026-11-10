@@ -2,7 +2,8 @@
 """« Mes outils » : le tableau de bord de mes outils personnels.
 
 Un petit serveur local (127.0.0.1, ce PC seulement) et une page affichée dans
-une fenêtre Edge en mode application. Les outils sont décrits dans
+une fenêtre en mode application (Edge sous Windows, Chrome ou Chromium sous
+Linux, voir systeme.py). Les outils sont décrits dans
 outils.json (créé depuis outils.exemple.json au premier lancement) ; les
 serveurs Odoo sont ceux d'un gadget « Serveurs Odoo » externe, facultatif
 (chemin dans outils.json, clé serveurs_odoo.gadget), dont on réutilise le
@@ -13,8 +14,8 @@ import importlib.util
 import json
 import os
 import re
+import shlex
 import socket
-import subprocess
 import sys
 import threading
 import time
@@ -26,6 +27,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import config  # noqa: E402  (outils.json et dossier donnees)
 import donnees  # noqa: E402  (notes et agenda)
+import systeme  # noqa: E402  (tout ce qui dépend de Windows ou de Linux)
 
 # MES_OUTILS_PORT : un autre port (essais, seconde copie à côté de la vraie).
 HOTE, PORT = "127.0.0.1", int(os.environ.get("MES_OUTILS_PORT") or 8760)
@@ -34,16 +36,9 @@ RACINE = config.RACINE
 PAGE = os.path.join(ICI, "hub.html")
 JOURNAL = config.JOURNAL
 
-NAVIGATEURS_APPLI = [
-    r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
-    r"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
-    r"C:\Program Files\Google\Chrome\Application\chrome.exe",
-]
 # Vrai quand le serveur tourne dans la bulle (bulle.py) : fermer la fenêtre
 # du tableau de bord ne doit alors rien arrêter.
 BULLE_ACTIVE = False
-CREATE_NO_WINDOW = 0x08000000
-DETACHED = 0x00000008 | 0x00000200  # DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP
 
 
 def journal(message):
@@ -187,20 +182,38 @@ def port_ouvert(port):
 
 
 def ouvrir_fenetre_appli(url, largeur=1360, hauteur=860):
-    """Une fenêtre sans barre d'adresse, comme un logiciel. À défaut
-    d'Edge ou de Chrome, un onglet du navigateur par défaut."""
-    for navigateur in NAVIGATEURS_APPLI:
-        if os.path.exists(navigateur):
-            subprocess.Popen([navigateur, f"--app={url}", f"--window-size={largeur},{hauteur}"],
-                             creationflags=DETACHED, close_fds=True)
-            return
-    webbrowser.open(url)
+    """Une fenêtre sans barre d'adresse, comme un logiciel (Edge, Chrome ou
+    Chromium). À défaut, un onglet du navigateur par défaut."""
+    systeme.ouvrir_fenetre_appli(url, largeur, hauteur)
+
+
+def commande_systeme(commande):
+    """La commande telle que le système la lance. Une commande écrite en une
+    seule ligne reste telle quelle sous Windows ; sous Linux, elle est
+    découpée comme dans un terminal (jamais passée à un shell)."""
+    if isinstance(commande, str) and not systeme.WINDOWS:
+        return shlex.split(commande)
+    return commande
 
 
 def lancer_detache(commande, dossier=None):
-    subprocess.Popen(commande, cwd=dossier, creationflags=DETACHED | CREATE_NO_WINDOW,
-                     stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
-                     stderr=subprocess.DEVNULL, close_fds=True)
+    """Lance une commande détachée, sans console, sans rien attendre."""
+    systeme.lancer_detache(commande_systeme(commande), dossier=dossier or None)
+
+
+# Linux : fichiers exécutables lancés directement (sans extension, scripts,
+# AppImage…) ; les autres sont ouverts par leur programme habituel.
+EXTENSIONS_PROGRAMMES_LINUX = ("", ".sh", ".appimage", ".run", ".bin", ".py")
+
+
+def ouvrir_cible(cible):
+    """Dossier, fichier ou programme d'une tuile. Sous Linux, un programme
+    exécutable est lancé directement (xdg-open l'ouvrirait dans un éditeur)."""
+    if (not systeme.WINDOWS and os.path.isfile(cible) and os.access(cible, os.X_OK)
+            and os.path.splitext(cible)[1].lower() in EXTENSIONS_PROGRAMMES_LINUX):
+        lancer_detache([cible], os.path.dirname(cible))
+        return
+    systeme.ouvrir(cible)
 
 
 def lancer_outil(identifiant):
@@ -238,7 +251,7 @@ def lancer_outil(identifiant):
     elif genre in ("dossier", "fichier", "programme"):
         if not os.path.exists(cible):
             raise FileNotFoundError(f"Introuvable : {cible}")
-        os.startfile(cible)
+        ouvrir_cible(cible)
     elif genre == "commande":
         lancer_detache(cible if isinstance(cible, list) else cible, outil.get("dossier"))
     else:
@@ -356,7 +369,9 @@ class Gestionnaire(BaseHTTPRequestHandler):
                                            "apps_actives": contenu.get("apps_actives"),
                                            "profil": contenu.get("profil") or "",
                                            # False seulement pour une installation neuve (outils.exemple.json)
-                                           "assistant": contenu.get("assistant_fait") is False})
+                                           "assistant": contenu.get("assistant_fait") is False,
+                                           # Pour adapter les textes de la page (Explorateur, Edge…)
+                                           "systeme": "windows" if systeme.WINDOWS else "linux"})
             if chemin == "/api/serveurs":
                 return self.repondre(200, etats_serveurs())
             if chemin == "/api/notes":
@@ -425,9 +440,12 @@ class Gestionnaire(BaseHTTPRequestHandler):
             if chemin.startswith("/api/github/"):
                 return self.github(chemin[len("/api/github/"):], donnees_requete)
             if chemin == "/api/gadget":
+                # Le gadget complet est un .bat : Windows seulement.
+                if not systeme.WINDOWS:
+                    raise ValueError("Le gadget « Serveurs Odoo » complet ne fonctionne que sous Windows.")
                 g = gadget()
                 bat = os.path.join(os.path.dirname(g.__file__), "Gestion serveurs Odoo.bat")
-                os.startfile(bat)
+                systeme.ouvrir(bat)
                 return self.repondre(200, {"ok": True})
             morceaux = chemin[len("/api/"):].split("/", 1) if chemin.startswith("/api/") else []
             if len(morceaux) == 2:

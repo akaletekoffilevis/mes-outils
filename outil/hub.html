@@ -16,7 +16,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect width='24' height='24' rx='6' fill='%235b5bd6'/><g fill='none' stroke='white' stroke-width='2'><rect x='6' y='6' width='5' height='5' rx='1'/><rect x='13' y='6' width='5' height='5' rx='1'/><rect x='6' y='13' width='5' height='5' rx='1'/><rect x='13' y='13' width='5' height='5' rx='1'/></g></svg>">
 <style>
   /* Couleurs : gris neutres et un seul accent. Thème sombre avec
-     data-theme="sombre" (« auto » suit Windows). Les onglets n'utilisent QUE
+     data-theme="sombre" (« auto » suit le système). Les onglets n'utilisent QUE
      ces variables. */
   :root {
     color-scheme: light;
@@ -527,7 +527,12 @@ new MutationObserver(mutations => {
   }
 }).observe(document.documentElement, { childList: true, subtree: true, characterData: true });
 document.addEventListener("DOMContentLoaded", () => traiterEmojis(document.body));
-const S = { config: null, edition: false, serveurs: null };
+// S.systeme : "windows" ou "linux" (donné par /api/onglets).
+const S = { config: null, edition: false, serveurs: null, systeme: "windows" };
+/** Vrai quand Mes outils tourne sous Linux. */
+const surLinux = () => S.systeme === "linux";
+/** Le texte qui convient au système : selonSysteme("…Windows…", "…Linux…"). */
+const selonSysteme = (windows, linux) => (surLinux() ? linux : windows);
 // Icônes proposées pour les tuiles (web/icones.js).
 const ICONES_TUILES = ["app-window", "folder", "folder-open", "file", "files", "file-code", "code", "terminal", "globe", "link",
   "receipt", "calculator", "briefcase", "chart-column", "trending-up", "calendar", "mail", "message-square", "notebook-pen", "book-open",
@@ -549,8 +554,11 @@ function iconeOutil(o) {
 }
 const COULEURS = ["#5b5bd6", "#e5603e", "#12a37a", "#d99a0b", "#d6457a", "#2f7ae5", "#8b5cf6", "#0e9aa7", "#64748b"];
 const TYPES = {
-  dossier: { emoji: "📂", nom: "Dossier", aide: "Chemin du dossier, ex. C:\\Users\\vous\\Documents" },
-  fichier: { emoji: "📄", nom: "Fichier / programme", aide: "Chemin d'un fichier, d'un .exe ou d'un .bat" },
+  // aideLinux : l'aide affichée sous Linux, si elle diffère.
+  dossier: { emoji: "📂", nom: "Dossier", aide: "Chemin du dossier, ex. C:\\Users\\vous\\Documents",
+    aideLinux: "Chemin du dossier, ex. /home/vous/Documents" },
+  fichier: { emoji: "📄", nom: "Fichier / programme", aide: "Chemin d'un fichier, d'un .exe ou d'un .bat",
+    aideLinux: "Chemin d'un fichier, d'un programme ou d'un script .sh" },
   lien: { emoji: "🌐", nom: "Page web", aide: "Adresse, ex. https://www.odoo.com" },
   appli_web: { emoji: "🧩", nom: "Appli locale", aide: "Adresse de l'appli, ex. http://127.0.0.1:8765/" },
 };
@@ -610,7 +618,7 @@ function confirmer(icone, titre, texte, oui = "Oui") {
   });
 }
 
-/** La fenêtre « Choisir un dossier » de Windows. Renvoie le chemin, ou null. */
+/** La fenêtre « Choisir un dossier » du système. Renvoie le chemin, ou null. */
 async function choisirDossier(titre = "Choisir un dossier", depart = "") {
   try { return (await api("/api/reglages/choisir_dossier", { titre: I18N.traduire(titre), depart })).chemin; }
   catch (e) { toast("😕 " + e.message, "erreur"); return null; }
@@ -721,7 +729,7 @@ function editer(outil) {
   const dessinerCible = () => {
     const t = TYPES[brouillon.type] || TYPES.dossier;
     const enfants = [el("label", { class: "champ" }, brouillon.type === "lien" || brouillon.type === "appli_web" ? "Adresse" : "Chemin",
-      el("input", { value: brouillon.cible || "", placeholder: t.aide, oninput: e => { brouillon.cible = e.target.value.trim(); } }))];
+      el("input", { value: brouillon.cible || "", placeholder: (surLinux() && t.aideLinux) || t.aide, oninput: e => { brouillon.cible = e.target.value.trim(); } }))];
     if (brouillon.type === "lien") {
       enfants.push(el("label", { class: "champ", style: "flex-direction:row;align-items:center;gap:8px" },
         el("input", { type: "checkbox", checked: brouillon.fenetre_appli ? "" : null, style: "width:18px;height:18px;accent-color:var(--violet)",
@@ -733,7 +741,7 @@ function editer(outil) {
         el("label", { class: "champ" }, "Port de l'appli",
           el("input", { type: "number", value: brouillon.port ?? "", placeholder: "ex. 8765", oninput: e => { brouillon.port = e.target.value ? Number(e.target.value) : undefined; } })),
         el("label", { class: "champ" }, "Commande de démarrage (un élément par ligne)",
-          el("textarea", { rows: 3, value: (brouillon.commande || []).join("\n"), placeholder: "C:\\…\\pythonw.exe\nC:\\…\\serveur.py",
+          el("textarea", { rows: 3, value: (brouillon.commande || []).join("\n"), placeholder: selonSysteme("C:\\…\\pythonw.exe\nC:\\…\\serveur.py", "/usr/bin/python3\n/home/…/serveur.py"),
             oninput: e => { brouillon.commande = e.target.value.split("\n").map(x => x.trim()).filter(Boolean); } }),
           el("small", {}, "Lancée seulement si rien ne répond sur le port.")));
     }
@@ -976,6 +984,9 @@ async function demarrerOnglets() {
   S.masques = info.masques;
   S.appsActives = info.apps_actives;
   S.profil = info.profil;
+  S.systeme = info.systeme === "linux" ? "linux" : "windows";
+  // Le gadget complet « Serveurs Odoo » est un .bat : Windows seulement.
+  if (surLinux()) $("#btn-gadget").hidden = true;
   appliquerTheme(info.theme || "auto");
   for (const f of info.fichiers) {
     const nom = f.replace(/\.js$/, "");
@@ -1170,10 +1181,26 @@ I18N.ajouter({
   "test GitHub en échec": "failing GitHub check", "tests GitHub en échec": "failing GitHub checks",
   "Tout est envoyé, rien en attente ✨": "Everything is pushed, nothing pending ✨", "Chrono en cours": "Timer running",
   "Le programme lancé par Mes outils est arrêté.": "The program started by Mes outils is stopped.",
+  // Linux (S.systeme = "linux")
+  "Thème : automatique (comme le système)": "Theme: automatic (like the system)",
+  "Thème automatique (comme le système)": "Automatic theme (like the system)",
+  "Chemin du dossier, ex. /home/vous/Documents": "Folder path, e.g. /home/you/Documents",
+  "Chemin d'un fichier, d'un programme ou d'un script .sh": "Path of a file, a program or a .sh script",
+  "Le gadget « Serveurs Odoo » complet ne fonctionne que sous Windows.": "The full “Odoo servers” gadget only works on Windows.",
+  // Messages du serveur (systeme.py) quand une fenêtre ou un programme manque sous Linux
+  "Aucune fenêtre de choix de fichiers : installez zenity (sudo apt install zenity).":
+    "No file picker available: install zenity (sudo apt install zenity).",
+  "Aucune fenêtre de choix de dossier : installez zenity (sudo apt install zenity).":
+    "No folder picker available: install zenity (sudo apt install zenity).",
+  "Impossible d'ouvrir : la commande xdg-open est absente.": "Cannot open: the xdg-open command is missing.",
+  "Le trousseau du bureau est verrouillé.": "The desktop keyring is locked.",
 });
+I18N.motifs([[/^Trousseau du bureau inaccessible \((.*)\)\.$/, "Desktop keyring unavailable ($1)."]]);
 
 // --------------------------------------------------------------- thème
-// « auto » suit Windows ; ?theme=sombre dans l'adresse force un thème (captures).
+// « auto » suit le système (Windows ou le bureau Linux) ; ?theme=sombre dans
+// l'adresse force un thème (captures).
+const texteThemeAuto = () => selonSysteme("Thème : automatique (comme Windows)", "Thème : automatique (comme le système)");
 const THEMES = ["auto", "clair", "sombre"];
 const sombreWindows = matchMedia("(prefers-color-scheme: dark)");
 function appliquerTheme(choix) {
@@ -1184,7 +1211,7 @@ function appliquerTheme(choix) {
   document.documentElement.dataset.theme = sombre ? "sombre" : "clair";
   const b = $("#btn-theme");
   b.textContent = choix === "auto" ? "🌗" : sombre ? "🌙" : "☀️";
-  b.title = I18N.traduire(choix === "auto" ? "Thème : automatique (comme Windows)" : sombre ? "Thème : sombre" : "Thème : clair");
+  b.title = I18N.traduire(choix === "auto" ? texteThemeAuto() : sombre ? "Thème : sombre" : "Thème : clair");
   try { localStorage.setItem("mes-outils-theme", choix); } catch {}
 }
 sombreWindows.addEventListener("change", () => { if (S.theme === "auto") appliquerTheme("auto"); });
@@ -1217,7 +1244,7 @@ function elementsPalette() {
   items.push(
     { section: "Actions", icone: "🌙", titre: I18N.traduire("Thème sombre"), action: () => changerTheme("sombre") },
     { section: "Actions", icone: "☀️", titre: I18N.traduire("Thème clair"), action: () => changerTheme("clair") },
-    { section: "Actions", icone: "🌗", titre: I18N.traduire("Thème automatique (comme Windows)"), action: () => changerTheme("auto") },
+    { section: "Actions", icone: "🌗", titre: I18N.traduire(selonSysteme("Thème automatique (comme Windows)", "Thème automatique (comme le système)")), action: () => changerTheme("auto") },
     { section: "Actions", icone: "✏️", titre: I18N.traduire("Modifier les tuiles"), action: () => { montrerVue("accueil"); if (!S.edition) $("#btn-edition").click(); } },
     { section: "Actions", icone: "🔄", titre: I18N.traduire("Recharger la page"), action: () => location.reload() });
   return items;

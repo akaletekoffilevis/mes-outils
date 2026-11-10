@@ -33,6 +33,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 import coffre_windows
 import config
+import systeme
 
 # Identifiant public de l'application GitHub « Mes outils » (OAuth App avec
 # « Device Flow » activé). Ce n'est pas un secret. outils.json peut en donner
@@ -45,8 +46,8 @@ URL_CODE = "https://github.com/login/device/code"
 URL_JETON = "https://github.com/login/oauth/access_token"
 TAILLE_MAX = 100 * 1024 * 1024  # GitHub refuse les fichiers de plus de 100 Mo
 TAILLE_LOURDE = 50 * 1024 * 1024
-CREATE_NO_WINDOW = 0x08000000
-DETACHED = 0x00000008 | 0x00000200
+CREATE_NO_WINDOW = systeme.SANS_FENETRE  # drapeaux de Windows, 0 ailleurs
+DETACHED = systeme.DETACHE
 
 NOM_VALIDE = re.compile(r"^[A-Za-z0-9._-]{1,100}$")
 COMPLET_VALIDE = re.compile(r"^[A-Za-z0-9-]{1,39}/[A-Za-z0-9._-]{1,100}$")
@@ -193,7 +194,7 @@ def connexion_suite():
             raise ErreurGitHub("GitHub a donné un accès qui ne fonctionne pas : réessayez.")
         profil = _profil_de(utilisateur)
         if not coffre_windows.ecrire(CIBLE_COFFRE, profil["login"], r["access_token"]):
-            raise ErreurGitHub("Impossible de ranger l'accès GitHub dans le coffre de Windows.")
+            raise ErreurGitHub(f"Impossible de ranger l'accès GitHub dans {systeme.nom_du_coffre()}.")
         with _verrou:
             _attente["code"] = None
         _cache["profil"] = profil
@@ -336,7 +337,7 @@ def _git(args, dossier, acces=False, delai=120, verifier=True):
     try:
         p = subprocess.run(["git", *args], cwd=dossier, env=_env_git(acces), stdin=subprocess.DEVNULL,
                            capture_output=True, text=True, encoding="utf-8", errors="replace",
-                           timeout=delai, creationflags=CREATE_NO_WINDOW)
+                           timeout=delai, **systeme.options_sans_fenetre())
     except FileNotFoundError:
         raise ErreurGitHub("Git n'est pas installé sur ce PC (https://git-scm.com).") from None
     except subprocess.TimeoutExpired:
@@ -727,17 +728,12 @@ def ouvrir_page(url):
 def ouvrir_dossier(chemin):
     if not os.path.isdir(chemin or ""):
         raise ErreurGitHub("Dossier introuvable.")
-    os.startfile(chemin)
+    systeme.ouvrir(chemin)
 
 
 def _vscode():
-    candidats = [os.path.expandvars(r"%LOCALAPPDATA%\Programs\Microsoft VS Code\Code.exe"),
-                 r"C:\Program Files\Microsoft VS Code\Code.exe",
-                 r"C:\Program Files (x86)\Microsoft VS Code\Code.exe"]
-    commande = shutil.which("code")
-    if commande:  # …\Microsoft VS Code\bin\code.cmd → …\Microsoft VS Code\Code.exe
-        candidats.append(os.path.join(os.path.dirname(os.path.dirname(commande)), "Code.exe"))
-    return next((c for c in candidats if os.path.isfile(c)), None)
+    """Code.exe (Windows), ou la commande code / code-insiders / codium (Linux)."""
+    return systeme.code_vscode()
 
 
 def ouvrir_vscode(chemin):
@@ -746,5 +742,8 @@ def ouvrir_vscode(chemin):
     code = _vscode()
     if not code:
         raise ErreurGitHub("VS Code est introuvable sur ce PC.")
+    if not systeme.WINDOWS:
+        systeme.lancer_detache([code, chemin])
+        return
     subprocess.Popen([code, chemin], creationflags=DETACHED, close_fds=True,
                      stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)

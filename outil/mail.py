@@ -4,9 +4,10 @@ Yahoo, iCloud, Zoho, Fastmail, GMX, OVH, Orange, Free, La Poste ou n'importe
 quel serveur (réglages manuels).
 
 - Le mot de passe (mot de passe d'application ou habituel, selon le
-  fournisseur) est rangé dans le Gestionnaire d'identification de Windows
-  (coffre chiffré par Windows, lié à votre session), jamais dans un fichier.
-  Cible : « MesOutils:mail:<adresse> ».
+  fournisseur) est rangé dans le coffre du système (voir systeme.py) :
+  Gestionnaire d'identification de Windows (chiffré par Windows, lié à votre
+  session), ou trousseau du bureau sous Linux (GNOME Keyring, KWallet) ;
+  jamais dans un fichier. Cible : « MesOutils:mail:<adresse> ».
 - Les réglages des serveurs sont dans outils.json, section « mail » :
   adresse, fournisseur, imap_hote, imap_port, smtp_hote, smtp_port,
   smtp_securite (« ssl » ou « starttls »), identifiant.
@@ -15,7 +16,6 @@ quel serveur (réglages manuels).
   pas encore prise en charge (message clair, rien n'est tenté).
 """
 import base64
-import ctypes
 import email
 import email.policy
 import email.utils
@@ -26,11 +26,11 @@ import ssl
 import threading
 import time
 import unicodedata
-from ctypes import wintypes
 from email.header import decode_header, make_header
 from email.message import EmailMessage
 
 import config
+import systeme
 
 CIBLE_COFFRE = "MesOutils:mail:{adresse}"
 SECTION = "mail"
@@ -195,52 +195,26 @@ def fournisseurs_pour_page():
 
 
 # ---------------------------------------------------------------------------
-# Coffre Windows (Credential Manager)
+# Coffre du système (Windows : Gestionnaire d'identification ; Linux :
+# trousseau du bureau). Les tests et la démo remplacent ces trois fonctions.
 # ---------------------------------------------------------------------------
-class _CREDENTIAL(ctypes.Structure):
-    _fields_ = [
-        ("Flags", wintypes.DWORD), ("Type", wintypes.DWORD), ("TargetName", wintypes.LPWSTR),
-        ("Comment", wintypes.LPWSTR), ("LastWritten", wintypes.FILETIME),
-        ("CredentialBlobSize", wintypes.DWORD), ("CredentialBlob", ctypes.POINTER(ctypes.c_char)),
-        ("Persist", wintypes.DWORD), ("AttributeCount", wintypes.DWORD), ("Attributes", ctypes.c_void_p),
-        ("TargetAlias", wintypes.LPWSTR), ("UserName", wintypes.LPWSTR),
-    ]
-
-
-_advapi = ctypes.WinDLL("advapi32", use_last_error=True)
-_advapi.CredReadW.argtypes = [wintypes.LPCWSTR, wintypes.DWORD, wintypes.DWORD, ctypes.POINTER(ctypes.POINTER(_CREDENTIAL))]
-_advapi.CredWriteW.argtypes = [ctypes.POINTER(_CREDENTIAL), wintypes.DWORD]
-_advapi.CredDeleteW.argtypes = [wintypes.LPCWSTR, wintypes.DWORD, wintypes.DWORD]
-_advapi.CredFree.argtypes = [ctypes.c_void_p]
-CRED_TYPE_GENERIC, CRED_PERSIST_LOCAL_MACHINE = 1, 2
+def _message_coffre_impossible():
+    if systeme.WINDOWS:  # texte inchangé : la page le traduit tel quel
+        return "Impossible d'enregistrer le mot de passe dans le coffre Windows."
+    return f"Impossible d'enregistrer le mot de passe dans {systeme.nom_du_coffre()}."
 
 
 def coffre_ecrire(adresse, secret):
-    blob = secret.encode("utf-16-le")
-    cred = _CREDENTIAL()
-    cred.Type = CRED_TYPE_GENERIC
-    cred.TargetName = CIBLE_COFFRE.format(adresse=adresse)
-    cred.UserName = adresse
-    cred.CredentialBlobSize = len(blob)
-    cred.CredentialBlob = ctypes.cast(ctypes.create_string_buffer(blob, len(blob)), ctypes.POINTER(ctypes.c_char))
-    cred.Persist = CRED_PERSIST_LOCAL_MACHINE
-    if not _advapi.CredWriteW(ctypes.byref(cred), 0):
-        raise ErreurMail("Impossible d'enregistrer le mot de passe dans le coffre Windows.")
+    if not systeme.secret_ecrire(CIBLE_COFFRE.format(adresse=adresse), adresse, secret):
+        raise ErreurMail(_message_coffre_impossible())
 
 
 def coffre_lire(adresse):
-    pcred = ctypes.POINTER(_CREDENTIAL)()
-    if not _advapi.CredReadW(CIBLE_COFFRE.format(adresse=adresse), CRED_TYPE_GENERIC, 0, ctypes.byref(pcred)):
-        return None
-    try:
-        c = pcred.contents
-        return ctypes.string_at(c.CredentialBlob, c.CredentialBlobSize).decode("utf-16-le")
-    finally:
-        _advapi.CredFree(pcred)
+    return systeme.secret_lire(CIBLE_COFFRE.format(adresse=adresse))
 
 
 def coffre_supprimer(adresse):
-    _advapi.CredDeleteW(CIBLE_COFFRE.format(adresse=adresse), CRED_TYPE_GENERIC, 0)
+    systeme.secret_supprimer(CIBLE_COFFRE.format(adresse=adresse))
 
 
 # ---------------------------------------------------------------------------
@@ -410,7 +384,8 @@ class Boite:
 
     def tester_et_enregistrer(self, adresse, secret, reglages=None):
         """Vérifie la connexion IMAP, puis range le mot de passe dans le coffre
-        Windows et les réglages serveur dans outils.json."""
+        du système (Windows ou trousseau Linux) et les réglages serveur dans
+        outils.json."""
         adresse = (adresse or "").strip()
         secret = (secret or "").strip()
         if not adresse or not secret:

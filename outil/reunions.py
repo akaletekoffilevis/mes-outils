@@ -27,12 +27,12 @@ rendez-vous à enregistrer (POST /api/agenda/enregistrer), puis
 import datetime
 import os
 import re
-import subprocess
 import threading
 import urllib.parse
 import uuid
 
 import config
+import systeme
 
 NOM = "reunions"
 FORMAT_MINUTE = "%Y-%m-%dT%H:%M"
@@ -41,10 +41,15 @@ RAPPEL_REUNION = datetime.timedelta(minutes=15)
 HEURE_RAPPEL_VEILLE = 9
 MAX_ALERTES_VUES = 300
 MAX_MAILTO = 1900
-CREATE_NO_WINDOW = 0x08000000
 # Fichiers que l'on ne lance jamais depuis la page (programmes, scripts).
 EXTENSIONS_REFUSEES = {".exe", ".com", ".bat", ".cmd", ".ps1", ".psm1", ".vbs", ".vbe", ".js", ".jse", ".wsf",
                        ".wsh", ".msi", ".msp", ".scr", ".pif", ".hta", ".cpl", ".jar", ".reg", ".lnk", ".url"}
+# Sous Linux, en plus : scripts, lanceurs (.desktop) et paquets, qu'un double
+# clic peut démarrer.
+EXTENSIONS_REFUSEES_LINUX = {".sh", ".bash", ".desktop", ".appimage", ".run", ".bin", ".deb", ".rpm", ".snap",
+                             ".flatpakref"}
+if not systeme.WINDOWS:
+    EXTENSIONS_REFUSEES = EXTENSIONS_REFUSEES | EXTENSIONS_REFUSEES_LINUX
 COULEUR_REUNION = "#2f8cff"
 COULEUR_DEPLACEMENT = "#18b597"
 
@@ -592,29 +597,13 @@ def feuille_de_route(identifiant):
 # ---------------------------------------------------------------------------
 # Documents liés
 # ---------------------------------------------------------------------------
-SCRIPT_FICHIERS = r"""
-Add-Type -AssemblyName System.Windows.Forms
-$p = New-Object System.Windows.Forms.Form
-$p.TopMost = $true
-$d = New-Object System.Windows.Forms.OpenFileDialog
-$d.Title = $env:MO_TITRE
-$d.Multiselect = $true
-$d.CheckFileExists = $true
-if ($d.ShowDialog($p) -eq [System.Windows.Forms.DialogResult]::OK) {
-  [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-  foreach ($f in $d.FileNames) { Write-Output $f }
-}
-"""
-
-
 def choisir_fichiers(titre=""):
-    """La fenêtre « Ouvrir » de Windows (plusieurs fichiers possibles).
+    """La fenêtre « Ouvrir » du système (plusieurs fichiers possibles).
     Renvoie {"chemins": [...]} (liste vide si annulé)."""
-    env = dict(os.environ, MO_TITRE=str(titre or "Choisir des fichiers")[:120])
-    r = subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-STA", "-Command", SCRIPT_FICHIERS],
-                       env=env, capture_output=True, text=True, encoding="utf-8", errors="replace",
-                       timeout=600, creationflags=CREATE_NO_WINDOW)
-    chemins = [x.strip() for x in (r.stdout or "").splitlines() if x.strip()]
+    try:
+        chemins = systeme.choisir_fichiers(str(titre or "Choisir des fichiers")[:120], "", multi=True)
+    except RuntimeError as erreur:  # Linux sans zenity ni kdialog
+        raise ValueError(str(erreur)) from None
     return {"chemins": [c for c in chemins if os.path.isfile(c)]}
 
 
@@ -633,17 +622,18 @@ def _document_du_deplacement(identifiant, chemin):
 
 def ouvrir_document(identifiant, chemin):
     chemin = _document_du_deplacement(identifiant, chemin)
-    os.startfile(chemin)  # noqa: S606  (chemin vérifié ci-dessus)
+    systeme.ouvrir(chemin)  # chemin vérifié ci-dessus
     return {"ok": True}
 
 
 def montrer_document(identifiant, chemin):
-    """Ouvre l'Explorateur sur le document (ou dans le dossier)."""
+    """Ouvre le gestionnaire de fichiers (l'Explorateur sous Windows) sur le
+    document, sélectionné (ou dans le dossier)."""
     chemin = _document_du_deplacement(identifiant, chemin)
     if os.path.isdir(chemin):
-        os.startfile(chemin)  # noqa: S606
+        systeme.ouvrir(chemin)
     else:
-        subprocess.Popen(["explorer", "/select,", chemin], creationflags=CREATE_NO_WINDOW)
+        systeme.montrer_dans_dossier(chemin)
     return {"ok": True}
 
 

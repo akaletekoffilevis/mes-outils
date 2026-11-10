@@ -15,7 +15,12 @@ import shutil
 import subprocess
 import webbrowser
 
-SANS_FENETRE = 0x08000000
+import systeme
+
+SANS_FENETRE = systeme.SANS_FENETRE  # 0 hors de Windows
+# Linux : Docker Engine (service systemd) ou Docker Desktop pour Linux.
+DESKTOP_LINUX = "/opt/docker-desktop/bin/docker-desktop"
+DOCKER_LINUX = ("/usr/bin/docker", "/usr/local/bin/docker", "/snap/bin/docker")
 
 # Identifiant (hexadécimal) ou nom de conteneur : jamais de « - » au début.
 ID_VALIDE = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,127}$")
@@ -41,12 +46,16 @@ def chemin_docker():
     trouve = shutil.which("docker")
     if trouve:
         return trouve
+    if not systeme.WINDOWS:
+        return next((c for c in DOCKER_LINUX if os.path.isfile(c)), None)
     standard = os.path.join(_programmes(), "Docker", "Docker", "resources", "bin", "docker.exe")
     return standard if os.path.isfile(standard) else None
 
 
 def chemin_desktop():
     """Docker Desktop dans son dossier standard, ou None."""
+    if not systeme.WINDOWS:
+        return DESKTOP_LINUX if os.path.isfile(DESKTOP_LINUX) else None
     chemin = os.path.join(_programmes(), "Docker", "Docker", "Docker Desktop.exe")
     return chemin if os.path.isfile(chemin) else None
 
@@ -58,7 +67,7 @@ def _docker(*arguments, delai=30):
         raise ErreurDocker("Docker n'est pas installé.")
     try:
         r = subprocess.run([programme, *arguments], capture_output=True, timeout=delai,
-                           creationflags=SANS_FENETRE)
+                           **systeme.options_sans_fenetre())
     except subprocess.TimeoutExpired:
         raise ErreurDocker("Docker ne répond pas (délai dépassé).") from None
     sortie = (r.stdout or b"").decode("utf-8", errors="replace")
@@ -82,13 +91,26 @@ def etat():
     if not resultat["installe"]:
         return resultat
     try:
-        code, sortie, _ = _docker("version", "--format", "{{.Server.Version}}", delai=10)
+        code, sortie, erreurs = _docker("version", "--format", "{{.Server.Version}}", delai=10)
     except (ErreurDocker, OSError):
         return resultat
     version = sortie.strip()
     resultat["demarre"] = code == 0 and bool(version)
     resultat["version"] = version if resultat["demarre"] else ""
+    if not systeme.WINDOWS and not resultat["demarre"]:
+        resultat["erreur"] = message_linux(erreurs, resultat["desktop"])
     return resultat
+
+
+def message_linux(erreurs, desktop=False):
+    """Pourquoi Docker ne répond pas sous Linux : droits sur la socket, ou
+    service arrêté."""
+    if "permission denied" in (erreurs or "").lower():
+        return ("Accès refusé à Docker : ajoutez votre compte au groupe docker "
+                "(sudo usermod -aG docker $USER), puis rouvrez la session.")
+    if desktop:
+        return "Docker Desktop n'est pas démarré."
+    return "Le service Docker n'est pas démarré (sudo systemctl start docker)."
 
 
 # ---------------------------------------------------------------------------
@@ -197,7 +219,7 @@ def _demarre():
     if not e["installe"]:
         raise ErreurDocker("Docker n'est pas installé.")
     if not e["demarre"]:
-        raise ErreurDocker("Docker Desktop n'est pas démarré.")
+        raise ErreurDocker(e.get("erreur") or "Docker Desktop n'est pas démarré.")
     return e
 
 
@@ -291,7 +313,13 @@ def lancer_desktop(d):
     chemin = chemin_desktop()
     if not chemin:
         raise ErreurDocker("Docker Desktop est introuvable sur ce PC.")
-    os.startfile(chemin)
+    if systeme.WINDOWS:
+        systeme.ouvrir(chemin)
+    elif shutil.which("systemctl"):
+        # Docker Desktop pour Linux est un service de l'utilisateur.
+        systeme.lancer_detache(["systemctl", "--user", "start", "docker-desktop"])
+    else:
+        systeme.lancer_detache([chemin])
     return {"ok": True}
 
 

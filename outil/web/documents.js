@@ -378,7 +378,7 @@
     const dossierCopie = el("small", { class: "sans-icone" });
     const majCopie = () => {
       const rub = (client.value.trim() || projet.value.trim() || t("Non classé")).replace(/[<>:"/\\|?*]/g, " ");
-      dossierCopie.textContent = t("Une copie va dans {dossier}. L'original ne bouge pas.", { dossier: D.r.classeur + "\\" + rub });
+      dossierCopie.textContent = t("Une copie va dans {dossier}. L'original ne bouge pas.", { dossier: D.r.classeur + selonSysteme("\\", "/") + rub });
     };
     client.addEventListener("input", majCopie); projet.addEventListener("input", majCopie); majCopie();
 

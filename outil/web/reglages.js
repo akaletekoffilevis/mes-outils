@@ -1,6 +1,7 @@
 "use strict";
 /* Onglet « Réglages » : prénom, langue, onglets affichés, dossiers de projets,
-   raccourcis Windows, mise à jour (voir reglages.py). */
+   raccourcis (Windows : Bureau et démarrage ; Linux : menu des applications,
+   démarrage avec la session, bulle et icône), mise à jour (voir reglages.py). */
 (() => {
   const R = { infos: null };
 
@@ -60,6 +61,27 @@
     "Pas de connexion à GitHub (Internet ?).": "No connection to GitHub (Internet?).",
     "Relancez la bulle (clic droit › Quitter, puis le raccourci) pour finir la mise à jour.":
       "Restart the bubble (right-click › Quit, then the shortcut) to finish the update.",
+    // Linux
+    "Linux": "Linux",
+    "Lancer Mes outils à l'ouverture de session": "Start Mes outils when I log in",
+    "Mes outils dans le menu des applications": "Mes outils in the applications menu",
+    "Affichage": "Display",
+    "Bulle et icône": "Bubble and icon",
+    "Bulle seule": "Bubble only",
+    "Icône seule": "Icon only",
+    "L'icône s'affiche en haut à droite de l'écran ; son menu reprend celui de la bulle.":
+      "The icon appears at the top right of the screen; its menu matches the bubble's.",
+    "L'icône n'est pas disponible sur ce bureau : la bulle reste affichée.":
+      "The icon is not available on this desktop: the bubble stays visible.",
+    "Télécharger la nouvelle AppImage ? Quittez la bulle (clic droit › Quitter la bulle), rendez le fichier exécutable (Propriétés › Exécutable comme un programme), puis lancez-le : vos réglages et vos données sont gardés.":
+      "Download the new AppImage? Quit the bubble (right-click › Quit the bubble), make the file executable (Properties › Executable as program), then run it: your settings and data are kept.",
+    "La mise à jour prend du temps : relancez Mes outils depuis le menu des applications.":
+      "The update is taking a while: restart Mes outils from the applications menu.",
+    "AppImage introuvable dans la dernière version publiée.": "AppImage not found in the latest release.",
+    "Le fichier téléchargé n'est pas une AppImage valide.": "The downloaded file is not a valid AppImage.",
+    "Installation automatique réservée au programme installé (AppImage).": "Automatic installation is only for the installed program (AppImage).",
+    "Installation automatique réservée au programme installé (Setup.exe).": "Automatic installation is only for the installed program (Setup.exe).",
+    "Affichage inconnu.": "Unknown display mode.",
   });
 
   const style = document.createElement("style");
@@ -150,9 +172,12 @@
             await installerMiseAJour(r.nouvelle);
           }
         } else if (r.nouvelle) {
-          // Copie sans installateur : on ouvre la page de téléchargement.
-          if (await confirmer("🎁", t("Version {v} disponible", { v: r.nouvelle }),
-              t("Télécharger le nouvel installateur ? Fermez la bulle (clic droit › Quitter), puis lancez-le : vos réglages et vos données sont gardés."), "Télécharger")) {
+          // Copie sans installateur (ou AppImage lancée autrement) : on ouvre
+          // la page de téléchargement.
+          const texte = i.systeme === "linux"
+            ? "Télécharger la nouvelle AppImage ? Quittez la bulle (clic droit › Quitter la bulle), rendez le fichier exécutable (Propriétés › Exécutable comme un programme), puis lancez-le : vos réglages et vos données sont gardés."
+            : "Télécharger le nouvel installateur ? Fermez la bulle (clic droit › Quitter), puis lancez-le : vos réglages et vos données sont gardés.";
+          if (await confirmer("🎁", t("Version {v} disponible", { v: r.nouvelle }), t(texte), "Télécharger")) {
             await api("/api/github/ouvrir_page", { url: r.telecharger });
           }
         } else if (r.change) { toast(t("✅ Mis à jour : la page va se recharger"), "succes", 3000); toast(t("Relancez la bulle (clic droit › Quitter, puis le raccourci) pour finir la mise à jour."), "", 9000); setTimeout(() => location.reload(), 2500); }
@@ -173,14 +198,33 @@
           el("button", { class: "btn", onclick: () => montrerVue("applications") }, "Choisir mes applications")),
         carte("📁", "Dossiers de projets", el("p", { class: "aide" }, "Les onglets GitHub, Projets et État Git y cherchent vos projets (le dossier et ses sous-dossiers directs)."),
           listeDossiers, ajoutDossier),
-        carte("💻", "Windows", interrupteur("demarrage", "Lancer la bulle au démarrage de Windows"),
-          interrupteur("bureau", "Raccourci « Mes outils » sur le Bureau")),
+        i.systeme === "linux" ? carteLinux(i, interrupteur)
+          : carte("💻", "Windows", interrupteur("demarrage", "Lancer la bulle au démarrage de Windows"),
+            interrupteur("bureau", "Raccourci « Mes outils » sur le Bureau")),
         carte("✉️", "Boîte mail", el("p", { class: "aide" }, "La boîte mail se connecte dans l'onglet Mails."),
           el("button", { class: "btn", onclick: () => montrerVue("mails") }, "Ouvrir l'onglet Mails")),
         carte("🧰", "À propos", el("p", { class: "aide" }, t("Version {v}", { v: i.version })),
           el("div", { style: "display:flex;gap:8px;flex-wrap:wrap" },
             el("button", { class: "btn", onclick: () => api("/api/github/ouvrir_page", { url: i.depot }).catch(e => toast("😕 " + e.message, "erreur")) }, "🌐 Code source sur GitHub"),
             majBtn))));
+  }
+
+  /** Linux : démarrage avec la session, entrée du menu des applications,
+      bulle et icône en haut à droite de l'écran. */
+  function carteLinux(i, interrupteur) {
+    const presences = el("div", { class: "langues-reg" }, [["bulle_icone", "Bulle et icône"], ["bulle", "Bulle seule"], ["icone", "Icône seule"]]
+      .map(([code, nom]) => el("button", {
+        class: "btn" + (i.presence === code ? " actif" : ""),
+        disabled: !i.icone_possible && code !== "bulle" ? "" : null,
+        onclick: async () => { if (code !== i.presence) { await enregistrer({ presence: code }); dessiner(); } },
+      }, nom)));
+    return carte("💻", "Linux",
+      interrupteur("demarrage", "Lancer Mes outils à l'ouverture de session"),
+      interrupteur("menu", "Mes outils dans le menu des applications"),
+      el("label", { class: "champ" }, "Affichage", presences),
+      el("p", { class: "aide" }, i.icone_possible
+        ? "L'icône s'affiche en haut à droite de l'écran ; son menu reprend celui de la bulle."
+        : "L'icône n'est pas disponible sur ce bureau : la bulle reste affichée."));
   }
 
   /** Lance la mise à jour, puis attend que la nouvelle version réponde. */
@@ -198,7 +242,12 @@
         const infos = await api("/api/reglages/lire", {});
         if (infos.version === version) { etat.textContent = t("✅ Version {v} installée", { v: version }); setTimeout(() => location.reload(), 1200); return; }
       } catch { /* Mes outils est en train de redémarrer */ }
-      if (Date.now() - debut > 180000) { etat.textContent = t("La mise à jour prend du temps : relancez Mes outils depuis son raccourci."); return; }
+      if (Date.now() - debut > 180000) {
+        etat.textContent = t(R.infos && R.infos.systeme === "linux"
+          ? "La mise à jour prend du temps : relancez Mes outils depuis le menu des applications."
+          : "La mise à jour prend du temps : relancez Mes outils depuis son raccourci.");
+        return;
+      }
       setTimeout(attendre, 2000);
     };
     setTimeout(attendre, 4000);

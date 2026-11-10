@@ -1,2 +1,4 @@
 cryptography
 Pillow
+jeepney; sys_platform == "linux"
+secretstorage; sys_platform == "linux"

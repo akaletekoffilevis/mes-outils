@@ -303,11 +303,43 @@ class TestNotesDeFrais(Base):
         dep = depenses.retirer_justificatif(dep["id"])
         self.assertIsNone(dep["justificatif"])
         sortie = mock.Mock(stdout=source + "\n")
-        with mock.patch.object(depenses.subprocess, "run", return_value=sortie) as run:
+        with mock.patch.object(depenses.systeme, "WINDOWS", True), \
+                mock.patch.object(depenses.systeme.subprocess, "run", return_value=sortie) as run:
             self.assertEqual(depenses.choisir_fichier({}), {"chemin": source, "nom": "photo.JPG"})
             self.assertNotIn("shell", run.call_args.kwargs)
-        with mock.patch.object(depenses.subprocess, "run", return_value=mock.Mock(stdout="")):
+            self.assertEqual(run.call_args[0][0][0], "powershell")
+            env = run.call_args.kwargs["env"]
+            self.assertEqual(env["MO_MULTI"], "0", "un seul justificatif à la fois")
+            self.assertEqual(env["MO_FILTRE"], "Justificatifs (photo, PDF)|*.pdf;*.png;*.jpg;*.jpeg;*.webp;*.gif;"
+                                               "*.heic;*.bmp;*.tif;*.tiff", "filtre de Windows inchangé")
+        with mock.patch.object(depenses.systeme, "WINDOWS", True), \
+                mock.patch.object(depenses.systeme.subprocess, "run", return_value=mock.Mock(stdout="")):
             self.assertEqual(depenses.choisir_fichier({}), {"chemin": None})
+
+    def test_fenetre_et_ouverture_sous_linux(self):
+        """Branche Linux simulée : zenity, motifs en majuscules aussi, xdg-open,
+        et un message clair s'il n'y a aucune fenêtre."""
+        source = os.path.join(self.cfg.dossier, "photo.JPG")
+        with open(source, "wb") as f:
+            f.write(b"\xff\xd8")
+        with mock.patch.object(depenses.systeme, "WINDOWS", False), \
+                mock.patch.object(depenses.systeme, "outil_de_fenetres", return_value="zenity"), \
+                mock.patch.object(depenses.systeme.subprocess, "run", return_value=mock.Mock(stdout=source + "\n")) as run:
+            self.assertEqual(depenses.choisir_fichier({}), {"chemin": source, "nom": "photo.JPG"})
+        args = run.call_args[0][0]
+        self.assertEqual(args[0], "zenity")
+        self.assertNotIn("--multiple", args)
+        filtre = next(a for a in args if a.startswith("--file-filter="))
+        self.assertIn("*.jpg", filtre)
+        self.assertIn("*.JPG", filtre, "Linux distingue les majuscules")
+        self.assertNotIn("creationflags", run.call_args.kwargs)
+        with mock.patch.object(depenses.systeme, "WINDOWS", False), \
+                mock.patch.object(depenses.systeme, "outil_de_fenetres", return_value=None):
+            with self.assertRaisesRegex(ValueError, "zenity"):
+                depenses.choisir_fichier({})
+        with mock.patch.object(depenses.systeme, "ouvrir") as ouvrir:
+            depenses._ouvrir(source)
+        ouvrir.assert_called_once_with(source)
 
 
 class TestRoutes(ServeurTest):

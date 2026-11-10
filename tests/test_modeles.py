@@ -151,11 +151,38 @@ class TestMail(unittest.TestCase):
                 modeles.lien_mail(mauvaise, "o", "t")
 
     def test_ouverture(self):
-        with mock.patch.object(modeles.os, "startfile", create=True) as ouvrir:
+        with mock.patch.object(modeles.systeme, "ouvrir") as ouvrir:
             r = modeles.ecrire_mail("a@exemple.com", "Objet", "Texte")
         ouvrir.assert_called_once_with(r["lien"])
-        with mock.patch.object(modeles.os, "startfile", create=True, side_effect=OSError("aucune")):
+        with mock.patch.object(modeles.systeme, "ouvrir", side_effect=OSError("aucune")):
             with self.assertRaises(ValueError):
+                modeles.ecrire_mail("a@exemple.com", "Objet", "Texte")
+
+    @unittest.skipUnless(sys.platform == "win32", "os.startfile n'existe que sous Windows")
+    def test_ouverture_sous_windows(self):
+        with mock.patch.object(modeles.systeme.os, "startfile") as ouvrir:
+            r = modeles.ecrire_mail("a@exemple.com", "Objet", "Texte")
+        ouvrir.assert_called_once_with(r["lien"])
+        with mock.patch.object(modeles.systeme.os, "startfile", side_effect=OSError("aucune")):
+            with self.assertRaisesRegex(ValueError, "Aucune messagerie"):
+                modeles.ecrire_mail("a@exemple.com", "Objet", "Texte")
+
+    def test_ouverture_sous_linux(self):
+        """Branche Linux simulée : xdg-open, sinon le navigateur, sinon un message clair."""
+        with mock.patch.object(modeles.systeme, "WINDOWS", False), \
+                mock.patch.object(modeles.systeme.shutil, "which", return_value="/usr/bin/xdg-open"), \
+                mock.patch.object(modeles.systeme, "lancer_detache") as lancer:
+            r = modeles.ecrire_mail("a@exemple.com", "Objet", "Texte")
+        lancer.assert_called_once_with(["xdg-open", r["lien"]])
+        with mock.patch.object(modeles.systeme, "WINDOWS", False), \
+                mock.patch.object(modeles.systeme.shutil, "which", return_value=None), \
+                mock.patch.object(modeles.systeme.webbrowser, "open") as navigateur:
+            r = modeles.ecrire_mail("a@exemple.com", "Objet", "Texte")
+        navigateur.assert_called_once_with(r["lien"])
+        with mock.patch.object(modeles.systeme, "WINDOWS", False), \
+                mock.patch.object(modeles.systeme.shutil, "which", return_value="/usr/bin/xdg-open"), \
+                mock.patch.object(modeles.systeme, "lancer_detache", side_effect=FileNotFoundError("xdg-open")):
+            with self.assertRaisesRegex(ValueError, "Aucune messagerie"):
                 modeles.ecrire_mail("a@exemple.com", "Objet", "Texte")
 
 
@@ -187,7 +214,7 @@ class TestRoutes(ServeurTest):
             self.assertEqual((statut, r["ajoutes"], r["doublons"]), (200, 0, len(modeles.EXEMPLES) + 2))
             statut, r = self.post("/api/modeles/importer", {"contenu": {"format": "autre"}})
             self.assertEqual(statut, 400)
-            with mock.patch.object(modeles.os, "startfile", create=True) as ouvrir:
+            with mock.patch.object(modeles.systeme, "ouvrir") as ouvrir:
                 statut, r = self.post("/api/modeles/mail", {"a": "a@exemple.com", "objet": "O", "texte": "T"})
             self.assertEqual((statut, r["texte_retire"]), (200, False))
             ouvrir.assert_called_once()

@@ -308,3 +308,32 @@ bibliothèques, crée les raccourcis, lance la bulle).
 « Mes outils.bat » utilise pythonw du PATH, ou le Python indiqué dans la
 variable d'environnement MES_OUTILS_PYTHON. Bibliothèques nécessaires :
 pip install -r requirements.txt
+
+
+SOUS LINUX (Ubuntu 24.04 et autres)
+-----------------------------------
+Mes-outils-x86_64.AppImage (page Releases du dépôt GitHub) : un seul
+fichier, sans installation ni droits administrateur. Le rendre exécutable
+(clic droit > Propriétés > « Exécutable comme programme », ou
+chmod +x Mes-outils-x86_64.AppImage), puis double-clic.
+
+  Bulle et icône    la bulle, plus une icône en haut à droite de l'écran
+                    (même menu). Sous GNOME avec Wayland, la bulle peut
+                    passer derrière les autres fenêtres : Réglages > Linux
+                    permet de choisir bulle et icône, bulle seule ou icône
+                    seule.
+  Rappels           la carte à côté de la bulle et une notification du bureau.
+  Données           ~/.config/mes-outils
+  Secrets           mots de passe des mails et accès GitHub dans le trousseau
+                    du bureau (GNOME Keyring, KWallet).
+  Navigateur        Google Chrome ou Chromium pour la fenêtre sans barre
+                    d'adresse et les PDF des factures (sudo snap install
+                    chromium) ; sinon le navigateur par défaut.
+  Fichiers          fenêtres de choix par zenity (ou kdialog sous KDE).
+  Menu, session     entrée « Mes outils » dans le menu des applications
+                    (~/.local/share/applications) ; démarrage avec la session
+                    (~/.config/autostart), réglable dans Réglages.
+  Mise à jour       automatique : la nouvelle AppImage remplace l'ancienne.
+
+Depuis le code source : sudo apt install python3-tk zenity, puis
+pip install -r requirements.txt et python3 outil/bulle.py.

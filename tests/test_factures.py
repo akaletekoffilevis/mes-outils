@@ -345,6 +345,7 @@ class TestPdfMailExport(BaseFactures):
     def edge_simule(self, commande, **kw):
         sortie = next(a.split("=", 1)[1] for a in commande if a.startswith("--print-to-pdf="))
         self.commande = commande
+        self.options = kw
         with open(sortie, "wb") as f:
             f.write(b"%PDF-1.4 simule")
         return mock.Mock(returncode=0)
@@ -379,27 +380,74 @@ class TestPdfMailExport(BaseFactures):
 
     def test_pdf_par_edge(self):
         f = self.facture()
-        with mock.patch.object(factures, "chemin_edge", return_value="msedge.exe"), \
-                mock.patch.object(factures.subprocess, "run", side_effect=self.edge_simule):
+        with mock.patch.object(factures.systeme, "WINDOWS", True), \
+                mock.patch.object(factures.systeme, "navigateur_chromium", return_value="msedge.exe"), \
+                mock.patch.object(factures.systeme.subprocess, "run", side_effect=self.edge_simule):
             r = factures.emettre(f["id"])
         self.assertIsNone(r["pdf_erreur"])
         attendu = os.path.join(self.documents, "Mes outils", "Factures", "2026", "FAC-2026-001 - Client Alpha.pdf")
         self.assertEqual(r["pdf"], attendu)
         self.assertTrue(os.path.isfile(attendu))
+        self.assertEqual(self.commande[0], "msedge.exe")
         self.assertIn("--headless", self.commande)
+        self.assertTrue(self.commande[-1].startswith("file:///"))
+        self.assertEqual(self.options.get("creationflags"), 0x08000000, "Windows : jamais de fenêtre noire")
         self.assertTrue(r["document"]["resume"]["pdf"])
+
+    def test_pdf_par_chromium_sous_linux(self):
+        """Branche Linux simulée : Chromium, sans creationflags."""
+        f = self.facture()
+        with mock.patch.object(factures.systeme, "WINDOWS", False), \
+                mock.patch.object(factures.systeme, "navigateur_chromium", return_value="/usr/bin/chromium"), \
+                mock.patch.object(factures.systeme.subprocess, "run", side_effect=self.edge_simule):
+            r = factures.emettre(f["id"])
+        self.assertIsNone(r["pdf_erreur"])
+        self.assertTrue(os.path.isfile(r["pdf"]))
+        self.assertEqual(self.commande[0], "/usr/bin/chromium")
+        self.assertIn("--headless", self.commande)
+        self.assertNotIn("creationflags", self.options, "jamais de creationflags hors de Windows")
 
     def test_sans_edge_l_emission_reste_valable(self):
         f = self.facture()
-        with mock.patch.object(factures, "chemin_edge", return_value=None):
+        with mock.patch.object(factures.systeme, "WINDOWS", True), \
+                mock.patch.object(factures.systeme, "navigateur_chromium", return_value=None):
             r = factures.emettre(f["id"])
         self.assertEqual(r["document"]["numero"], "FAC-2026-001")
         self.assertIn("Edge est introuvable", r["pdf_erreur"])
 
+    def test_sans_chrome_sous_linux(self):
+        f = self.facture()
+        with mock.patch.object(factures.systeme, "WINDOWS", False), \
+                mock.patch.object(factures.systeme, "navigateur_chromium", return_value=None):
+            r = factures.emettre(f["id"])
+        self.assertEqual(r["document"]["numero"], "FAC-2026-001")
+        self.assertEqual(r["pdf_erreur"], "Google Chrome ou Chromium est introuvable : impossible de créer le PDF.")
+
+    def test_pdf_vide(self):
+        f = self.facture()
+        with mock.patch.object(factures.systeme, "navigateur_chromium", return_value="/usr/bin/chromium"), \
+                mock.patch.object(factures.systeme.subprocess, "run", return_value=mock.Mock(returncode=1)):
+            r = factures.emettre(f["id"])
+        self.assertEqual(r["pdf_erreur"], "Chromium n'a pas pu créer le PDF.")
+
+    def test_dossier_documents_du_systeme(self):
+        self.patchs[-1].stop()  # le vrai dossier_documents, remis en place à la fin
+        try:
+            with mock.patch.object(factures.systeme, "dossier_documents", return_value="/home/moi/Documents"):
+                self.assertEqual(factures.dossier_pdf("2026"),
+                                 os.path.join("/home/moi/Documents", "Mes outils", "Factures", "2026"))
+        finally:
+            self.patchs[-1].start()
+
+    def test_ouvrir_par_le_systeme(self):
+        with mock.patch.object(factures.systeme, "ouvrir") as ouvrir:
+            r = factures.ouvrir_dossier()
+        ouvrir.assert_called_once_with(r["chemin"])
+
     def test_ouvrir_et_mail(self):
         f = self.facture()
-        with mock.patch.object(factures, "chemin_edge", return_value="msedge.exe"), \
-                mock.patch.object(factures.subprocess, "run", side_effect=self.edge_simule), \
+        with mock.patch.object(factures.systeme, "navigateur_chromium", return_value="msedge.exe"), \
+                mock.patch.object(factures.systeme.subprocess, "run", side_effect=self.edge_simule), \
                 mock.patch.object(factures, "_ouvrir") as ouvrir:
             self.emettre(f["id"])
             r = factures.preparer_mail(f["id"])
@@ -444,7 +492,7 @@ class TestRoutes(ServeurTest):
         try:
             with ConfigTemporaire(), mock.patch.object(factures, "aujourdhui", lambda: jour), \
                     mock.patch.object(factures, "dossier_documents", lambda: documents), \
-                    mock.patch.object(factures, "chemin_edge", return_value=None):
+                    mock.patch.object(factures.systeme, "navigateur_chromium", return_value=None):
                 statut, r = self.post("/api/factures/liste", {})
                 self.assertEqual((statut, r["configuree"], r["documents"]), (200, False, []))
                 statut, r = self.post("/api/factures/reglages/enregistrer", {"entreprise": {"nom": ""}})
