@@ -394,7 +394,7 @@ class TestPdfMailExport(BaseFactures):
         if sys.platform == "win32":
             self.assertEqual(self.options.get("creationflags"), 0x08000000, "Windows : jamais de fenêtre noire")
         else:
-            self.assertNotIn("creationflags", self.options, "creationflags est refusé hors de Windows")
+            self.assertFalse(self.options.get("creationflags"), "creationflags non nul est refusé hors de Windows")
         self.assertTrue(r["document"]["resume"]["pdf"])
 
     def test_pdf_par_chromium_sous_linux(self):
