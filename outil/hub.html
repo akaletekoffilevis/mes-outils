@@ -90,7 +90,6 @@
     .menu .groupe + button { margin-top: 8px; }
     .menu button { justify-content: center; padding: 0; }
     .menu button .lib { display: none; }
-    .menu .compteur { position: absolute; top: 1px; right: 1px; margin: 0; }
   }
   /* Le menu reste toujours fixe et entier, jamais de barre de défilement :
      ajusterMenu() le resserre par étapes selon la hauteur de la fenêtre. */
@@ -104,11 +103,26 @@
   .menu.icones { width: 56px; }
   .menu.icones button { justify-content: center; padding: 0; }
   .menu.icones button .lib { display: none; }
-  .menu.icones .compteur { position: absolute; top: 0; right: 0; margin: 0; }
+  /* Icônes seules : le compteur devient un point dans le coin de l'icône
+     (le nombre reste dans l'info-bulle et au survol du menu). */
+  .menu.icones:not(:hover) .compteur { position: absolute; top: 5px; right: 13px; margin: 0; padding: 0;
+    width: 7px; height: 7px; font-size: 0; background: var(--violet); border: 1.5px solid var(--carte); box-sizing: content-box; }
+  /* Au survol, le menu en icônes s'élargit par-dessus la page et montre les
+     noms ; la page ne bouge pas (marge négative), il se replie en sortant. */
+  .menu.icones:hover { width: 216px; margin-right: -160px; z-index: 25; box-shadow: 6px 0 18px rgba(0, 0, 0, .10); }
+  .menu.icones:hover button { justify-content: flex-start; padding: 0 10px; }
+  .menu.icones:hover button .lib { display: block; }
   .menu.serre .groupe.bas { margin-top: auto; }
   /* Titres masqués : celui du bas reste comme ressort, Réglages reste en bas. */
   .menu.tres-serre .groupe.bas { display: block; visibility: hidden; height: 0; margin: auto 0 0; }
-  @media (max-width: 1100px) { .menu .groupe.bas { display: block; visibility: hidden; height: 0; margin: auto 0 0; } }
+  @media (max-width: 1100px) {
+    .menu .groupe.bas { display: block; visibility: hidden; height: 0; margin: auto 0 0; }
+    .menu:not(:hover) .compteur { position: absolute; top: 5px; right: 13px; margin: 0; padding: 0;
+      width: 7px; height: 7px; font-size: 0; background: var(--violet); border: 1.5px solid var(--carte); box-sizing: content-box; }
+    .menu:hover { width: 216px; margin-right: -160px; z-index: 25; box-shadow: 6px 0 18px rgba(0, 0, 0, .10); }
+    .menu:hover button { justify-content: flex-start; padding: 0 10px; }
+    .menu:hover button .lib { display: block; }
+  }
 
   /* En-tête ---------------------------------------------------------- */
   header { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: 10px; margin: 0 -24px 0 0; padding: 0 16px;
@@ -922,7 +936,7 @@ function construireMenu() {
     }
   }
   if (S.vue) nav.querySelectorAll("button").forEach(b => b.classList.toggle("actif", b.dataset.vue === S.vue));
-  if (S.mailsNonLus) { const c = $("#compteur-mails"); if (c) { c.hidden = false; c.textContent = S.mailsNonLus; } }
+  if (S.mailsNonLus) majCompteurMails(S.mailsNonLus);
   ajusterMenu();
 }
 /** Menu collant s'il tient dans la fenêtre, sinon il défile avec la page. */
@@ -1118,12 +1132,19 @@ async function commandeProjet(s, action) {
   } catch (e) { toast("😕 " + e.message, "erreur", 5500); }
 }
 
+/** Le compteur de mails non lus du menu : « 99+ » au-delà de 99. */
+function majCompteurMails(n) {
+  const c = $("#compteur-mails");
+  if (!c) return;
+  c.hidden = !n;
+  c.textContent = !n ? "" : n > 99 ? "99+" : String(n);
+  c.title = n ? t("{n} mails non lus", { n }) : "";
+}
 async function compterMails() {
   try {
     const { non_lus } = await api("/api/mail/non_lus");
     S.mailsNonLus = non_lus;
-    const c = $("#compteur-mails");
-    if (c) { c.hidden = !non_lus; c.textContent = non_lus || ""; }
+    majCompteurMails(non_lus);
   } catch { S.mailsNonLus = null; }
 }
 

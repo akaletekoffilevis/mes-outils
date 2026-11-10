@@ -111,6 +111,7 @@ I18N.ajouter({
   "Tester une API : requêtes, réponses, historique.": "Test an API: requests, responses, history.",
   "Une clé par serveur, posée en un clic.": "One key per server, installed in one click.",
   "Réunions et trajets": "Meetings and trips",
+  "{n} mails non lus": "{n} unread emails",
   // en-tête
   "Coucou !": "Hi there!",
   "Bonjour": "Hello",
