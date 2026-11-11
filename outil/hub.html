@@ -724,7 +724,7 @@ async function lancer(outil, t) {
   t.classList.remove("lance"); void t.offsetWidth; t.classList.add("lance");
   try {
     await api("/api/lancer", { id: outil.id });
-    toast(`${outil.emoji || "🚀"} ${outil.nom} : ${I18N.t("c'est parti !")}`, "succes");
+    toast(t("{nom} lancé", { nom: outil.nom }), "succes");
     setTimeout(chargerOutils, 1500);
   } catch (e) { toast("😕 " + e.message, "erreur", 5500); }
 }
@@ -803,7 +803,7 @@ function editer(outil) {
     el("div", { class: "actions" },
       el("button", { class: "btn", onclick: fermer }, "Annuler"),
       el("button", { class: "btn principal", onclick: async () => {
-        if (!brouillon.nom.trim()) { toast("Donnez-lui un nom 😉", "erreur"); return; }
+        if (!brouillon.nom.trim()) { toast("Indiquez un nom", "erreur"); return; }
         if (!brouillon.cible) { toast("Indiquez ce qu'il faut ouvrir", "erreur"); return; }
         if (outil) {
           S.config.outils = S.config.outils.map(o => o.id === outil.id ? brouillon : o);
@@ -941,13 +941,13 @@ const SURCHARGES = { temps: { groupe: "clients", ordre: 40 }, presse_papiers: { 
   reunions: { titreMenu: "Réunions et trajets" } };
 // Onglets écrits avant le menu latéral (ils ne déclarent que afficher()).
 const ONGLETS_CONNUS = {
-  accueil: { titre: "Accueil", icone: "🏠", groupe: "quotidien", ordre: 0 },
-  mails: { titre: "Mails", icone: "✉️", groupe: "quotidien", ordre: 10 },
-  notes: { titre: "Notes", icone: "📝", groupe: "quotidien", ordre: 20 },
-  agenda: { titre: "Agenda", icone: "📅", groupe: "quotidien", ordre: 30 },
-  motsdepasse: { titre: "Mots de passe", icone: "🔐", groupe: "quotidien", ordre: 40 },
-  github: { titre: "GitHub", icone: "🐙", groupe: "dev", ordre: 20 },
-  ssh: { titre: "SSH", icone: "🔑", groupe: "dev", ordre: 60 },
+  accueil: { titre: "Accueil", icone: "house", groupe: "quotidien", ordre: 0 },
+  mails: { titre: "Mails", icone: "mail", groupe: "quotidien", ordre: 10 },
+  notes: { titre: "Notes", icone: "notebook-pen", groupe: "quotidien", ordre: 20 },
+  agenda: { titre: "Agenda", icone: "calendar", groupe: "quotidien", ordre: 30 },
+  motsdepasse: { titre: "Mots de passe", icone: "lock", groupe: "quotidien", ordre: 40 },
+  github: { titre: "GitHub", icone: "git-branch", groupe: "dev", ordre: 20 },
+  ssh: { titre: "SSH", icone: "key-round", groupe: "dev", ordre: 60 },
 };
 VUES.accueil = { afficher: () => afficherAujourdhui() };
 function infosOnglet(nom) { return { ...(ONGLETS_CONNUS[nom] || {}), ...(CATALOGUE[nom] || {}), ...(VUES[nom] || {}), ...(SURCHARGES[nom] || {}) }; }
@@ -1071,18 +1071,18 @@ async function afficherAujourdhui() {
     el("span", { class: "pastille-c", style: `background:${e.couleur || "#6c4cf5"}` }), e.titre ? document.createTextNode(e.titre) : "Rendez-vous");
   const cartes = [
     !appActive("agenda") ? null : el("div", { class: "carte-jour", style: "--accent:var(--violet)", onclick: () => montrerVue("agenda") },
-      el("h4", {}, "📅 Aujourd'hui"),
-      duJour.length ? duJour.map(ligneRdv) : el("div", { class: "rien" }, "Rien de prévu, profitez-en 🌴"),
+      el("h4", {}, icone("calendar"), "Aujourd'hui"),
+      duJour.length ? duJour.map(ligneRdv) : el("div", { class: "rien" }, "Rien de prévu"),
       deDemain.length ? [el("h4", { style: "margin-top:12px" }, "Demain"), deDemain.slice(0, 3).map(ligneRdv)] : null),
     !appActive("notes") ? null : el("div", { class: "carte-jour", style: "--accent:var(--ambre)", onclick: () => montrerVue("notes") },
-      el("h4", {}, "📌 Notes épinglées"),
+      el("h4", {}, icone("pin"), "Notes épinglées"),
       epinglees.length ? epinglees.map(n => el("div", { class: "ligne-jour" },
         el("span", { class: "pastille-c", style: `background:${n.couleur || "#ffb020"}` }), (n.titre || (n.texte || "").slice(0, 50)) ? document.createTextNode(n.titre || (n.texte || "").slice(0, 50)) : "Note"))
         : el("div", { class: "rien" }, "Épinglez une note pour la retrouver ici")),
   ].filter(Boolean);
   if (appActive("mails") && S.mailsNonLus !== undefined && S.mailsNonLus !== null) {
     cartes.push(el("div", { class: "carte-jour", style: "--accent:var(--corail)", onclick: () => montrerVue("mails") },
-      el("h4", {}, "✉️ Mails"),
+      el("h4", {}, icone("mail"), "Mails"),
       el("div", { class: "ligne-jour" }, el("span", { class: "heure", style: "font-size:26px" }, String(S.mailsNonLus)),
         S.mailsNonLus === 1 ? "mail non lu" : "mails non lus")));
   }
@@ -1125,7 +1125,7 @@ async function afficherAujourdhui() {
     const enRetard = etats.filter(g => g.retard > 0).length;
     const ligne = (icone, n, texte) => el("div", { class: "ligne-jour" }, el("span", { class: "heure" }, icone + " " + n), t(texte));
     dev.push(el("div", { class: "carte-jour carte-dev", style: "--accent:var(--menthe)", onclick: () => montrerVue("projets") },
-      el("h4", {}, "💻 " + t("Code")),
+      el("h4", {}, icone("laptop"), t("Code")),
       aEnvoyer || modifies || enRetard || ci?.nombre
         ? [aEnvoyer ? ligne("⬆️", aEnvoyer, aEnvoyer > 1 ? "projets à envoyer" : "projet à envoyer") : null,
            modifies ? ligne("✏️", modifies, modifies > 1 ? "projets modifiés" : "projet modifié") : null,
@@ -1137,7 +1137,7 @@ async function afficherAujourdhui() {
   if (chrono?.en_cours) {
     const depuis = Math.floor((chrono.secondes || 0) / 60);
     dev.push(el("div", { class: "carte-jour carte-dev", style: "--accent:var(--ambre)", onclick: () => montrerVue("temps") },
-      el("h4", {}, "⏱️ " + t("Chrono en cours")),
+      el("h4", {}, icone("timer"), t("Chrono en cours")),
       el("div", { class: "grand" }, `${Math.floor(depuis / 60)} h ${String(depuis % 60).padStart(2, "0")}`),
       el("div", { class: "ligne-jour" }, chrono.projet || "")));
   }
