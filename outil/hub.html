@@ -375,6 +375,14 @@
   @media (hover: none) {
     .ligne-actions { opacity: 1; }
   }
+  /* Cibles tactiles : zone cliquable d'au moins 44 px sur écran tactile
+     (le bureau, à la souris, garde ses tailles compactes). */
+  @media (pointer: coarse) {
+    .icone-btn, .rond { min-width: 44px; min-height: 44px; }
+    .puce, .btn, .btn.petit { min-height: 44px; }
+    .types button { min-height: 52px; }
+    .emojis button { min-height: 44px; }
+  }
 
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
