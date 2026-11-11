@@ -371,6 +371,11 @@
   .etat-txt.vert { color: var(--vert-texte); } .etat-txt.rouge { color: var(--rouge-texte); }
   .etat-txt.ambre { color: var(--ambre-texte); } .etat-txt.gris { color: var(--gris); }
 
+  /* Tactile (pas de survol) : les actions des lignes restent visibles. */
+  @media (hover: none) {
+    .ligne-actions { opacity: 1; }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
   }
@@ -431,7 +436,7 @@
   <div class="resultats" id="palette-resultats"></div>
   <div class="pied"><span><kbd>↑</kbd> <kbd>↓</kbd> choisir</span><span><kbd>Entrée</kbd> ouvrir</span><span><kbd>Échap</kbd> fermer</span></div>
 </div></div>
-<div id="toasts"></div>
+<div id="toasts" aria-live="polite"></div>
 
 <script>
 "use strict";
@@ -513,8 +518,8 @@ function traiterEmojis(racine) {
   const noeuds = [];
   while (marcheur.nextNode()) noeuds.push(marcheur.currentNode);
   noeuds.forEach(remplacerEmojis);
-  for (const e of [racine, ...racine.querySelectorAll("[title],[placeholder]")]) {
-    for (const a of ["title", "placeholder"]) if (e.hasAttribute?.(a)) {
+  for (const e of [racine, ...racine.querySelectorAll("[title],[placeholder],[aria-label]")]) {
+    for (const a of ["title", "placeholder", "aria-label"]) if (e.hasAttribute?.(a)) {
       const v = e.getAttribute(a), propre = sansEmoji(v);
       if (propre !== v) e.setAttribute(a, propre);
     }
@@ -580,9 +585,11 @@ function el(tag, attrs = {}, ...enfants) {
     else if (k === "style") e.setAttribute("style", v);
     else if (k.startsWith("on")) e.addEventListener(k.slice(2), v);
     else if (k === "value") e.value = v;
-    else if (k === "title" || k === "placeholder") e.setAttribute(k, I18N.traduire(String(v)));
+    else if (k === "title" || k === "placeholder" || k === "aria-label") e.setAttribute(k, I18N.traduire(String(v)));
     else if (v !== false && v !== null && v !== undefined) e.setAttribute(k, v);
   }
+  // Un bouton sans texte (icône seule) : son nom accessible vient du title.
+  if (attrs.title && attrs["aria-label"] === undefined) e.setAttribute("aria-label", I18N.traduire(String(attrs.title)));
   // flat(Infinity) : une liste d'éléments peut en contenir d'autres (bloc
   // « Demain » de l'accueil) ; sans ça, elle s'affiche en texte brut.
   for (const c of enfants.flat(Infinity)) {
@@ -598,16 +605,40 @@ function toast(message, type = "", duree = 3000) {
   $("#toasts").append(bloc);
   setTimeout(() => { bloc.classList.add("part"); setTimeout(() => bloc.remove(), 300); }, duree);
 }
+// Le focus est rendu à cet élément quand la fenêtre se referme.
+let focusPrecedent = null;
 function fenetre(contenu, petite = false) {
   const f = $("#fenetre");
   f.className = "fenetre" + (petite ? " petite" : "");
   f.style.width = ""; f.style.background = "";  // une note ou un mail a pu les changer
+  f.setAttribute("role", "dialog");
+  f.setAttribute("aria-modal", "true");
+  f.tabIndex = -1;
   f.replaceChildren(...contenu);
+  focusPrecedent = document.activeElement;
   $("#voile").classList.add("visible");
+  // Focus sur le premier élément focusable (sinon la fenêtre elle-même).
+  const premier = f.querySelector("button, input, select, textarea, [href], [tabindex]:not([tabindex='-1'])");
+  (premier || f).focus();
 }
-function fermer() { $("#voile").classList.remove("visible"); }
+function fermer() {
+  const voile = $("#voile");
+  if (!voile.classList.contains("visible")) return;
+  voile.classList.remove("visible");
+  if (focusPrecedent?.isConnected) { focusPrecedent.focus(); focusPrecedent = null; }
+}
 $("#voile").addEventListener("mousedown", e => { if (e.target.id === "voile") fermer(); });
-document.addEventListener("keydown", e => { if (e.key === "Escape") fermer(); });
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") { fermer(); return; }
+  if (e.key !== "Tab" || !$("#voile").classList.contains("visible")) return;
+  // La fenêtre est une modale : le focus reste piégé dedans.
+  const focusables = [...$("#fenetre").querySelectorAll("button, input, select, textarea, [href], [tabindex]:not([tabindex='-1'])")]
+    .filter(x => !x.disabled);
+  if (!focusables.length) return;
+  const premier = focusables[0], dernier = focusables[focusables.length - 1];
+  if (e.shiftKey && document.activeElement === premier) { e.preventDefault(); dernier.focus(); }
+  else if (!e.shiftKey && document.activeElement === dernier) { e.preventDefault(); premier.focus(); }
+});
 function confirmer(icone, titre, texte, oui = "Oui") {
   return new Promise(resolve => {
     const fin = v => { fermer(); resolve(v); };
@@ -943,7 +974,7 @@ function construireMenu() {
         o.nom === "mails" ? el("span", { class: "compteur", id: "compteur-mails", hidden: "" }) : null));
     }
   }
-  if (S.vue) nav.querySelectorAll("button").forEach(b => b.classList.toggle("actif", b.dataset.vue === S.vue));
+  if (S.vue) marquerActif(S.vue);
   if (S.mailsNonLus) majCompteurMails(S.mailsNonLus);
   ajusterMenu();
 }
@@ -960,10 +991,18 @@ function ajusterMenu() {
   }
 }
 addEventListener("resize", () => ajusterMenu());
+/** Marque l'onglet actif du menu (visuel + lecteur d'écran). */
+function marquerActif(nom) {
+  document.querySelectorAll("#onglets button").forEach(b => {
+    const actif = b.dataset.vue === nom;
+    b.classList.toggle("actif", actif);
+    if (actif) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current");
+  });
+}
 function montrerVue(nom) {
   if (!$("#vue-" + nom) || !VUES[nom]) nom = "accueil";
   document.querySelectorAll(".vue").forEach(v => v.classList.toggle("actif", v.id === "vue-" + nom));
-  document.querySelectorAll("#onglets button").forEach(b => b.classList.toggle("actif", b.dataset.vue === nom));
+  marquerActif(nom);
   S.vue = nom;
   try { VUES[nom]?.afficher(); } catch (e) { console.error(e); toast("😕 " + e.message, "erreur"); }
   history.replaceState(null, "", "#" + nom);
