@@ -43,7 +43,7 @@
     "Nom du serveur": "Server name",
     "Adresse IP ou nom": "IP address or name",
     "Port SSH": "SSH port",
-    "Utilisateur": "User",
+    "Utilisateur": "Username",
     "Mot de passe du serveur": "Server password",
     "Annuler": "Cancel",
     // messages du serveur (ssh_cles.py)

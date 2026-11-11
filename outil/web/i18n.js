@@ -212,7 +212,7 @@ I18N.ajouter({
   "Fichier de configuration": "Configuration file",
   "Démarrer": "Start",
   "Arrêter": "Stop",
-  "Ouvrir dans le navigateur": "Open in the browser",
+  "Ouvrir dans le navigateur": "Open in browser",
   "Journal": "Log",
   "Base de référence": "Reference database",
   "« {base} » ne doit pas être modifiée. Démarrer quand même son serveur ?": "“{base}” must not be modified. Start its server anyway?",

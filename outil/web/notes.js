@@ -30,7 +30,7 @@
     "☑️ En liste": "☑️ As list",
     "Titre": "Title",
     "Supprimer cette note ?": "Delete this note?",
-    "Elle disparaît définitivement.": "It will be deleted permanently.",
+    "Elle disparaît définitivement.": "It is removed for good.",
     "Supprimer": "Delete",
     "🗑 Supprimer": "🗑 Delete",
     "🗑️ Note supprimée": "🗑️ Note deleted",

@@ -138,7 +138,7 @@
   ]);
   I18N.ajouter({
     // Affichage en lignes compactes
-    "Plus d'actions": "More actions", "Ouvrir le dossier": "Open the folder",
+    "Plus d'actions": "More actions", "Ouvrir le dossier": "Open folder",
     "Dossiers de projets…": "Project folders…",
     "Ouvrir la page du dépôt sur GitHub": "Open the repository page on GitHub",
   });

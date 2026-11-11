@@ -26,7 +26,7 @@
     "Ajoutez un contrat, un devis signé, une attestation… Le fichier reste où il est : le classeur garde seulement son adresse.":
       "Add a contract, a signed quote, a certificate… The file stays where it is: the binder only keeps its location.",
     "Aucun document ne correspond.": "No matching document.",
-    "Introuvable": "Missing",
+    "Introuvable": "Not found",
     "Retrouver…": "Locate…",
     "Le fichier a été déplacé ou supprimé. Choisissez son nouvel emplacement.": "The file was moved or deleted. Choose its new location.",
     "Expiré": "Expired",

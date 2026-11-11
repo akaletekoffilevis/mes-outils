@@ -27,7 +27,7 @@
     "Cochez celles dont vous vous servez. Les autres restent disponibles dans la page Applications.":
       "Tick the ones you use. The others stay available on the Apps page.",
     "Retour": "Back", "Continuer": "Continue", "Commencer": "Get started", "Passer": "Skip",
-    "Étape {n} sur 3": "Step {n} of 3", "Tout cocher": "Tick all", "Tout décocher": "Untick all",
+    "Étape {n} sur 3": "Step {n} of 3", "Tout cocher": "Select all", "Tout décocher": "Clear all",
     "Freelance": "Freelancer", "Clients, devis, factures, temps passé.": "Clients, quotes, invoices, time spent.",
     "Assistant(e) virtuel(le)": "Virtual assistant", "Plusieurs clients, tâches, messages types.": "Several clients, tasks, message templates.",
     "Assistant(e) de direction": "Executive assistant", "Agenda, réunions, déplacements, documents.": "Calendar, meetings, travel, documents.",
