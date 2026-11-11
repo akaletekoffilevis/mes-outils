@@ -186,7 +186,7 @@
   h2 .espace { flex: 1; }
 
   /* Tuiles des outils ------------------------------------------------ */
-  .tuiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; }
+  .tuiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(250px, 100%), 1fr)); gap: 10px; }
   .tuile {
     position: relative; border: 1px solid var(--ligne); text-align: left; cursor: pointer; padding: 12px 14px; border-radius: var(--rayon); min-height: 64px; color: var(--encre);
     background: var(--carte); display: grid; grid-template-columns: 32px minmax(0, 1fr); column-gap: 12px; align-content: center; transition: border-color .12s, background .12s;
@@ -219,7 +219,7 @@
   @keyframes clignote { to { opacity: .35; } }
 
   /* Serveurs ------------------------------------------------------------ */
-  .serveurs { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 10px; }
+  .serveurs { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(360px, 100%), 1fr)); gap: 10px; }
   .serveur {
     background: var(--carte); border: 1px solid var(--ligne); border-radius: var(--rayon); box-shadow: var(--ombre); padding: 10px 12px; display: flex; align-items: center; gap: 12px;
   }
@@ -290,7 +290,7 @@
   .vue.actif { display: block; animation: apparait .15s ease-out both; }
 
   /* Aujourd'hui (accueil) ----------------------------------------------- */
-  .aujourdhui { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-bottom: 4px; }
+  .aujourdhui { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap: 10px; margin-bottom: 4px; }
   .carte-jour { background: var(--carte); border: 1px solid var(--ligne); border-radius: var(--rayon); padding: 12px 14px; cursor: pointer; transition: border-color .12s, background .12s; }
   .carte-jour:hover { border-color: var(--ligne-forte); background: var(--surface); }
   .carte-jour h4 { margin: 0 0 8px; font-size: 11.5px; font-weight: 600; color: var(--gris); text-transform: uppercase; letter-spacing: .04em; display: flex; gap: 6px; align-items: center; }
@@ -308,7 +308,7 @@
   .barre-vue h2 svg.ico { color: var(--doux); }
   .barre-vue .espace { flex: 1; }
   .champ-recherche { position: relative; }
-  .champ-recherche input { padding-left: 32px !important; width: 260px; }
+  .champ-recherche input { padding-left: 32px !important; width: 260px; max-width: 100%; }
   .champ-recherche span { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--gris); pointer-events: none; display: flex; }
   .champ-recherche span svg.ico { margin: 0; }
   .puces { display: inline-flex; gap: 2px; flex-wrap: wrap; background: var(--surface); border: 1px solid var(--ligne); padding: 2px; border-radius: 8px; }
