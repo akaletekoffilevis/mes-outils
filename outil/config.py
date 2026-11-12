@@ -51,7 +51,7 @@ DONNEES = os.path.join(BASE, "donnees")
 FICHIER_BULLE = os.path.join(BASE, "bulle.json")
 JOURNAL = os.path.join(BASE if GELE else ICI, "hub.log")
 LANGUES = ("fr", "en")
-THEMES = ("auto", "clair", "sombre")
+THEMES = ("auto", "clair", "sombre", "sepia", "contraste")
 # Métiers proposés au premier lancement (ils pré-cochent des applications).
 PROFILS = ("freelance", "assistant_virtuel", "assistant_direction", "developpeur", "personnalise")
 # Toujours présentes, jamais désactivables.
