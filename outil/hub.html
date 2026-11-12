@@ -271,10 +271,10 @@
   @keyframes miroite { to { background-position: -200% 0; } }
 
   /* Fenêtres, messages ------------------------------------------------- */
-  .voile { position: fixed; inset: 0; background: var(--voile); display: none; place-items: center; z-index: 40; }
+  .voile { position: fixed; inset: 0; background: var(--voile); display: none; place-items: center; z-index: 40; backdrop-filter: blur(8px) saturate(120%); -webkit-backdrop-filter: blur(8px) saturate(120%); }
   .voile.visible { display: grid; animation: fondu .12s both; }
   @keyframes fondu { from { opacity: 0; } }
-  .fenetre { width: min(540px, 94vw); max-height: 92vh; overflow: auto; background: var(--carte); color: var(--encre); border: 1px solid var(--ligne); border-radius: 12px; padding: 22px; box-shadow: var(--ombre-forte); animation: pop .14s ease-out both; }
+  .fenetre { width: min(540px, 94vw); max-height: 92vh; overflow: auto; background: var(--carte); color: var(--encre); border: 1px solid var(--ligne); border-radius: 14px; padding: 22px; box-shadow: var(--ombre-forte); animation: pop .18s var(--ressort) both; }
   .fenetre.petite { width: min(420px, 92vw); }
   .fenetre .gros { width: 38px; height: 38px; border-radius: 9px; background: var(--surface); color: var(--doux); display: grid; place-items: center; font-size: 20px; margin-bottom: 4px; }
   .fenetre .gros:empty { display: none; }
@@ -303,7 +303,7 @@
   .apercu-tuile .tuile { width: 280px; cursor: default; }
 
   #toasts { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 60; align-items: center; pointer-events: none; }
-  .toast { background: var(--encre); color: var(--fond); padding: 9px 14px; border-radius: 8px; box-shadow: var(--ombre-forte); font-weight: 500; font-size: 13.5px;
+  .toast { background: var(--encre); color: var(--fond); padding: 9px 14px; border-radius: 10px; box-shadow: var(--ombre-forte); font-weight: 500; font-size: 13.5px;
     display: flex; align-items: center; gap: 8px; animation: pop .14s ease-out both; max-width: 560px; }
   .toast svg.ico { margin: 0; }
   .toast.erreur svg.ico { color: var(--rouge); }
