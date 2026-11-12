@@ -169,7 +169,7 @@
       el("button", { title: t("Précédent"), onclick: precedent }, icone("chevron-left")),
       el("button", { class: "principal", title: V.enLecture ? t("Pause") : t("Lecture"), onclick: basculer }, icone(V.enLecture ? "pause" : "play")),
       el("button", { title: t("Suivant"), onclick: suivant }, icone("skip-forward")),
-      el("button", { title: t("Plein écran"), onclick: pleinEcran }, icone("maximize")));
+      el("button", { title: t("Plein écran"), onclick: pleinEcran }, icone("external-link")));
     const volume = el("div", { class: "video-volume" },
       el("input", { type: "range", min: 0, max: 1, step: 0.01, value: V.volume, oninput: e => { V.volume = Number(e.target.value); if (V.video) V.video.volume = V.volume; } }));
     const liste = V.videos.length
