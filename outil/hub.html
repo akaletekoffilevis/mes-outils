@@ -10,8 +10,10 @@
   // Thème appliqué avant le premier affichage (pas d'éclair blanc).
   (() => { let c = "auto"; try { c = localStorage.getItem("mes-outils-theme") || "auto"; } catch {}
     const f = new URLSearchParams(location.search).get("theme");
-    const sombre = f ? f === "sombre" : c === "sombre" || (c === "auto" && matchMedia("(prefers-color-scheme: dark)").matches);
-    document.documentElement.dataset.theme = sombre ? "sombre" : "clair"; })();
+    let nom = f || c;
+    if (nom === "auto") nom = matchMedia("(prefers-color-scheme: dark)").matches ? "sombre" : "clair";
+    if (!["clair", "sombre", "sepia", "contraste"].includes(nom)) nom = "clair";
+    document.documentElement.dataset.theme = nom; })();
 </script>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect width='24' height='24' rx='6' fill='%235b5bd6'/><g fill='none' stroke='white' stroke-width='2'><rect x='6' y='6' width='5' height='5' rx='1'/><rect x='13' y='6' width='5' height='5' rx='1'/><rect x='6' y='13' width='5' height='5' rx='1'/><rect x='13' y='13' width='5' height='5' rx='1'/></g></svg>">
 <style>
@@ -44,6 +46,32 @@
     --code: #121215; --code-texte: #e4e4e8; --verre: #17171a; --voile: rgba(0, 0, 0, .62);
     --ombre: 0 1px 2px rgba(0, 0, 0, .5);
     --ombre-forte: 0 16px 40px -12px rgba(0, 0, 0, .8), 0 0 0 1px rgba(255, 255, 255, .04);
+  }
+  /* Sépia : papier chaud, tons bruns, accent terracotta. */
+  :root[data-theme="sepia"] {
+    color-scheme: light;
+    --fond: #f2ead9; --carte: #faf5ea; --surface: #eae0cb; --champ: #faf5ea; --champ-focus: #fdf9f0;
+    --encre: #3a3222; --doux: #6d6049; --gris: #9a8a6d; --ligne: #e3d8c0; --ligne-forte: #cec0a2;
+    --violet: #9a5b2e; --violet-2: #824c26; --violet-clair: #efe1ce; --sur-violet: #ffffff;
+    --corail: #bd5a35; --menthe: #2f8a5c; --ambre: #b07f18; --rouge: #b23a3a;
+    --vert-clair: #e3efe3; --vert-texte: #2f6b46; --rouge-clair: #f6e6e1; --rouge-texte: #a63a2e;
+    --ambre-clair: #f5e9cd; --ambre-texte: #7d5a12; --bleu-clair: #e0e7ef; --bleu-texte: #2f538f;
+    --code: #efe6d3; --code-texte: #3a3222; --verre: #faf5ea; --voile: rgba(58, 50, 34, .42);
+    --ombre: 0 1px 2px rgba(58, 50, 34, .07);
+    --ombre-forte: 0 12px 32px -12px rgba(58, 50, 34, .26), 0 1px 3px rgba(58, 50, 34, .08);
+  }
+  /* Contrasté : noir et blanc, bordures nettes (accessibilité). */
+  :root[data-theme="contraste"] {
+    color-scheme: dark;
+    --fond: #000000; --carte: #0a0a0a; --surface: #171717; --champ: #050505; --champ-focus: #0a0a0a;
+    --encre: #ffffff; --doux: #d8d8d8; --gris: #adadad; --ligne: #4d4d4d; --ligne-forte: #6e6e6e;
+    --violet: #c9cbff; --violet-2: #b6b9ff; --violet-clair: #1f2140; --sur-violet: #000000;
+    --corail: #ffb3a0; --menthe: #60e9b2; --ambre: #ffd36b; --rouge: #ff9e9e;
+    --vert-clair: #0a2b1d; --vert-texte: #80f2be; --rouge-clair: #311212; --rouge-texte: #ffb8b8;
+    --ambre-clair: #2b2109; --ambre-texte: #ffe08d; --bleu-clair: #0e2039; --bleu-texte: #b6d4ff;
+    --code: #0a0a0a; --code-texte: #ffffff; --verre: #0a0a0a; --voile: rgba(0, 0, 0, .82);
+    --ombre: 0 0 0 1px rgba(255, 255, 255, .16);
+    --ombre-forte: 0 0 0 1px rgba(255, 255, 255, .32), 0 16px 40px -12px rgba(0, 0, 0, .9);
   }
   * { box-sizing: border-box; }
   [hidden] { display: none !important; }
@@ -1212,6 +1240,7 @@ I18N.ajouter({
   "Aller à un onglet, lancer un outil, une action…": "Go to a tab, launch a tool, run an action…",
   "Thème clair ou sombre": "Light or dark theme", "Thème : automatique (comme Windows)": "Theme: automatic (like Windows)",
   "Thème : sombre": "Theme: dark", "Thème : clair": "Theme: light", "Thème sombre": "Dark theme", "Thème clair": "Light theme",
+  "Thème sépia": "Sepia theme", "Thème contrasté": "High contrast theme",
   "Thème automatique (comme Windows)": "Automatic theme (like Windows)", "Modifier les tuiles": "Edit the tiles",
   "Recharger la page": "Reload the page", "Onglets": "Tabs", "Mes outils": "My tools", "Actions": "Actions", "Rien trouvé": "Nothing found",
   "choisir": "select", "ouvrir": "open", "fermer": "close", "Entrée": "Enter", "Échap": "Esc",
@@ -1248,17 +1277,24 @@ I18N.motifs([[/^Trousseau du bureau inaccessible \((.*)\)\.$/, "Desktop keyring 
 // « auto » suit le système (Windows ou le bureau Linux) ; ?theme=sombre dans
 // l'adresse force un thème (captures).
 const texteThemeAuto = () => selonSysteme("Thème : automatique (comme Windows)", "Thème : automatique (comme le système)");
-const THEMES = ["auto", "clair", "sombre"];
+const THEMES = ["auto", "clair", "sombre", "sepia", "contraste"];
+const ICONES_THEMES = { auto: "sun-moon", clair: "sun", sombre: "moon", sepia: "book-open", contraste: "eye" };
+const NOMS_THEMES = { clair: "Thème clair", sombre: "Thème sombre", sepia: "Thème sépia", contraste: "Thème contrasté" };
 const sombreWindows = matchMedia("(prefers-color-scheme: dark)");
+function nomTheme(choix) {
+  // Le thème effectif (« auto » suit le système : clair ou sombre).
+  if (choix === "auto") return sombreWindows.matches ? "sombre" : "clair";
+  return THEMES.includes(choix) ? choix : "clair";
+}
 function appliquerTheme(choix) {
   if (!THEMES.includes(choix)) choix = "auto";
   S.theme = choix;
   const force = new URLSearchParams(location.search).get("theme");
-  const sombre = force ? force === "sombre" : choix === "sombre" || (choix === "auto" && sombreWindows.matches);
-  document.documentElement.dataset.theme = sombre ? "sombre" : "clair";
+  const nom = ["clair", "sombre", "sepia", "contraste"].includes(force) ? force : nomTheme(choix);
+  document.documentElement.dataset.theme = nom;
   const b = $("#btn-theme");
-  b.textContent = choix === "auto" ? "🌗" : sombre ? "🌙" : "☀️";
-  b.title = I18N.traduire(choix === "auto" ? texteThemeAuto() : sombre ? "Thème : sombre" : "Thème : clair");
+  b.replaceChildren(icone(ICONES_THEMES[choix] || "sun-moon"));
+  b.title = I18N.traduire(choix === "auto" ? texteThemeAuto() : NOMS_THEMES[choix] || ("Thème " + choix));
   try { localStorage.setItem("mes-outils-theme", choix); } catch {}
 }
 sombreWindows.addEventListener("change", () => { if (S.theme === "auto") appliquerTheme("auto"); });

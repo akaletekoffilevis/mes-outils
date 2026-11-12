@@ -12,9 +12,11 @@
     "ex. Marie": "e.g. Mary",
     "Langue": "Language",
     "Thème": "Theme",
-    "🌗 Automatique": "🌗 Automatic",
-    "☀️ Clair": "☀️ Light",
-    "🌙 Sombre": "🌙 Dark",
+    "Automatique": "Automatic",
+    "Clair": "Light",
+    "Sombre": "Dark",
+    "Sépia": "Sepia",
+    "Contrasté": "High contrast",
     "Onglets affichés": "Visible tabs",
     "Choisissez les applications du menu, comme dans un ERP : les autres disparaissent, leurs données restent.":
       "Choose the apps in the menu, like in an ERP: the others leave, their data stays.",
@@ -132,8 +134,8 @@
     const langues = el("div", { class: "langues-reg" }, [["fr", "Français"], ["en", "English"]].map(([code, nom]) =>
       el("button", { class: "btn" + (i.langue === code ? " actif" : ""), onclick: () => { if (code !== i.langue) enregistrer({ langue: code }, true); } }, nom)));
 
-    const themes = el("div", { class: "langues-reg" }, [["auto", "🌗 Automatique"], ["clair", "☀️ Clair"], ["sombre", "🌙 Sombre"]].map(([code, nom]) =>
-      el("button", { class: "btn" + (S.theme === code ? " actif" : ""), onclick: async () => { await changerTheme(code); dessiner(); } }, nom)));
+    const themes = el("div", { class: "langues-reg" }, [["auto", "Automatique"], ["clair", "Clair"], ["sombre", "Sombre"], ["sepia", "Sépia"], ["contraste", "Contrasté"]].map(([code, nom]) =>
+      el("button", { class: "btn" + (S.theme === code ? " actif" : ""), onclick: async () => { await changerTheme(code); dessiner(); } }, icone(ICONES_THEMES[code]), t(nom))));
 
     const masques = new Set(i.onglets_masques);
     const onglets = listeOnglets().filter(o => o.nom !== "accueil" && o.nom !== "reglages")
