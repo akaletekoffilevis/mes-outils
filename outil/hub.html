@@ -130,7 +130,9 @@
   .menu .groupe { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--gris); font-weight: 600; margin: 14px 10px 4px; }
   .menu .groupe:first-child { margin-top: 2px; }
   .menu button { border: 0; background: transparent; height: 32px; padding: 0 10px; border-radius: 6px; font-size: 13.5px; cursor: pointer; font-weight: 500; color: var(--doux);
-    display: flex; align-items: center; gap: 10px; text-align: left; white-space: nowrap; position: relative; flex: none; transition: background .12s, color .12s; }
+    display: flex; align-items: center; gap: 10px; text-align: left; white-space: nowrap; position: relative; flex: none; transition: background .12s, color .12s; user-select: none; }
+  .menu button.glisse { opacity: .5; }
+  .menu button.survol { background: var(--violet-clair); color: var(--violet); }
   .menu button .ic { width: 18px; display: grid; place-items: center; flex: none; font-size: 16px; }
   .menu button .ic svg.ico { width: 17px; height: 17px; margin: 0; }
   .menu button .lib { flex: 1; overflow: hidden; text-overflow: ellipsis; }
@@ -1061,6 +1063,7 @@ function appActive(nom) {
 function listeOnglets() {
   return Object.keys(VUES).filter(n => $("#vue-" + n) && infosOnglet(n).titre).map(n => ({ nom: n, ...infosOnglet(n) }));
 }
+let _dernierGlisseMenu = 0;
 function construireMenu() {
   const parGroupe = {};
   for (const o of listeOnglets()) {
@@ -1070,15 +1073,73 @@ function construireMenu() {
   const nav = $("#onglets");
   nav.replaceChildren();
   for (const g of Object.keys(GROUPES)) {
-    const liste = (parGroupe[g] || []).sort((a, b) => (a.ordre ?? 99) - (b.ordre ?? 99));
+    const liste = parGroupe[g] || [];
     if (!liste.length) continue;
+    // Ordre personnalisé (si défini dans les réglages), sinon par défaut.
+    const ordre = (S.config?.ordre_menu || {})[g];
+    if (Array.isArray(ordre)) {
+      liste.sort((a, b) => {
+        const ia = ordre.indexOf(a.nom), ib = ordre.indexOf(b.nom);
+        if (ia >= 0 && ib >= 0) return ia - ib;
+        if (ia >= 0) return -1;
+        if (ib >= 0) return 1;
+        return (a.ordre ?? 99) - (b.ordre ?? 99);
+      });
+    } else {
+      liste.sort((a, b) => (a.ordre ?? 99) - (b.ordre ?? 99));
+    }
     // « Mes outils » (Réglages) tout en bas du dock.
     nav.append(el("div", { class: "groupe" + (g === "systeme" ? " bas" : "") }, GROUPES[g]));
     for (const o of liste) {
       const titre = I18N.traduire(o.titre);
-      nav.append(el("button", { "data-vue": o.nom, title: titre, onclick: () => montrerVue(o.nom) },
+      const btn = el("button", { "data-vue": o.nom, title: titre,
+        draggable: "true",
+        onclick: () => {
+          // Un glisser-déposer vient de se terminer : ne pas ouvrir l'onglet.
+          if (Date.now() - _dernierGlisseMenu < 400) return;
+          montrerVue(o.nom);
+        },
+        ondragstart: ev => {
+          ev.dataTransfer.effectAllowed = "move";
+          ev.dataTransfer.setData("text/plain", JSON.stringify({ nom: o.nom, groupe: g }));
+          btn.classList.add("glisse");
+        },
+        ondragend: () => {
+          btn.classList.remove("glisse");
+          nav.querySelectorAll("button").forEach(x => x.classList.remove("survol"));
+        },
+        ondragover: ev => {
+          if (ev.dataTransfer.types.includes("text/plain")) {
+            ev.preventDefault();
+            ev.dataTransfer.dropEffect = "move";
+            btn.classList.add("survol");
+          }
+        },
+        ondragleave: () => btn.classList.remove("survol"),
+        ondrop: ev => {
+          ev.preventDefault();
+          btn.classList.remove("survol");
+          let payload;
+          try { payload = JSON.parse(ev.dataTransfer.getData("text/plain")); } catch { return; }
+          if (!payload || payload.groupe !== g) return;
+          const fromNom = payload.nom, toNom = o.nom;
+          if (fromNom === toNom) return;
+          const noms = liste.map(x => x.nom);
+          const fromIdx = noms.indexOf(fromNom), toIdx = noms.indexOf(toNom);
+          if (fromIdx < 0 || toIdx < 0) return;
+          noms.splice(fromIdx, 1);
+          noms.splice(toIdx, 0, fromNom);
+          const ordre = { ...(S.config?.ordre_menu || {}) };
+          ordre[g] = noms;
+          if (S.config) S.config.ordre_menu = ordre;
+          api("/api/reglages/enregistrer", { ordre_menu: ordre }).catch(e => toast("😕 " + e.message, "erreur"));
+          _dernierGlisseMenu = Date.now();
+          construireMenu();
+        }
+      },
         el("span", { class: "ic" }, iconeOnglet(o.icone)), el("span", { class: "lib" }, o.titreMenu ? I18N.traduire(o.titreMenu) : titre),
-        o.nom === "mails" ? el("span", { class: "compteur", id: "compteur-mails", hidden: "" }) : null));
+        o.nom === "mails" ? el("span", { class: "compteur", id: "compteur-mails", hidden: "" }) : null);
+      nav.append(btn);
     }
   }
   if (S.vue) marquerActif(S.vue);
