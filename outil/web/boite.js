@@ -248,7 +248,7 @@
       const jeton = B.jwt.trim().replace(/^Bearer\s+/i, "");
       if (!jeton) { resultat.replaceChildren(); return; }
       const parties = jeton.split(".");
-      if (parties.length < 2 || parties.length > 5) { resultat.replaceChildren(alerte("rouge", icone("x") + " " + t("Un JWT a trois parties séparées par des points."))); return; }
+      if (parties.length < 2 || parties.length > 5) { resultat.replaceChildren(alerte("rouge", icone("x"), " ", t("Un JWT a trois parties séparées par des points."))); return; }
       const lire = p => {
         try { return new TextDecoder("utf-8", { fatal: true }).decode(base64VersOctets(p)); }
         catch { return null; }
@@ -259,7 +259,7 @@
       const teteJson = tete !== null ? json(tete) : undefined, corpsJson = corps !== null ? json(corps) : undefined;
       if (teteJson?.alg) blocs.push(el("div", { class: "bo-aide" }, t("Algorithme : {alg}", { alg: String(teteJson.alg) })));
       const colonne = (titre, brut, valeur) => brut === null
-        ? el("div", { class: "bo-sortie" }, el("div", { class: "bo-tete" }, titre), alerte("rouge", icone("x") + " " + t("Partie illisible (Base64 URL invalide).")))
+        ? el("div", { class: "bo-sortie" }, el("div", { class: "bo-tete" }, titre), alerte("rouge", icone("x"), " ", t("Partie illisible (Base64 URL invalide).")))
         : valeur === undefined ? sortie(titre, brut) : sortie(titre, JSON.stringify(valeur, null, 2), true);
       blocs.push(el("div", { class: "bo-deux" }, colonne(t("En-tête"), tete, teteJson), colonne(t("Charge utile"), corps, corpsJson)));
       if (corpsJson && typeof corpsJson === "object") {
@@ -290,8 +290,8 @@
       el("p", { class: "bo-aide" }, "Tout se passe dans cette page : rien n'est envoyé."),
       zone(B.jwt, "Collez un jeton JWT (eyJ…)", e => { B.jwt = e.target.value; dessiner(); }, 4),
       el("div", { class: "bo-actions" },
-        el("button", { class: "btn discret", onclick: exemple }, icone("sparkles") + " " + t("Exemple")),
-        el("button", { class: "btn discret", onclick: () => { B.jwt = ""; afficher(); } }, icone("brush") + " " + t("Effacer"))),
+        el("button", { class: "btn discret", onclick: exemple }, icone("sparkles"), " ", t("Exemple")),
+        el("button", { class: "btn discret", onclick: () => { B.jwt = ""; afficher(); } }, icone("brush"), " ", t("Effacer"))),
       resultat);
   }
 
@@ -301,7 +301,7 @@
     const montrer = () => {
       const s = B.b64sortie;
       if (!s) resultat.replaceChildren();
-      else if (s.erreur) resultat.replaceChildren(alerte("rouge", icone("x") + " " + s.erreur));
+      else if (s.erreur) resultat.replaceChildren(alerte("rouge", icone("x"), " ", s.erreur));
       else if (s.binaire) resultat.replaceChildren(el("div", { class: "bo-aide", style: "margin-top:10px" }, t("Contenu binaire ({n} octets), affiché en hexadécimal :", { n: s.binaire })), sortie(t("Résultat"), s.texte));
       else resultat.replaceChildren(sortie(t("Résultat"), s.texte));
     };
@@ -435,9 +435,9 @@
     return el("div", {},
       zone(B.json, "Collez du JSON", e => { B.json = e.target.value; }, 9),
       el("div", { class: "bo-actions" },
-        el("button", { class: "btn principal", onclick: () => traiter("forme") }, icone("sparkles") + " " + t("Mettre en forme")),
+        el("button", { class: "btn principal", onclick: () => traiter("forme") }, icone("sparkles"), " ", t("Mettre en forme")),
         el("button", { class: "btn", onclick: () => traiter("compacter") }, t("Compacter")),
-        el("button", { class: "btn", onclick: () => traiter("valider") }, icone("check") + " " + t("Valider")),
+        el("button", { class: "btn", onclick: () => traiter("valider") }, icone("check"), " ", t("Valider")),
         indentation,
         coche(t("Trier les clés"), B.jsonTri, v => { B.jsonTri = v; })),
       resultat);
@@ -454,10 +454,10 @@
       const brut = B.unix.trim();
       if (!brut) { versDate.replaceChildren(); return; }
       const n = Number(brut);
-      if (!Number.isFinite(n)) { versDate.replaceChildren(alerte("rouge", icone("x") + " " + t("Nombre invalide."))); return; }
+      if (!Number.isFinite(n)) { versDate.replaceChildren(alerte("rouge", icone("x"), " ", t("Nombre invalide."))); return; }
       const ms = B.unite === "ms" || (B.unite === "auto" && Math.abs(n) >= 1e11) ? n : n * 1000;
       const d = new Date(ms);
-      if (isNaN(d)) { versDate.replaceChildren(alerte("rouge", icone("x") + " " + t("Nombre invalide."))); return; }
+      if (isNaN(d)) { versDate.replaceChildren(alerte("rouge", icone("x"), " ", t("Nombre invalide."))); return; }
       versDate.replaceChildren(tableau([[t("Date locale"), dateLocale(d)], [t("ISO 8601 (UTC)"), d.toISOString()],
         [t("Par rapport à maintenant"), relatif(d)], [t("Unix (secondes)"), Math.floor(ms / 1000)], [t("Unix (millisecondes)"), Math.round(ms)]]));
     };
@@ -508,7 +508,7 @@
       const lignes = B.uuids.map(forme);
       resultat.replaceChildren(el("div", { class: "bo-sortie" },
         el("div", { class: "bo-tete" }, "UUID v4", el("span", { class: "espace" }),
-          el("button", { class: "bo-copier", onclick: () => copier(lignes.join("\n")) }, icone("clipboard") + " " + t("Tout copier"))),
+          el("button", { class: "bo-copier", onclick: () => copier(lignes.join("\n")) }, icone("clipboard"), " ", t("Tout copier"))),
         el("table", { class: "bo-table" }, lignes.map(u => el("tr", {}, el("td", { class: "bo-v", style: "width:auto" }, document.createTextNode(u)), el("td", {}, boutonCopier(u)))))));
     };
     const generer = () => { B.uuids = Array.from({ length: Math.min(Math.max(B.nbUuid, 1), 100) }, uuid4); montrer(); };
@@ -533,7 +533,7 @@
       if (!B.motif) { resultat.replaceChildren(); return; }
       let re;
       try { re = new RegExp(B.motif, B.drapeaux.includes("g") ? B.drapeaux : B.drapeaux + "g"); }
-      catch (e) { resultat.replaceChildren(alerte("rouge", icone("x") + " " + t("Motif invalide : {m}", { m: e.message }))); return; }
+      catch (e) { resultat.replaceChildren(alerte("rouge", icone("x"), " ", t("Motif invalide : {m}", { m: e.message }))); return; }
       const texte = B.texteRegex, toutes = B.drapeaux.includes("g");
       const trouvees = [];
       let m, limite = false;
@@ -591,7 +591,7 @@
     const resultat = el("div"), detail = el("div");
     const montrer = () => {
       const s = B.urlSortie;
-      resultat.replaceChildren(...(s ? [s.erreur ? alerte("rouge", icone("x") + " " + s.erreur) : sortie(t("Résultat"), s.texte)] : []));
+      resultat.replaceChildren(...(s ? [s.erreur ? alerte("rouge", icone("x"), " ", s.erreur) : sortie(t("Résultat"), s.texte)] : []));
     };
     const decomposer = () => {
       let u;
@@ -628,14 +628,14 @@
       if (n !== numero) return;  // un calcul plus récent est en cours
       const attendu = B.attendu.trim().toLowerCase();
       resultat.replaceChildren(...[
-        B.fichier ? el("div", { class: "bo-actions" }, el("span", { class: "bo-etat" }, icone("file-text") + " " + t("Fichier : {nom} ({taille})", { nom: B.fichier.name, taille: taille(B.fichier.size) })),
+        B.fichier ? el("div", { class: "bo-actions" }, el("span", { class: "bo-etat" }, icone("file-text"), " ", t("Fichier : {nom} ({taille})", { nom: B.fichier.name, taille: taille(B.fichier.size) })),
           el("button", { class: "btn discret", onclick: () => { B.fichier = null; afficher(); } }, "↩ " + t("Revenir au texte"))) : null,
         tableau(algos.map((a, i) => [attendu && attendu === empreintes[i] ? `${a}  ` : a, empreintes[i]])),
-        attendu && !empreintes.includes(attendu) ? alerte("rouge", icone("x") + " " + t("Aucune correspondance.")) : null,
+        attendu && !empreintes.includes(attendu) ? alerte("rouge", icone("x"), " ", t("Aucune correspondance.")) : null,
         el("p", { class: "bo-aide" }, "SHA-1 est cassé pour la sécurité : ne s'en servir que pour comparer des fichiers.")].filter(Boolean));
     }
-    const lancer = () => calculer().catch(e => resultat.replaceChildren(alerte("rouge", icone("x") + " " + e.message)));
-    const fichier = el("input", { type: "file", onchange: e => { B.fichier = e.target.files[0] || null; if (B.fichier) { resultat.replaceChildren(el("p", { class: "bo-aide" }, icone("loader") + " " + t("Calcul…"))); lancer(); } } });
+    const lancer = () => calculer().catch(e => resultat.replaceChildren(alerte("rouge", icone("x"), " ", e.message)));
+    const fichier = el("input", { type: "file", onchange: e => { B.fichier = e.target.files[0] || null; if (B.fichier) { resultat.replaceChildren(el("p", { class: "bo-aide" }, icone("loader"), " ", t("Calcul…"))); lancer(); } } });
     lancer();
     return el("div", {},
       B.fichier ? null : zone(B.hache, "Texte à hacher (UTF-8)", e => { B.hache = e.target.value; lancer(); }, 4),
@@ -679,7 +679,7 @@
       placeholder: "Couleur (hex, rgb(), hsl() ou nom CSS)", oninput: e => { B.couleur = e.target.value; dessiner(); } });
     function dessiner() {
       const c = lireCouleur(B.couleur);
-      if (!c) { pastille.style.background = "transparent"; resultat.replaceChildren(...(B.couleur.trim() ? [alerte("rouge", icone("x") + " " + t("Couleur non reconnue."))] : [])); return; }
+      if (!c) { pastille.style.background = "transparent"; resultat.replaceChildren(...(B.couleur.trim() ? [alerte("rouge", icone("x"), " ", t("Couleur non reconnue."))] : [])); return; }
       const h2 = n => n.toString(16).padStart(2, "0");
       const hexa = `#${h2(c.r)}${h2(c.g)}${h2(c.b)}` + (c.a < 1 ? h2(Math.round(c.a * 255)) : "");
       const { h, s, l } = versHsl(c);

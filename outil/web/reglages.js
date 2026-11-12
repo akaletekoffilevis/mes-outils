@@ -140,7 +140,7 @@
   }
 
   function carte(icone, titre, ...contenu) {
-    return el("div", { class: "carte-reg" }, el("h3", {}, icone + t(titre)), ...contenu);
+    return el("div", { class: "carte-reg" }, el("h3", {}, icone, " ", t(titre)), ...contenu);
   }
 
   function dessiner() {

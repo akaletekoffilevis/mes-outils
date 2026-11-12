@@ -238,10 +238,10 @@
   // -- page ------------------------------------------------------------------------
   function dessiner() {
     racine().replaceChildren(
-      el("div", { class: "barre-vue" }, el("h2", {}, icone("radio") + " " + t("Testeur d'API")), el("div", { class: "espace" }),
+      el("div", { class: "barre-vue" }, el("h2", {}, icone("radio"), " ", t("Testeur d'API")), el("div", { class: "espace" }),
         el("span", { class: "rq-info" }, "Ctrl + Entrée pour envoyer"),
         el("button", { class: "btn", title: "Nouvelle requête", onclick: () => {
-          R.req = completer(nouvelle()); R.idEnregistree = null; R.rep = null; R.erreur = null; dessinerRequete(); dessinerReponse(); } }, icone("sparkles") + " " + t("Nouvelle")),
+          R.req = completer(nouvelle()); R.idEnregistree = null; R.rep = null; R.erreur = null; dessinerRequete(); dessinerReponse(); } }, icone("sparkles"), " ", t("Nouvelle")),
         el("button", { class: "btn", title: "Enregistrer la requête", onclick: enregistrer }, t("Enregistrer")),
         el("button", { class: "btn", title: "Copier en cURL (bash)", onclick: copierCurl }, "📋 cURL")),
       el("div", { class: "rq-grille" },
@@ -264,7 +264,7 @@
       oninput: e => { r.url = e.target.value; },
       onkeydown: e => { if (e.key === "Enter") { e.preventDefault(); envoyer(); } } });
     const bouton = el("button", { class: "btn principal", id: "rq-envoyer", onclick: envoyer, disabled: R.envoi ? "" : null },
-      R.envoi ? icone("loader") + " " + t("Envoi…") : icone("rocket") + " " + t("Envoyer"));
+      R.envoi ? [icone("loader"), " ", t("Envoi…")] : [icone("rocket"), " ", t("Envoyer")]);
     const compte = l => l.filter(x => x.actif && x.cle.trim()).length;
     const onglets = [
       ["params", "Paramètres", compte(r.params)], ["entetes", "En-têtes", compte(r.entetes)],
@@ -344,7 +344,7 @@
     const verifier = () => {
       if (c.type !== "json" || !c.texte.trim()) { etat.textContent = ""; return; }
       try { JSON.parse(c.texte); etat.textContent = t("✅ JSON valide"); etat.style.color = "var(--vert-texte)"; }
-      catch (e) { etat.textContent = icone("x") + " " + e.message; etat.style.color = "var(--rouge-texte)"; }
+      catch (e) { etat.textContent = icone("x"), " ", e.message; etat.style.color = "var(--rouge-texte)"; }
     };
     const zone = el("textarea", { value: c.texte, spellcheck: "false", rows: 10,
       placeholder: c.type === "json" ? '{\n  "nom": "valeur"\n}' : "",
@@ -494,7 +494,7 @@
           el("span", { class: "rq-mini " + classeStatut(h.statut).replace("rq-statut ", "") }, String(h.statut))));
       }
       zone.replaceChildren(...[puces, liste, R.historique.length ? el("div", { style: "margin-top:8px;text-align:right" },
-        el("button", { class: "btn discret", onclick: viderHistorique }, icone("trash-2") + " " + t("Vider"))) : null].filter(Boolean));
+        el("button", { class: "btn discret", onclick: viderHistorique }, icone("trash-2"), " ", t("Vider"))) : null].filter(Boolean));
       return;
     }
     if (!R.enregistrees.length) liste.append(el("div", { class: "rq-vide" }, "Aucune requête enregistrée. Bouton 💾 pour garder la requête en cours."));
@@ -502,7 +502,7 @@
     for (const e of R.enregistrees) (groupes[e.collection || ""] ||= []).push(e);
     const noms = Object.keys(groupes).sort((a, b) => (a === "") - (b === "") || a.localeCompare(b));
     for (const g of noms) {
-      liste.append(el("div", { class: "rq-groupe" }, g ? icone("folder") + " " + g : t("Sans collection")));
+      liste.append(el("div", { class: "rq-groupe" }, g ? [icone("folder"), " ", g] : t("Sans collection")));
       for (const e of groupes[g].sort((a, b) => a.nom.localeCompare(b.nom))) {
         liste.append(el("div", { class: "rq-elt", title: e.requete.url, style: e.id === R.idEnregistree ? "background:var(--violet-clair)" : "",
           onclick: () => charger(e.requete, e.id, e.nom) },
@@ -537,14 +537,14 @@
   function dessinerReponse() {
     const zone = $("#rq-reponse");
     if (!zone) return;
-    if (R.envoi) { zone.replaceChildren(el("div", { class: "rq-vide" }, icone("loader") + " " + t("Envoi…"))); return; }
+    if (R.envoi) { zone.replaceChildren(el("div", { class: "rq-vide" }, icone("loader"), " ", t("Envoi…"))); return; }
     if (R.erreur) {
       zone.replaceChildren(el("div", { class: "rq-tete" }, el("b", {}, "Réponse")),
-        el("div", { class: "rq-alerte rouge" }, icone("x") + " " + t("Échec de la requête") + ": " + R.erreur));
+        el("div", { class: "rq-alerte rouge" }, icone("x"), " ", t("Échec de la requête") + ": " + R.erreur));
       return;
     }
     const rep = R.rep;
-    if (!rep) { zone.replaceChildren(el("div", { class: "rq-vide" }, icone("radio") + " " + t("Envoyez une requête pour voir la réponse ici."))); return; }
+    if (!rep) { zone.replaceChildren(el("div", { class: "rq-vide" }, icone("radio"), " ", t("Envoyez une requête pour voir la réponse ici."))); return; }
     const puces = el("div", { class: "puces" },
       el("button", { class: "puce " + (R.ongletRep === "corps" ? " actif" : ""), onclick: () => { R.ongletRep = "corps"; dessinerReponse(); } }, "Corps"),
       el("button", { class: "puce " + (R.ongletRep === "entetes" ? " actif" : ""), onclick: () => { R.ongletRep = "entetes"; dessinerReponse(); } },
@@ -552,10 +552,10 @@
     const tete = el("div", { class: "rq-tete" },
       el("span", { class: classeStatut(rep.statut) }, `${rep.statut} ${rep.raison || ""}`.trim()),
       el("span", { class: "rq-info" }, duree(rep.duree_ms)),
-      el("span", { class: "rq-info" }, icone("package") + " " + taille(rep.taille)),
+      el("span", { class: "rq-info" }, icone("package"), " ", taille(rep.taille)),
       rep.redirections ? el("span", { class: "rq-info", title: t("Adresse finale") + ": " + rep.url_finale }, "↪ " + t("{n} redirection(s)", { n: rep.redirections })) : null,
       el("span", { class: "espace" }), puces,
-      R.ongletRep === "corps" && rep.corps ? el("button", { class: "btn", onclick: () => copier(rep.corps) }, icone("clipboard") + " " + t("Copier")) : null);
+      R.ongletRep === "corps" && rep.corps ? el("button", { class: "btn", onclick: () => copier(rep.corps) }, icone("clipboard"), " ", t("Copier")) : null);
     const blocs = [tete];
     if (R.ongletRep === "entetes") {
       blocs.push(el("table", { class: "rq-table" }, rep.entetes.map(([k, v]) => el("tr", {}, el("td", {}, k), el("td", {}, v)))));
