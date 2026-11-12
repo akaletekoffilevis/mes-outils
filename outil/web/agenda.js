@@ -134,13 +134,17 @@
 
   function barre() {
     const lun = lundi(A.ref), dim = plusJours(lun, 6);
-    const titre = A.mode === "semaine"
+    const titre = A.mode === "jour"
+      ? A.ref.toLocaleDateString(I18N.locale(), { weekday: "long", day: "numeric", month: "long", year: "numeric" })
+      : A.mode === "semaine"
       ? (lun.getMonth() === dim.getMonth()
         ? `${lun.getDate()} – ${dim.getDate()} ${dim.toLocaleDateString(I18N.locale(), { month: "long", year: "numeric" })}`
         : `${lun.toLocaleDateString(I18N.locale(), { day: "numeric", month: "short" })} – ${dim.toLocaleDateString(I18N.locale(), { day: "numeric", month: "short", year: "numeric" })}`)
       : A.ref.toLocaleDateString(I18N.locale(), { month: "long", year: "numeric" });
     const decaler = sens => {
-      A.ref = A.mode === "semaine" ? plusJours(A.ref, 7 * sens) : new Date(A.ref.getFullYear(), A.ref.getMonth() + sens, 1);
+      if (A.mode === "jour") A.ref = plusJours(A.ref, sens);
+      else if (A.mode === "semaine") A.ref = plusJours(A.ref, 7 * sens);
+      else A.ref = new Date(A.ref.getFullYear(), A.ref.getMonth() + sens, 1);
       dessiner();
     };
     return el("div", { class: "barre-vue" },
@@ -150,7 +154,7 @@
       el("button", { class: "btn discret", title: "Suivant", onclick: () => decaler(1) }, "›"),
       el("span", { class: "titre-periode" }, titre.charAt(0).toUpperCase() + titre.slice(1)),
       el("div", { class: "espace" }),
-      el("div", { class: "puces" }, [["semaine", "Semaine"], ["mois", "Mois"]].map(([m, libelle]) =>
+      el("div", { class: "puces" }, [["jour", "Jour"], ["semaine", "Semaine"], ["mois", "Mois"]].map(([m, libelle]) =>
         el("button", { class: "puce" + (A.mode === m ? " actif" : ""), onclick: () => { A.mode = m; dessiner(); } }, libelle))),
       el("button", { class: "btn principal", onclick: () => editer(nouveau(new Date())) }, "＋ Rendez-vous"));
   }
@@ -247,22 +251,26 @@
       ...deplacable(e), onclick: ev => { ev.stopPropagation(); editer(e); } }, brut((e.journee ? "" : e.debut.slice(11, 16) + " ") + (e.titre || t("Rendez-vous"))));
   }
 
-  // -- vue semaine -----------------------------------------------------------
-  function vueSemaine() {
-    const lun = lundi(A.ref);
-    const jours = [...Array(7)].map((_, i) => plusJours(lun, i));
+  // -- vue semaine (ou journée unique avec nbJours = 1) -----------------------
+  function vueSemaine(nbJours = 7) {
+    const debut = nbJours === 1 ? new Date(A.ref) : lundi(A.ref);
+    debut.setHours(0, 0, 0, 0);
+    const jours = [...Array(nbJours)].map((_, i) => plusJours(debut, i));
     const noms = nomsJours();
     const auj = new Date();
+    const cols = `54px repeat(${nbJours}, minmax(0, 1fr))`;
     const grille = el("div", { class: "semaine" },
-      el("div", { class: "entete-semaine" },
+      el("div", { class: "entete-semaine", style: `grid-template-columns: ${cols}; padding-right: 8px;` },
         el("div", { class: "tete-jour" }),
-        jours.map((d, i) => el("div", { class: "tete-jour" + (memeJourA(d, auj) ? " auj" : "") }, noms[i], el("b", {}, String(d.getDate()))))));
+        jours.map((d, i) => el("div", { class: "tete-jour" + (memeJourA(d, auj) ? " auj" : "") },
+          noms[nbJours === 1 ? (d.getDay() === 0 ? 6 : d.getDay() - 1) : i],
+          el("b", {}, String(d.getDate()))))));
     // Rendez-vous de la journée entière
-    grille.append(el("div", { class: "bande-jour" },
+    grille.append(el("div", { class: "bande-jour", style: `grid-template-columns: ${cols}; padding-right: 8px;` },
       el("div", { class: "etiquette-h" }, "jour"),
       jours.map(d => el("div", { class: "case", ...zoneDepot(d) }, A.evenements.filter(e => e.journee && memeJourA(debutDe(e), d)).map(e =>
         el("div", { class: "rdv jour", style: `background:${e.couleur || "#6c4cf5"}`, ...deplacable(e), onclick: () => editer(e) }, el("b", {}, titreDe(e))))))));
-    const corps = el("div", { class: "corps-semaine" },
+    const corps = el("div", { class: "corps-semaine", style: `grid-template-columns: ${cols};` },
       el("div", { class: "heures" }, [...Array(H1 - H0)].map((_, i) => el("div", {}, i ? `${H0 + i}:00` : ""))));
     jours.forEach(d => {
       const col = el("div", { class: "colonne" + (memeJourA(d, auj) ? " auj" : ""), style: `height:${(H1 - H0) * PX}px`,
@@ -336,7 +344,7 @@
   function dessiner() {
     $("#vue-agenda").replaceChildren(barre(),
       el("div", { class: "astuce-agenda" }, "💡 Glissez un rendez-vous pour le déplacer · Ctrl + glisser pour le dupliquer"),
-      A.mode === "semaine" ? vueSemaine() : vueMois());
+      A.mode === "mois" ? vueMois() : vueSemaine(A.mode === "jour" ? 1 : 7));
   }
 
   // -- formulaire --------------------------------------------------------------
