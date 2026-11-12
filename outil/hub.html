@@ -275,7 +275,8 @@
   .voile { position: fixed; inset: 0; background: var(--voile); display: none; place-items: center; z-index: 40; backdrop-filter: blur(8px) saturate(120%); -webkit-backdrop-filter: blur(8px) saturate(120%); }
   .voile.visible { display: grid; animation: fondu .12s both; }
   @keyframes fondu { from { opacity: 0; } }
-  .fenetre { width: min(540px, 94vw); max-height: 92vh; overflow: auto; background: var(--carte); color: var(--encre); border: 1px solid var(--ligne); border-radius: 14px; padding: 22px; box-shadow: var(--ombre-forte); animation: pop .18s var(--ressort) both; }
+  .fenetre { position: relative; width: min(540px, 94vw); max-height: 92vh; overflow: auto; background: var(--carte); color: var(--encre); border: 1px solid var(--ligne); border-radius: 14px; padding: 22px; box-shadow: var(--ombre-forte); animation: pop .18s var(--ressort) both; }
+  .fenetre-ferme { position: absolute; top: 12px; right: 12px; z-index: 2; }
   .fenetre.petite { width: min(420px, 92vw); }
   .fenetre .gros { width: 38px; height: 38px; border-radius: 9px; background: var(--surface); color: var(--doux); display: grid; place-items: center; font-size: 20px; margin-bottom: 4px; }
   .fenetre .gros:empty { display: none; }
@@ -644,18 +645,18 @@ function toast(message, type = "", duree = 3000) {
 }
 // Le focus est rendu à cet élément quand la fenêtre se referme.
 let focusPrecedent = null;
-function fenetre(contenu, petite = false) {
+function fenetre(contenu, petite = false, onClose = fermer) {
   const f = $("#fenetre");
   f.className = "fenetre" + (petite ? " petite" : "");
   f.style.width = ""; f.style.background = "";  // une note ou un mail a pu les changer
   f.setAttribute("role", "dialog");
   f.setAttribute("aria-modal", "true");
   f.tabIndex = -1;
-  f.replaceChildren(...contenu);
+  const ferme = el("button", { class: "icone-btn fenetre-ferme", type: "button", title: "Fermer", "aria-label": "Fermer", onclick: () => (onClose ? onClose() : fermer()) }, icone("x"));
+  f.replaceChildren(ferme, ...contenu);
   focusPrecedent = document.activeElement;
   $("#voile").classList.add("visible");
-  // Focus sur le premier élément focusable (sinon la fenêtre elle-même).
-  const premier = f.querySelector("button, input, select, textarea, [href], [tabindex]:not([tabindex='-1'])");
+  const premier = [...f.querySelectorAll("button, input, select, textarea, [href], [tabindex]:not([tabindex='-1'])")].find(x => !x.classList.contains("fenetre-ferme"));
   (premier || f).focus();
 }
 function fermer() {
@@ -682,7 +683,7 @@ function confirmer(icone, titre, texte, oui = "Oui") {
     fenetre([el("div", { class: "gros" }, icone), el("h3", {}, I18N.traduire(titre)), el("p", {}, I18N.traduire(texte)),
       el("div", { class: "actions" },
         el("button", { class: "btn", onclick: () => fin(false) }, "Annuler"),
-        el("button", { class: "btn principal", onclick: () => fin(true) }, oui))], true);
+        el("button", { class: "btn principal", onclick: () => fin(true) }, oui))], true, () => fin(false));
   });
 }
 
