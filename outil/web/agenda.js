@@ -34,6 +34,12 @@
     "Lieu": "Place",
     "Rappel (par la bulle)": "Reminder (from the bubble)",
     "Couleur": "Colour",
+    "Répétition": "Repeat",
+    "Aucune": "None",
+    "Chaque jour": "Every day",
+    "Chaque semaine": "Every week",
+    "Chaque mois": "Every month",
+    "Chaque année": "Every year",
     "Notes": "Notes",
     "ex. Réunion client": "e.g. Client meeting",
     "ex. Bureau, Teams…": "e.g. Office, Teams…",
@@ -66,7 +72,7 @@
     const j = new Date(2024, 0, 1 + i).toLocaleDateString(I18N.locale(), { weekday: "short" }).replace(/\.$/, "");
     return j.charAt(0).toUpperCase() + j.slice(1);
   });
-  const A = { evenements: [], mode: "semaine", ref: new Date() };
+  const A = { evenements: [], bruts: [], mode: "semaine", ref: new Date() };
 
   const style = document.createElement("style");
   style.textContent = `
@@ -127,8 +133,50 @@
   const titreDe = e => (e.titre ? brut(e.titre) : t("Rendez-vous"));
   const astuce = e => (e.titre || "") + " — " + t("glisser pour déplacer, Ctrl + glisser pour dupliquer");
 
+  /** Étend les rendez-vous récurrents en instances sur la plage visible
+   *  (±2 mois autour de la date de référence), sans toucher aux données. */
+  function etendreRecurrences(bruts, ref) {
+    const resultat = [];
+    const debut = new Date(ref.getFullYear(), ref.getMonth() - 2, 1);
+    const fin = new Date(ref.getFullYear(), ref.getMonth() + 3, 0);
+    for (const e of bruts) {
+      if (!e.recurrence) { resultat.push(e); continue; }
+      const deb0 = debutDe(e);
+      const fin0 = finDe(e);
+      const duree = fin0 - deb0;
+      let d = new Date(deb0);
+      // Aligner le premier jour sur la récurrence (début de la série).
+      while (d < debut) {
+        if (e.recurrence === "daily") d.setDate(d.getDate() + 1);
+        else if (e.recurrence === "weekly") d.setDate(d.getDate() + 7);
+        else if (e.recurrence === "monthly") d.setMonth(d.getMonth() + 1);
+        else if (e.recurrence === "yearly") d.setFullYear(d.getFullYear() + 1);
+        else break;
+        if (d > fin) break;
+      }
+      while (d <= fin) {
+        if (d >= debut) {
+          const copie = structuredClone(e);
+          copie.debut = isoMinute(d);
+          copie.fin = isoMinute(new Date(d.getTime() + duree));
+          copie._virtuel = true;
+          copie._serie = e.id;
+          resultat.push(copie);
+        }
+        if (e.recurrence === "daily") d.setDate(d.getDate() + 1);
+        else if (e.recurrence === "weekly") d.setDate(d.getDate() + 7);
+        else if (e.recurrence === "monthly") d.setMonth(d.getMonth() + 1);
+        else if (e.recurrence === "yearly") d.setFullYear(d.getFullYear() + 1);
+        else break;
+        if (d > fin) break;
+      }
+    }
+    return resultat;
+  }
+
   async function charger() {
-    A.evenements = await api("/api/agenda");
+    A.bruts = await api("/api/agenda");
+    A.evenements = etendreRecurrences(A.bruts, A.ref);
     dessiner();
   }
 
@@ -145,6 +193,7 @@
       if (A.mode === "jour") A.ref = plusJours(A.ref, sens);
       else if (A.mode === "semaine") A.ref = plusJours(A.ref, 7 * sens);
       else A.ref = new Date(A.ref.getFullYear(), A.ref.getMonth() + sens, 1);
+      A.evenements = etendreRecurrences(A.bruts, A.ref);
       dessiner();
     };
     return el("div", { class: "barre-vue" },
@@ -163,13 +212,18 @@
     const d = new Date(jour);
     if (heure === undefined) { const h = new Date().getHours() + 1; d.setHours(Math.min(Math.max(h, 8), 20), 0, 0, 0); }
     else d.setHours(heure, 0, 0, 0);
-    return { titre: "", debut: isoMinute(d), fin: isoMinute(new Date(d.getTime() + 3600e3)), journee: false, couleur: COULEURS_RDV[0], rappel_minutes: 15, lieu: "", notes: "" };
+    return { titre: "", debut: isoMinute(d), fin: isoMinute(new Date(d.getTime() + 3600e3)), journee: false, couleur: COULEURS_RDV[0], rappel_minutes: 15, lieu: "", notes: "", recurrence: "" };
   }
 
   // -- déplacer, dupliquer ------------------------------------------------------
   /** Déplacer (ou copier) un rendez-vous à une nouvelle date de début, en
    *  gardant sa durée. Un rendez-vous déplacé retrouve son rappel. */
   async function deplacerVers(e, nouveauDebut, copier) {
+    // Un rendez-vous récurrent est déplacé comme sa série.
+    if (e._virtuel && e._serie) {
+      const original = A.bruts.find(x => x.id === e._serie);
+      if (original) e = original;
+    }
     const duree = finDe(e) - debutDe(e);
     const x = structuredClone(e);
     x.debut = isoMinute(nouveauDebut);
@@ -248,7 +302,9 @@
 
   function puce(e) {
     return el("div", { class: "puce-rdv", style: `background:${e.couleur || "#6c4cf5"}`, title: astuce(e),
-      ...deplacable(e), onclick: ev => { ev.stopPropagation(); editer(e); } }, brut((e.journee ? "" : e.debut.slice(11, 16) + " ") + (e.titre || t("Rendez-vous"))));
+      ...deplacable(e), onclick: ev => { ev.stopPropagation(); editer(e); } },
+      e.recurrence ? icone("arrow-left-right") : null,
+      brut((e.journee ? "" : e.debut.slice(11, 16) + " ") + (e.titre || t("Rendez-vous"))));
   }
 
   // -- vue semaine (ou journée unique avec nbJours = 1) -----------------------
@@ -283,7 +339,7 @@
         const bloc = el("div", { class: "rdv", style: `top:${haut}px;height:${hauteur}px;background:${e.couleur || "#6c4cf5"};left:calc(${voie * 100 / voies}% + 3px);width:calc(${100 / voies}% - 6px);right:auto`,
           title: astuce(e),
           onmousedown: ev => glisserRdv(ev, e, bloc, jours), onclick: ev => ev.stopPropagation() },
-          el("b", {}, titreDe(e)),
+          el("b", {}, e.recurrence ? icone("arrow-left-right") : null, titreDe(e)),
           el("span", {}, brut(`${e.debut.slice(11, 16)} – ${isoMinute(fin).slice(11, 16)}${e.lieu ? " · " + e.lieu : ""}`)));
         col.append(bloc);
       });
@@ -349,6 +405,11 @@
 
   // -- formulaire --------------------------------------------------------------
   function editer(source, estCopie = false) {
+    // Un rendez-vous récurrent est édité comme sa série (l'original).
+    if (source._virtuel && source._serie) {
+      const original = A.bruts.find(x => x.id === source._serie);
+      if (original) source = structuredClone(original);
+    }
     const e = structuredClone(source);
     const champ = (libelle, controle) => el("label", { class: "champ" }, libelle, controle);
     const jour = el("input", { type: "date", value: e.debut.slice(0, 10) });
@@ -369,6 +430,8 @@
     const titre = el("input", { value: e.titre || "", placeholder: "ex. Réunion client" });
     const lieu = el("input", { value: e.lieu || "", placeholder: "ex. Bureau, Teams…" });
     const rappel = el("select", {}, RAPPELS.map(([v, libelle]) => el("option", { value: v, selected: String(e.rappel_minutes ?? "") === v ? "" : null }, libelle)));
+    const recurrences = [["", "Aucune"], ["daily", "Chaque jour"], ["weekly", "Chaque semaine"], ["monthly", "Chaque mois"], ["yearly", "Chaque année"]];
+    const recurrence = el("select", {}, recurrences.map(([v, libelle]) => el("option", { value: v, selected: (e.recurrence || "") === v ? "" : null }, libelle)));
     const notes = el("textarea", { rows: 3, value: e.notes || "", placeholder: "Détails, ordre du jour…" });
 
     fenetre([
@@ -378,6 +441,7 @@
         el("label", { class: "champ", style: "flex-direction:row;align-items:center;gap:8px;margin-top:22px" }, journee, "Toute la journée")),
       heures,
       el("div", { class: "grille-form" }, champ("Lieu", lieu), champ("Rappel (par la bulle)", rappel)),
+      el("div", { class: "grille-form" }, champ("Répétition", recurrence)),
       champ("Couleur", couleurs),
       champ("Notes", notes),
       el("div", { class: "actions" },
@@ -398,6 +462,7 @@
         el("button", { class: "btn principal", onclick: async () => {
           if (!titre.value.trim()) { toast("Indiquez un titre", "erreur"); return; }
           e.titre = titre.value.trim(); e.lieu = lieu.value.trim(); e.notes = notes.value;
+          e.recurrence = recurrence.value;
           e.journee = journee.checked;
           e.debut = `${jour.value}T${e.journee ? "08:00" : hDebut.value}`;
           e.fin = `${jour.value}T${e.journee ? "09:00" : hFin.value}`;
