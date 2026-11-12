@@ -362,7 +362,8 @@ def environnement(variables, outils, racine=None):
     env.update(variables)
     return [mock.patch.dict(os.environ, env, clear=True),
             mock.patch.object(pp.shutil, "which", side_effect=lambda n: f"/usr/bin/{n}" if n in outils else None),
-            mock.patch.object(pp, "_racine_tk", racine)]
+            mock.patch.object(pp, "_racine_tk", racine),
+            mock.patch.object(pp, "_creer_tk_autonome", lambda: None)]
 
 
 class TestChoixSourceLinux(unittest.TestCase):

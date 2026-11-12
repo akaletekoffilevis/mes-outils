@@ -179,8 +179,8 @@ MAX_SECRETS = 20
 INDICES_MOT_DE_PASSE = ("x-kde-passwordManagerHint",)
 DELAI_COMMANDE = 2        # secondes pour lire avec wl-paste, xclip, xsel
 DELAI_TK = 1.0            # secondes d'attente d'une réponse du fil de Tk
-MESSAGE_INDISPONIBLE = ("Presse-papiers indisponible : installez wl-clipboard (Wayland) ou xclip "
-                        "(sudo apt install wl-clipboard xclip).")
+MESSAGE_INDISPONIBLE = ("Presse-papiers indisponible : aucune source utilisable (Tk, wl-clipboard, "
+                        "xclip, xsel).")
 
 
 def empreinte(texte):
@@ -455,6 +455,11 @@ def choisir_source_linux():
     for _nom, possible, fabrique in candidates:
         if possible:
             return fabrique()
+    # Dernier recours : créer une fenêtre Tk cachée (embarquée, rien à
+    # installer). Tk est dans la bibliothèque standard de Python.
+    _creer_tk_autonome()
+    if _racine_tk is not None:
+        return SourceTk(*_racine_tk)
     return SourceAbsente()
 
 
@@ -662,6 +667,41 @@ def utiliser_tk(racine):
     with _verrou_module:
         _racine_tk = (racine, threading.get_ident())
     _la_surveillance()      # remplace une SourceAbsente déjà créée
+
+
+def _creer_tk_autonome():
+    """Crée une fenêtre Tk cachée dans un fil d'arrière-plan, pour servir de
+    presse-papiers sous Linux quand aucun outil externe n'est installé.
+    Tk est dans la bibliothèque standard de Python : rien à installer."""
+    global _racine_tk
+    if systeme.WINDOWS:
+        return
+    if _racine_tk is not None:
+        return
+    try:
+        import tkinter  # noqa: PLC0415 — import conditionnel
+    except ImportError:
+        return
+
+    def boucle():
+        global _racine_tk
+        try:
+            racine = tkinter.Tk()
+            racine.withdraw()
+            with _verrou_module:
+                _racine_tk = (racine, threading.get_ident())
+            _la_surveillance()
+            racine.mainloop()
+        except Exception:  # noqa: BLE001 — Tk indisponible : on reste sans source
+            pass
+
+    fil = threading.Thread(target=boucle, name="tk-presse-papiers", daemon=True)
+    fil.start()
+    # Attendre que la fenêtre soit prête (au plus 2 s).
+    for _ in range(20):
+        if _racine_tk is not None:
+            break
+        time.sleep(0.1)
 
 
 def source_disponible():
