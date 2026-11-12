@@ -210,6 +210,8 @@ def _executer(commande, secret=None, delai=DELAI):
         return subprocess.run(commande, env=env, stdin=subprocess.DEVNULL, capture_output=True,
                               text=True, encoding="utf-8", errors="replace", timeout=delai,
                               **systeme.options_sans_fenetre())
+    except FileNotFoundError:
+        raise ErreurSSH("SSH n'est pas installé sur ce PC (installez openssh-client).") from None
     except subprocess.TimeoutExpired:
         raise ErreurSSH("Le serveur ne répond pas (délai dépassé). Vérifiez l'adresse et le port.") from None
 
