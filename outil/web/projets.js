@@ -269,7 +269,7 @@
 
   async function appel(action, donnees, message) {
     try {
-      const r = await api("/api/projets/ " + action, donnees || {});
+      const r = await api("/api/projets/" + action, donnees || {});
       if (message) toast(message, "succes");
       return r;
     } catch (e) { toast(e.message, "erreur", 7000); return null; }

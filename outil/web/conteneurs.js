@@ -278,7 +278,7 @@
 
   async function action(nom, c, bouton) {
     if (bouton) { bouton.disabled = true; bouton.replaceChildren(el("span", { class: "attente" }, icone("loader"))); }
-    try { await api("/api/conteneurs/ " + nom, { id: c.id }); toast(t(MESSAGES[nom]), "succes"); }
+    try { await api("/api/conteneurs/" + nom, { id: c.id }); toast(t(MESSAGES[nom]), "succes"); }
     catch (e) { toast(e.message, "erreur", 8000); }
     afficher();
   }
@@ -299,7 +299,7 @@
     if (nom === "arreter" && !(await confirmer("", "Arrêter tout le projet ?", t("Tous les conteneurs de « {projet} » seront arrêtés.", { projet }), "Tout arrêter"))) return;
     if (bouton) { bouton.disabled = true; bouton.replaceChildren(el("span", { class: "attente" }, icone("loader"))); }
     try {
-      await api("/api/conteneurs/projet/ " + nom, { projet });
+      await api("/api/conteneurs/projet/" + nom, { projet });
       toast(t(nom === "demarrer" ? "Projet démarré" : "Projet arrêté"), "succes");
     } catch (e) { toast(e.message, "erreur", 8000); }
     afficher();

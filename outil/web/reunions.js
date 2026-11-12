@@ -982,7 +982,7 @@
       if (await modifie(true)) dessiner();
       else annuler(() => d.documents.splice(avant));
     };
-    const action = (route, doc) => api("/api/reunions/document/ " + route, { id: d.id, chemin: doc.chemin }).catch(erreur);
+    const action = (route, doc) => api("/api/reunions/document/" + route, { id: d.id, chemin: doc.chemin }).catch(erreur);
     return bloc("Documents", "paperclip",
       d.documents.length ? el("div", { class: "lignes" }, d.documents.map(doc => el("div", { class: "ligne cliquable", title: doc.chemin, onclick: () => action("ouvrir", doc) },
         el("span", { class: "ligne-ic" }, icone(/\.[a-z0-9]{1,5}$/i.test(doc.nom) ? "file-text" : "folder")),

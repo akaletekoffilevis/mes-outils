@@ -292,7 +292,7 @@
   function chargerSuivi(forcer) {
     for (const cle of ["prs", "issues", "actions"]) {
       if (forcer) G[cle] = null;
-      api("/api/github/ " + cle, { forcer })
+      api("/api/github/" + cle, { forcer })
         .then(r => { G[cle] = r; })
         .catch(e => { G[cle] = { erreur: e.message }; })
         .finally(() => { majPuces(); if (G.sous === cle) dessinerListe(); });
@@ -533,7 +533,7 @@
   }
 
   async function action(nom, donnees, message) {
-    try { await api("/api/github/ " + nom, donnees); if (message) toast(message, "succes"); }
+    try { await api("/api/github/" + nom, donnees); if (message) toast(message, "succes"); }
     catch (e) { toast(e.message, "erreur", 6000); }
   }
   const ouvrirPage = url => action("ouvrir_page", { url });

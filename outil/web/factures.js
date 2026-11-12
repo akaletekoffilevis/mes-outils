@@ -799,7 +799,7 @@
 
   async function action(nom, id, extra = {}) {
     try {
-      const doc = await api("/api/factures/ " + nom, { id, ...extra });
+      const doc = await api("/api/factures/" + nom, { id, ...extra });
       await charger();
       if (doc.numero) return ouvrirFiche(doc.id);
       F.doc = brouillonDepuis(doc); F.modifie = false;

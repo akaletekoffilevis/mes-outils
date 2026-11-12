@@ -133,7 +133,7 @@
   }
 
   async function action(nom, donnees) {
-    try { await api("/api/presse_papiers/ " + nom, donnees); recharger(); }
+    try { await api("/api/presse_papiers/" + nom, donnees); recharger(); }
     catch (e) { toast(e.message, "erreur"); recharger(); }
   }
 
