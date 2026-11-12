@@ -47,6 +47,9 @@
     .note { background: var(--note, #fff); break-inside: avoid; margin: 0 0 16px; border-radius: var(--rayon); padding: 14px 16px 12px; box-shadow: var(--ombre);
             cursor: pointer; position: relative; transition: transform .2s, box-shadow .2s; animation: apparait .35s both; border: 1.5px solid rgba(0,0,0,.04); color: #1f1a3a; color-scheme: light; }
     .note:hover { transform: none; }
+    .note { user-select: none; }
+    .note.glisse { opacity: .5; transform: scale(.98); }
+    .note.survol { outline: 2px solid var(--violet); outline-offset: 2px; }
     .note .titre { font-weight: 600; font-size: 15.5px; margin: 0 22px 6px 0; word-break: break-word; }
     .note .texte { white-space: pre-wrap; font-size: 14px; color: #3b3657; line-height: 1.45; max-height: 230px; overflow: hidden; word-break: break-word; }
     .note .epingle { position: absolute; top: 10px; right: 10px; font-size: 15px; }
@@ -117,10 +120,22 @@
 
   function filtrees() {
     const q = N.recherche.toLowerCase();
-    return N.notes
+    let liste = N.notes
       .filter(n => N.filtre === "toutes" || (N.filtre === "listes" ? n.genre === "liste" : N.filtre === "rappels" ? n.rappel : true))
-      .filter(n => !q || [n.titre, n.texte, ...(n.elements || []).map(e => e.texte)].join(" ").toLowerCase().includes(q))
-      .sort((a, b) => (b.epinglee ? 1 : 0) - (a.epinglee ? 1 : 0) || (b.modifie || "").localeCompare(a.modifie || ""));
+      .filter(n => !q || [n.titre, n.texte, ...(n.elements || []).map(e => e.texte)].join(" ").toLowerCase().includes(q));
+    const ordre = S.config?.ordre_notes;
+    if (Array.isArray(ordre) && !q && N.filtre === "toutes") {
+      liste.sort((a, b) => {
+        const ia = ordre.indexOf(a.id), ib = ordre.indexOf(b.id);
+        if (ia >= 0 && ib >= 0) return ia - ib;
+        if (ia >= 0) return -1;
+        if (ib >= 0) return 1;
+        return (b.epinglee ? 1 : 0) - (a.epinglee ? 1 : 0) || (b.modifie || "").localeCompare(a.modifie || "");
+      });
+    } else {
+      liste.sort((a, b) => (b.epinglee ? 1 : 0) - (a.epinglee ? 1 : 0) || (b.modifie || "").localeCompare(a.modifie || ""));
+    }
+    return liste;
   }
 
   function carte(n, i) {
@@ -168,7 +183,42 @@
         N.notes.length ? "Aucune note ne correspond." : "Pas encore de note. Une idée ? Notez-la ! ✍️"));
       return;
     }
-    g.replaceChildren(el("div", { class: "notes-grille" }, liste.map(carte)));
+    const grille = el("div", { class: "notes-grille" });
+    liste.forEach((n, i) => {
+      const card = carte(n, i);
+      card.setAttribute("draggable", "true");
+      card.addEventListener("dragstart", ev => {
+        ev.dataTransfer.effectAllowed = "move";
+        ev.dataTransfer.setData("text/plain", n.id);
+        card.classList.add("glisse");
+      });
+      card.addEventListener("dragend", () => {
+        card.classList.remove("glisse");
+        grille.querySelectorAll(".note").forEach(x => x.classList.remove("survol"));
+      });
+      card.addEventListener("dragover", ev => { ev.preventDefault(); ev.dataTransfer.dropEffect = "move"; card.classList.add("survol"); });
+      card.addEventListener("dragleave", () => card.classList.remove("survol"));
+      card.addEventListener("drop", ev => {
+        ev.preventDefault();
+        card.classList.remove("survol");
+        const fromId = ev.dataTransfer.getData("text/plain");
+        const toId = n.id;
+        if (fromId === toId) return;
+        const notes = [...N.notes];
+        const fromIdx = notes.findIndex(x => x.id === fromId);
+        const toIdx = notes.findIndex(x => x.id === toId);
+        if (fromIdx < 0 || toIdx < 0) return;
+        const moved = notes.splice(fromIdx, 1)[0];
+        notes.splice(toIdx, 0, moved);
+        N.notes = notes;
+        const ordre = notes.map(x => x.id);
+        if (S.config) S.config.ordre_notes = ordre;
+        api("/api/reglages/enregistrer", { ordre_notes: ordre }).catch(e => toast("😕 " + e.message, "erreur"));
+        dessinerGrille();
+      });
+      grille.append(card);
+    });
+    g.replaceChildren(grille);
   }
 
   async function sauver(n) {
