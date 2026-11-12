@@ -65,7 +65,7 @@
   let vueChoisie = "liste";
   try { vueChoisie = localStorage.getItem("mes-outils-taches-vue") || "liste"; } catch {}
   const T = { r: null, vue: vueChoisie, recherche: "", etiquette: "", client: "", priorite: "", contacts: null,
-    ouvertes: new Set(), faitesOuvertes: false, glisse: null };
+    ouvertes: new Set(), faitesOuvertes: false, glisse: null, glisseListe: null };
 
   const style = document.createElement("style");
   style.textContent = `
@@ -118,6 +118,9 @@
       box-shadow: var(--ombre); transition: border-color .12s; }
     .tc-carte:hover { border-color: var(--ligne-forte); }
     .tc-carte.glisse { opacity: .4; }
+    .tc-ligne-draggable { cursor: grab; }
+    .tc-ligne-draggable.glisse { opacity: .4; }
+    .tc-ligne-draggable.survol { outline: 2px solid var(--violet); outline-offset: -2px; }
     .tc-carte-titre { font-weight: 500; display: flex; gap: 6px; align-items: flex-start; overflow-wrap: anywhere; }
     .tc-carte-titre > span:first-child { flex: 1; min-width: 0; }
     .tc-carte.tc-faite .tc-carte-titre > span:first-child { text-decoration: line-through; color: var(--gris); }
@@ -348,7 +351,7 @@
       x.recurrence ? el("span", { class: "tc-meta", title: RECURRENCES[x.recurrence] }, icone("repeat"), RECURRENCES[x.recurrence]) : null,
       x.description ? el("span", { class: "tc-meta" }, txt(x.description.split("\n")[0])) : null,
     ].filter(Boolean);
-    const rangee = el("div", { class: "ligne cliquable" + (x.statut === "fait" ? " tc-faite" : "") + (ouverte ? " ouverte" : ""),
+    const rangee = el("div", { class: "ligne cliquable tc-ligne-draggable" + (x.statut === "fait" ? " tc-faite" : "") + (ouverte ? " ouverte" : ""), draggable: "true", "data-id": x.id,
       onclick: () => {
         if (!aDetail) { editer(x); return; }
         ouverte ? T.ouvertes.delete(x.id) : T.ouvertes.add(x.id);
@@ -363,6 +366,40 @@
       el("div", { class: "ligne-actions" },
         el("button", { class: "icone-btn", title: "Modifier", onclick: e => { e.stopPropagation(); editer(x); } }, icone("pencil")),
         el("button", { class: "icone-btn danger", title: "Supprimer", onclick: e => { e.stopPropagation(); supprimer(x); } }, icone("trash-2"))));
+    rangee.addEventListener("dragstart", e => {
+      e.dataTransfer.effectAllowed = "move";
+      try { e.dataTransfer.setData("text/plain", x.id); } catch {}
+      rangee.classList.add("glisse");
+      T.glisseListe = x.id;
+    });
+    rangee.addEventListener("dragend", () => {
+      rangee.classList.remove("glisse");
+      document.querySelectorAll(".tc-ligne-draggable").forEach(el => el.classList.remove("survol"));
+      T.glisseListe = null;
+    });
+    rangee.addEventListener("dragover", e => {
+      if (!T.glisseListe || T.glisseListe === x.id) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      rangee.classList.add("survol");
+    });
+    rangee.addEventListener("dragleave", () => rangee.classList.remove("survol"));
+    rangee.addEventListener("drop", e => {
+      e.preventDefault();
+      rangee.classList.remove("survol");
+      const fromId = T.glisseListe;
+      const toId = x.id;
+      if (!fromId || fromId === toId) return;
+      const container = rangee.closest(".lignes");
+      if (!container) return;
+      const ids = [...container.querySelectorAll(".tc-ligne-draggable")].map(el => el.dataset.id).filter(i => i && i !== fromId);
+      const pos = ids.indexOf(toId);
+      ids.splice(pos < 0 ? ids.length : pos, 0, fromId);
+      T.glisseListe = null;
+      api("/api/taches/reorganiser_liste", { ordre: ids })
+        .then(() => recharger())
+        .catch(err => { erreur(err); recharger(); });
+    });
     if (!ouverte || !aDetail) return rangee;
     return [rangee, el("div", { class: "ligne-detail" },
       x.description ? el("p", { class: "tc-desc" }, txt(x.description)) : null,

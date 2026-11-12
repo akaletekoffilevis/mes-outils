@@ -185,6 +185,17 @@ class TestModification(BaseTaches):
         with self.assertRaisesRegex(ValueError, "Statut"):
             taches.deplacer(a["id"], "perdu")
 
+    def test_reorganiser_liste(self):
+        a, b, c = (taches.creer_tache(x) for x in "ABC")
+        taches.reorganiser_liste([c["id"], a["id"], b["id"]])
+        par_id = {t["id"]: t for t in taches.toutes()}
+        self.assertEqual(par_id[c["id"]]["ordre_liste"], 0)
+        self.assertEqual(par_id[a["id"]]["ordre_liste"], 1)
+        self.assertEqual(par_id[b["id"]]["ordre_liste"], 2)
+        # Tri respecté.
+        ids = [t["id"] for t in taches.toutes()]
+        self.assertEqual(ids[:3], [c["id"], a["id"], b["id"]])
+
     def test_supprimer(self):
         t = taches.creer_tache("A")
         self.assertEqual(taches.supprimer_tache(t["id"]), 1)

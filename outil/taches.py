@@ -275,9 +275,14 @@ def groupe(t, a_l_heure):
 
 
 def _cle_tri(t):
-    """Échéance (sans échéance à la fin), heure, priorité haute d'abord, ordre."""
+    """Échéance (sans échéance à la fin), heure, priorité haute d'abord, ordre.
+    Si la tâche a été réorganisée manuellement dans la vue liste, son
+    « ordre_liste » prend le pas sur le tri automatique."""
+    ol = t.get("ordre_liste")
+    if ol is not None:
+        return (0, ol)
     rang = {"haute": 0, "normale": 1, "basse": 2}.get(t.get("priorite"), 1)
-    return (t.get("echeance") or "9999-99-99", t.get("heure") or "99:99", rang, t.get("ordre", 0))
+    return (1, t.get("echeance") or "9999-99-99", t.get("heure") or "99:99", rang, t.get("ordre", 0))
 
 
 def _vue(t, a_l_heure):
@@ -306,6 +311,7 @@ def creer_tache(titre, echeance="", description="", contact_id="", origine="", *
         d = _lire()
         a_l_heure = maintenant()
         tache = {"id": _nouvel_id(), **propre, "statut": statut, "ordre": _premier_ordre(d, statut),
+                 "ordre_liste": None,
                  "origine": _espaces(origine, MAX_ORIGINE), "cree": a_l_heure.strftime(FORMAT_MINUTE),
                  "fait_le": a_l_heure.strftime(FORMAT_MINUTE) if statut == "fait" else "", "rappel_vu": ""}
         d["taches"].append(tache)
@@ -401,6 +407,27 @@ def deplacer(identifiant, statut, ordre=None):
                     x["ordre"] = rang
         _ecrire(d)
         return {"tache": _vue(t, a_l_heure), "suivante": _vue(suivante, a_l_heure) if suivante else None}
+
+
+def reorganiser_liste(identifiants):
+    """Vue liste : réorganise les tâches selon la liste d'identifiants reçue.
+    Seules les tâches présentes dans la liste sont réordonnées ; les autres
+    gardent leur tri automatique."""
+    if not isinstance(identifiants, list) or not all(isinstance(i, str) for i in identifiants):
+        raise ValueError("Liste d'identifiants invalide.")
+    with _verrou:
+        d = _lire()
+        par_id = {x["id"]: x for x in d["taches"]}
+        for rang, i in enumerate(identifiants):
+            x = par_id.get(i)
+            if x is not None:
+                x["ordre_liste"] = rang
+        # Les tâches absentes de la liste perdent leur ordre manuel.
+        for x in d["taches"]:
+            if x["id"] not in set(identifiants):
+                x["ordre_liste"] = None
+        _ecrire(d)
+        return {"ok": True}
 
 
 def cocher_etape(identifiant, etape_id, fait=True):
@@ -514,6 +541,7 @@ ROUTES = {
     "modifier": lambda d: modifier_tache(d.get("tache") or d),
     "cocher": lambda d: cocher(d.get("id"), bool(d.get("fait", True))),
     "deplacer": lambda d: deplacer(d.get("id"), d.get("statut"), d.get("ordre")),
+    "reorganiser_liste": lambda d: reorganiser_liste(d.get("ordre") or d.get("ids")),
     "etape": lambda d: cocher_etape(d.get("id"), d.get("etape_id"), bool(d.get("fait", True))),
     "supprimer": lambda d: {"supprimes": supprimer_tache(d.get("id"))},
     "jour": lambda d: taches_du_jour(d.get("limite", 5)),
