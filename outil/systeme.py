@@ -257,12 +257,13 @@ def ouvrir_fenetre_appli(url, largeur=1360, hauteur=860):
         if LINUX:
             # Une icône et un nom à part dans le dock de GNOME.
             args.append(f"--class={ID_APPLI}")
-        subprocess.Popen(args, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+        proc = subprocess.Popen(args, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
                          stderr=subprocess.DEVNULL, **(
                              {"creationflags": DETACHE, "close_fds": True} if WINDOWS
                              else {"start_new_session": True, "close_fds": True}))
-        return
+        return proc
     webbrowser.open(url)
+    return None
 
 
 def html_vers_pdf(source_html, sortie_pdf, profil, delai=90):

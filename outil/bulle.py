@@ -116,6 +116,7 @@ _verrou_instance = None
 # Dernière ouverture du tableau de bord (secondes, time.time()) : garde-fou
 # pour éviter d'ouvrir une seconde fenêtre sur un double-clic rapide.
 _derniere_ouverture = 0.0
+_processus_tableau = None  # Popen du Chrome --app, pour éviter d'en ouvrir un second
 
 
 def chemin_verrou():
@@ -200,15 +201,27 @@ def ouvrir_tableau(onglet=None):
         hub.demander_onglet(onglet)  # la page déjà ouverte le lit d'elle-même
     adresse = f"http://{hub.HOTE}:{hub.PORT}/" + (f"#{onglet}" if onglet else "")
     if not systeme.WINDOWS:
+        global _processus_tableau
+        # 1) Si wmctrl est installé, on ramène la fenêtre existante.
         if ramener_fenetre_linux(TITRE_TABLEAU):
             return
-        # Garde-fou : si une fenêtre a été ouverte il y a moins de 3 s, ne
-        # pas en ouvrir une seconde (évite les doublons sur un double-clic
-        # rapide). La fenêtre existante, si elle est là, est au premier plan
-        # via wmctrl ci-dessus (quand wmctrl est installé).
-        if time.time() - _derniere_ouverture < 3.0:
-            # Meilleur effort : tenter de ramener la fenêtre existante via
-            # xdg-open (peut la faire passer au premier plan sous GNOME).
+        # 2) Sinon (cas GNOME/Wayland sans wmctrl) : si le Chrome --app
+        #    lancé précédemment tourne encore, on ne l'ouvre PAS une seconde
+        #    fois ; on tente juste de le faire passer au premier plan.
+        if _processus_tableau is not None:
+            try:
+                if _processus_tableau.poll() is None:
+                    # Processus vivant : ne pas en ouvrir un second.
+                    try:
+                        subprocess.Popen(["xdg-open", adresse], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    except (OSError, subprocess.SubprocessError):
+                        pass
+                    return
+            except (AttributeError, OSError):
+                pass
+            _processus_tableau = None
+        # 3) Garde-fou temporel : évite les doublons sur un double-clic rapide.
+        if time.time() - _derniere_ouverture < 10.0:
             try:
                 subprocess.Popen(["xdg-open", adresse], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             except (OSError, subprocess.SubprocessError):
@@ -217,7 +230,9 @@ def ouvrir_tableau(onglet=None):
         # Marquer comme ouverte AVANT de lancer Chrome, pour éviter la
         # course si l'utilisateur clique deux fois très vite.
         _derniere_ouverture = time.time()
-        systeme.ouvrir_fenetre_appli(adresse, 1180, 800)
+        proc = systeme.ouvrir_fenetre_appli(adresse, 1180, 800)
+        if isinstance(proc, subprocess.Popen):
+            _processus_tableau = proc
         return
     hwnd = trouver_fenetre(TITRE_TABLEAU)
     if hwnd:
