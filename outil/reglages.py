@@ -57,6 +57,7 @@ def lire(_d=None):
         "prenom": contenu.get("prenom") or "",
         "langue": config.langue(),
         "theme": config.theme(),
+        "accent": config.accent(),
         "onglets_masques": contenu.get("onglets_masques") or [],
         "apps_actives": contenu.get("apps_actives"),
         "profil": contenu.get("profil") or "",
@@ -88,6 +89,10 @@ def enregistrer(d):
         if d["theme"] not in config.THEMES:
             raise ValueError("Thème inconnu.")
         valeurs["theme"] = d["theme"]
+    if "accent" in d:
+        if d["accent"] not in config.ACCENTS:
+            raise ValueError("Accent inconnu.")
+        valeurs["accent"] = d["accent"]
     if "apps_actives" in d:
         apps = d["apps_actives"]
         if apps is not None and (not isinstance(apps, list) or not all(isinstance(n, str) and n.isidentifier() for n in apps)):

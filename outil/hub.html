@@ -7,13 +7,14 @@
 <script src="/js/i18n.js"></script>
 <script src="/js/icones.js"></script>
 <script>
-  // Thème appliqué avant le premier affichage (pas d'éclair blanc).
+  // Thème et accent appliqués avant le premier affichage (pas d'éclair blanc).
   (() => { let c = "auto"; try { c = localStorage.getItem("mes-outils-theme") || "auto"; } catch {}
     const f = new URLSearchParams(location.search).get("theme");
     let nom = f || c;
     if (nom === "auto") nom = matchMedia("(prefers-color-scheme: dark)").matches ? "sombre" : "clair";
     if (!["clair", "sombre", "sepia", "contraste"].includes(nom)) nom = "clair";
-    document.documentElement.dataset.theme = nom; })();
+    document.documentElement.dataset.theme = nom;
+    try { document.documentElement.dataset.accent = localStorage.getItem("mes-outils-accent") || "violet"; } catch {} })();
 </script>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect width='24' height='24' rx='6' fill='%235b5bd6'/><g fill='none' stroke='white' stroke-width='2'><rect x='6' y='6' width='5' height='5' rx='1'/><rect x='13' y='6' width='5' height='5' rx='1'/><rect x='6' y='13' width='5' height='5' rx='1'/><rect x='13' y='13' width='5' height='5' rx='1'/></g></svg>">
 <style>
@@ -73,6 +74,15 @@
     --ombre: 0 0 0 1px rgba(255, 255, 255, .16);
     --ombre-forte: 0 0 0 1px rgba(255, 255, 255, .32), 0 16px 40px -12px rgba(0, 0, 0, .9);
   }
+  /* Accent personnalisable (la couleur d'accent, indépendante du thème). */
+  :root:not([data-theme="sombre"])[data-accent="bleu"] { --violet: #2f7ae5; --violet-2: #2564c4; --violet-clair: #e9f0fd; --sur-violet: #ffffff; }
+  :root:not([data-theme="sombre"])[data-accent="vert"] { --violet: #12a37a; --violet-2: #0e8564; --violet-clair: #e7f6ef; --sur-violet: #ffffff; }
+  :root:not([data-theme="sombre"])[data-accent="corail"] { --violet: #e5603e; --violet-2: #c54c2e; --violet-clair: #fdeee9; --sur-violet: #ffffff; }
+  :root:not([data-theme="sombre"])[data-accent="rose"] { --violet: #d6457a; --violet-2: #b83664; --violet-clair: #fceaf1; --sur-violet: #ffffff; }
+  :root[data-theme="sombre"][data-accent="bleu"] { --violet: #8fb6ff; --violet-2: #a9c8ff; --violet-clair: #13213a; --sur-violet: #0d0d18; }
+  :root[data-theme="sombre"][data-accent="vert"] { --violet: #62d6a2; --violet-2: #85e0b8; --violet-clair: #102a20; --sur-violet: #0d0d18; }
+  :root[data-theme="sombre"][data-accent="corail"] { --violet: #f08060; --violet-2: #f59a80; --violet-clair: #301619; --sur-violet: #0d0d18; }
+  :root[data-theme="sombre"][data-accent="rose"] { --violet: #f08bb4; --violet-2: #f5a3c2; --violet-clair: #30121f; --sur-violet: #0d0d18; }
   * { box-sizing: border-box; }
   [hidden] { display: none !important; }
   html, body { margin: 0; min-height: 100%; }
@@ -310,7 +320,11 @@
 
   #toasts { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 60; align-items: center; pointer-events: none; }
   .toast { background: var(--encre); color: var(--fond); padding: 9px 14px; border-radius: 10px; box-shadow: var(--ombre-forte); font-weight: 500; font-size: 13.5px;
-    display: flex; align-items: center; gap: 8px; animation: pop .14s ease-out both; max-width: 560px; }
+    display: flex; align-items: center; gap: 8px; animation: pop .18s var(--ressort) both; max-width: 560px; }
+  .toast-ferme { width: 22px; height: 22px; border: 0; background: transparent; color: var(--fond); opacity: .7; cursor: pointer; border-radius: 50%;
+    display: grid; place-items: center; flex: none; transition: opacity .12s, background .12s; margin-left: 4px; }
+  .toast-ferme svg.ico { margin: 0; width: 13px; height: 13px; }
+  .toast-ferme:hover { opacity: 1; background: rgba(255, 255, 255, .16); }
   .toast svg.ico { margin: 0; }
   .toast.erreur svg.ico { color: var(--rouge); }
   .toast.succes svg.ico { color: var(--menthe); }
@@ -576,7 +590,7 @@ new MutationObserver(mutations => {
 }).observe(document.documentElement, { childList: true, subtree: true, characterData: true });
 document.addEventListener("DOMContentLoaded", () => traiterEmojis(document.body));
 // S.systeme : "windows" ou "linux" (donné par /api/onglets).
-const S = { config: null, edition: false, serveurs: null, systeme: "windows" };
+const S = { config: null, edition: false, serveurs: null, systeme: "windows", accent: "violet" };
 /** Vrai quand Mes outils tourne sous Linux. */
 const surLinux = () => S.systeme === "linux";
 /** Le texte qui convient au système : selonSysteme("…Windows…", "…Linux…"). */
@@ -643,10 +657,14 @@ function el(tag, attrs = {}, ...enfants) {
 }
 function toast(message, type = "", duree = 3000) {
   const texte = sansEmoji(I18N.traduire(String(message))).replace(/[\p{Extended_Pictographic}]\uFE0F?/gu, "").trim();
+  let timer;
+  const retirer = () => { clearTimeout(timer); bloc.classList.add("part"); setTimeout(() => bloc.remove(), 300); };
   const bloc = el("div", { class: "toast " + type },
-    icone(type === "succes" ? "circle-check" : type === "erreur" ? "circle-alert" : "info"), el("span", { class: "sans-icone" }, texte));
+    icone(type === "succes" ? "circle-check" : type === "erreur" ? "circle-alert" : "info"),
+    el("span", { class: "sans-icone" }, texte),
+    el("button", { class: "toast-ferme", type: "button", title: "Fermer", "aria-label": "Fermer", onclick: retirer }, icone("x")));
+  timer = setTimeout(retirer, duree);
   $("#toasts").append(bloc);
-  setTimeout(() => { bloc.classList.add("part"); setTimeout(() => bloc.remove(), 300); }, duree);
 }
 // Le focus est rendu à cet élément quand la fenêtre se referme.
 let focusPrecedent = null;
@@ -1070,6 +1088,7 @@ async function demarrerOnglets() {
   // Le gadget complet « Serveurs Odoo » est un .bat : Windows seulement.
   if (surLinux()) $("#btn-gadget").hidden = true;
   appliquerTheme(info.theme || "auto");
+  appliquerAccent(info.accent || "violet");
   for (const f of info.fichiers) {
     const nom = f.replace(/\.js$/, "");
     if (!$("#vue-" + nom)) $("#vues").insertBefore(el("section", { class: "vue", id: "vue-" + nom }), $("#vues > footer"));
@@ -1303,6 +1322,18 @@ function appliquerTheme(choix) {
   b.replaceChildren(icone(ICONES_THEMES[choix] || "sun-moon"));
   b.title = I18N.traduire(choix === "auto" ? texteThemeAuto() : NOMS_THEMES[choix] || ("Thème " + choix));
   try { localStorage.setItem("mes-outils-theme", choix); } catch {}
+}
+const ACCENTS = ["violet", "bleu", "vert", "corail", "rose"];
+const COULEURS_ACCENT = { violet: "#5b5bd6", bleu: "#2f7ae5", vert: "#12a37a", corail: "#e5603e", rose: "#d6457a" };
+function appliquerAccent(choix) {
+  if (!ACCENTS.includes(choix)) choix = "violet";
+  S.accent = choix;
+  document.documentElement.dataset.accent = choix === "violet" ? "" : choix;
+  try { localStorage.setItem("mes-outils-accent", choix); } catch {}
+}
+async function changerAccent(choix) {
+  appliquerAccent(choix);
+  try { await api("/api/reglages/enregistrer", { accent: choix }); } catch (e) { toast("😕 " + e.message, "erreur"); }
 }
 sombreWindows.addEventListener("change", () => { if (S.theme === "auto") appliquerTheme("auto"); });
 async function changerTheme(choix) {

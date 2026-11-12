@@ -17,6 +17,8 @@
     "Sombre": "Dark",
     "Sépia": "Sepia",
     "Contrasté": "High contrast",
+    "Accent": "Accent",
+    "Violet": "Violet", "Bleu": "Blue", "Vert": "Green", "Corail": "Coral", "Rose": "Rose",
     "Onglets affichés": "Visible tabs",
     "Choisissez les applications du menu, comme dans un ERP : les autres disparaissent, leurs données restent.":
       "Choose the apps in the menu, like in an ERP: the others leave, their data stays.",
@@ -136,6 +138,11 @@
 
     const themes = el("div", { class: "langues-reg" }, [["auto", "Automatique"], ["clair", "Clair"], ["sombre", "Sombre"], ["sepia", "Sépia"], ["contraste", "Contrasté"]].map(([code, nom]) =>
       el("button", { class: "btn" + (S.theme === code ? " actif" : ""), onclick: async () => { await changerTheme(code); dessiner(); } }, icone(ICONES_THEMES[code]), t(nom))));
+    const COULEURS_ACCENT = { violet: "#5b5bd6", bleu: "#2f7ae5", vert: "#12a37a", corail: "#e5603e", rose: "#d6457a" };
+    const accents = el("div", { class: "langues-reg" }, [["violet", "Violet"], ["bleu", "Bleu"], ["vert", "Vert"], ["corail", "Corail"], ["rose", "Rose"]].map(([code, nom]) =>
+      el("button", { class: "btn" + (S.accent === code ? " actif" : ""), onclick: async () => { await changerAccent(code); dessiner(); } },
+        el("span", { style: `background:${COULEURS_ACCENT[code]}; width:14px; height:14px; border-radius:50%; display:inline-block; border:2px solid var(--carte); box-shadow:0 0 0 1px var(--ligne)` }),
+        t(nom))));
 
     const masques = new Set(i.onglets_masques);
     const onglets = listeOnglets().filter(o => o.nom !== "accueil" && o.nom !== "reglages")
@@ -194,7 +201,8 @@
         carte("👤", "Profil",
           el("label", { class: "champ" }, "Prénom (pour la salutation)", prenom),
           el("label", { class: "champ" }, "Langue", langues),
-          el("label", { class: "champ" }, "Thème", themes)),
+          el("label", { class: "champ" }, "Thème", themes),
+          el("label", { class: "champ" }, "Accent", accents)),
         carte("🗂️", "Applications", el("p", { class: "aide" }, "Choisissez les applications du menu, comme dans un ERP : les autres disparaissent, leurs données restent."),
           i.profil && PROFILS[i.profil] ? el("p", { class: "aide" }, t("Votre métier : {p}", { p: t(PROFILS[i.profil].titre) })) : null,
           el("button", { class: "btn", onclick: () => montrerVue("applications") }, "Choisir mes applications")),

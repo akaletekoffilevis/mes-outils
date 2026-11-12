@@ -52,6 +52,7 @@ FICHIER_BULLE = os.path.join(BASE, "bulle.json")
 JOURNAL = os.path.join(BASE if GELE else ICI, "hub.log")
 LANGUES = ("fr", "en")
 THEMES = ("auto", "clair", "sombre", "sepia", "contraste")
+ACCENTS = ("violet", "bleu", "vert", "corail", "rose")
 # Métiers proposés au premier lancement (ils pré-cochent des applications).
 PROFILS = ("freelance", "assistant_virtuel", "assistant_direction", "developpeur", "personnalise")
 # Toujours présentes, jamais désactivables.
@@ -162,6 +163,11 @@ def langue():
 def theme():
     valeur = lire().get("theme") or "auto"
     return valeur if valeur in THEMES else "auto"
+
+
+def accent():
+    valeur = lire().get("accent") or "violet"
+    return valeur if valeur in ACCENTS else "violet"
 
 
 def app_active(nom):
