@@ -320,7 +320,7 @@
       if (e.key !== "Enter" || !saisie.value.trim()) return;
       try {
         await api("/api/taches/creer", { titre: saisie.value, etiquettes: T.etiquette ? [T.etiquette] : [],
-          client: T.client || "", priorite: T.priorite || "normale" });
+          client: T.client || "", priorite: S.config?.priorite_taches || "normale" });
         saisie.value = "";
         T.r = await api("/api/taches/liste", {});
         dessiner();
@@ -575,7 +575,7 @@
 
   function editer(x) {
     const nouveau = !x;
-    const b = x ? structuredClone(x) : { titre: "", description: "", echeance: "", heure: "", priorite: T.priorite || "normale",
+    const b = x ? structuredClone(x) : { titre: "", description: "", echeance: "", heure: "", priorite: S.config?.priorite_taches || "normale",
       etiquettes: T.etiquette ? [T.etiquette] : [], liste: [], recurrence: "", statut: "a_faire", client: T.client || "", contact_id: "" };
     const titre = el("input", { value: b.titre, maxlength: 200 });
     const description = el("textarea", { rows: 2, maxlength: 2000 });

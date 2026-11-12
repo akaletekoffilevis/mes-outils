@@ -212,7 +212,7 @@
     const d = new Date(jour);
     if (heure === undefined) { const h = new Date().getHours() + 1; d.setHours(Math.min(Math.max(h, 8), 20), 0, 0, 0); }
     else d.setHours(heure, 0, 0, 0);
-    return { titre: "", debut: isoMinute(d), fin: isoMinute(new Date(d.getTime() + 3600e3)), journee: false, couleur: COULEURS_RDV[0], rappel_minutes: 15, lieu: "", notes: "", recurrence: "" };
+    return { titre: "", debut: isoMinute(d), fin: isoMinute(new Date(d.getTime() + 3600e3)), journee: false, couleur: COULEURS_RDV[0], rappel_minutes: Number(S.config?.rappel_agenda ?? 15), lieu: "", notes: "", recurrence: "" };
   }
 
   // -- déplacer, dupliquer ------------------------------------------------------

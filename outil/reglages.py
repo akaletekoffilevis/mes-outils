@@ -60,6 +60,8 @@ def lire(_d=None):
         "accent": config.accent(),
         "densite": config.densite(),
         "vue_taches": config.vue_taches(),
+        "priorite_taches": config.priorite_taches(),
+        "rappel_agenda": config.rappel_agenda(),
         "onglets_masques": contenu.get("onglets_masques") or [],
         "notifications_desactivees": contenu.get("notifications_desactivees") or [],
         "apps_actives": contenu.get("apps_actives"),
@@ -104,6 +106,14 @@ def enregistrer(d):
         if d["vue_taches"] not in config.VUES_TACHES:
             raise ValueError("Vue des tâches inconnue.")
         valeurs["vue_taches"] = d["vue_taches"]
+    if "priorite_taches" in d:
+        if d["priorite_taches"] not in config.PRIORITES_TACHES:
+            raise ValueError("Priorité inconnue.")
+        valeurs["priorite_taches"] = d["priorite_taches"]
+    if "rappel_agenda" in d:
+        if str(d["rappel_agenda"]) not in config.RAPPELS_AGENDA:
+            raise ValueError("Rappel inconnu.")
+        valeurs["rappel_agenda"] = str(d["rappel_agenda"])
     if "apps_actives" in d:
         apps = d["apps_actives"]
         if apps is not None and (not isinstance(apps, list) or not all(isinstance(n, str) and n.isidentifier() for n in apps)):

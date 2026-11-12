@@ -55,6 +55,8 @@ THEMES = ("auto", "clair", "sombre", "sepia", "contraste")
 ACCENTS = ("violet", "bleu", "vert", "corail", "rose")
 DENSITES = ("confortable", "compact")
 VUES_TACHES = ("liste", "tableau")
+PRIORITES_TACHES = ("basse", "normale", "haute")
+RAPPELS_AGENDA = ("", "0", "5", "15", "30", "60", "1440")
 # Métiers proposés au premier lancement (ils pré-cochent des applications).
 PROFILS = ("freelance", "assistant_virtuel", "assistant_direction", "developpeur",
            "comptable", "redacteur", "designer", "consultant", "commercial", "personnalise")
@@ -181,6 +183,18 @@ def densite():
 def vue_taches():
     valeur = lire().get("vue_taches") or "liste"
     return valeur if valeur in VUES_TACHES else "liste"
+
+
+def priorite_taches():
+    valeur = lire().get("priorite_taches") or "normale"
+    return valeur if valeur in PRIORITES_TACHES else "normale"
+
+
+def rappel_agenda():
+    valeur = lire().get("rappel_agenda")
+    if valeur is None:
+        return "15"
+    return str(valeur) if str(valeur) in RAPPELS_AGENDA else "15"
 
 
 def app_active(nom):

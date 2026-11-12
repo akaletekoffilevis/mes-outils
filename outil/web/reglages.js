@@ -21,6 +21,9 @@
     "Violet": "Violet", "Bleu": "Blue", "Vert": "Green", "Corail": "Coral", "Rose": "Rose",
     "Densité": "Density", "Confortable": "Comfortable", "Compact": "Compact",
     "Vue par défaut des tâches": "Default task view", "Liste": "List", "Tableau": "Board",
+    "Priorité par défaut des tâches": "Default task priority", "Basse": "Low", "Normale": "Normal", "Haute": "High",
+    "Rappel par défaut de l'agenda": "Default agenda reminder", "Aucun": "None", "À l'heure": "At the time",
+    "5 min": "5 min", "15 min": "15 min", "30 min": "30 min", "1 h": "1 h", "La veille": "The day before",
     "Onglets affichés": "Visible tabs",
     "Choisissez les applications du menu, comme dans un ERP : les autres disparaissent, leurs données restent.":
       "Choose the apps in the menu, like in an ERP: the others leave, their data stays.",
@@ -162,6 +165,14 @@
       el("button", { class: "btn" + (S.config?.vue_taches === code ? " actif" : ""), onclick: async () => {
         await enregistrer({ vue_taches: code }); dessiner();
       } }, t(nom))));
+    const prioritesTaches = el("div", { class: "langues-reg" }, [["basse", "Basse"], ["normale", "Normale"], ["haute", "Haute"]].map(([code, nom]) =>
+      el("button", { class: "btn" + (S.config?.priorite_taches === code ? " actif" : ""), onclick: async () => {
+        await enregistrer({ priorite_taches: code }); dessiner();
+      } }, t(nom))));
+    const rappelsAgenda = el("div", { class: "langues-reg" }, [["", "Aucun"], ["0", "À l'heure"], ["5", "5 min"], ["15", "15 min"], ["30", "30 min"], ["60", "1 h"], ["1440", "La veille"]].map(([code, nom]) =>
+      el("button", { class: "btn" + (String(S.config?.rappel_agenda ?? "15") === code ? " actif" : ""), onclick: async () => {
+        await enregistrer({ rappel_agenda: code }); dessiner();
+      } }, t(nom))));
 
     const masques = new Set(i.onglets_masques);
     const onglets = listeOnglets().filter(o => o.nom !== "accueil" && o.nom !== "reglages")
@@ -224,6 +235,8 @@
           el("label", { class: "champ" }, "Accent", accents),
           el("label", { class: "champ" }, "Densité", densites),
           el("label", { class: "champ" }, "Vue par défaut des tâches", vuesTaches),
+          el("label", { class: "champ" }, "Priorité par défaut des tâches", prioritesTaches),
+          el("label", { class: "champ" }, "Rappel par défaut de l'agenda", rappelsAgenda),
           el("label", { class: "champ" }, "Accent", accents)),
         carte("🗂️", "Applications", el("p", { class: "aide" }, "Choisissez les applications du menu, comme dans un ERP : les autres disparaissent, leurs données restent."),
           i.profil && PROFILS[i.profil] ? el("p", { class: "aide" }, t("Votre métier : {p}", { p: t(PROFILS[i.profil].titre) })) : null,
