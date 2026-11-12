@@ -72,15 +72,28 @@ def modules_connus():
     installé : la liste écrite au moment de la construction (modules.json)."""
     liste = os.path.join(ICI, "modules.json")
     if config.GELE and os.path.isfile(liste):
-        with open(liste, encoding="utf-8") as f:
-            return set(json.load(f))
-    return {n[:-3] for n in os.listdir(ICI) if n.endswith(".py")} - {"hub", "bulle"}
+        try:
+            with open(liste, encoding="utf-8") as f:
+                return set(json.load(f))
+        except (OSError, json.JSONDecodeError):
+            journal(f"modules.json illisible : {liste}")
+            return set()
+    try:
+        return {n[:-3] for n in os.listdir(ICI) if n.endswith(".py")} - {"hub", "bulle"}
+    except OSError as erreur:
+        journal(f"Impossible de lire le dossier des modules : {erreur}")
+        return set()
 
 
 def routes_module(nom):
     if not MODULE_VALIDE.match(nom) or nom not in modules_connus():
         return None
-    routes = getattr(importlib.import_module(nom), "ROUTES", None)
+    try:
+        module = importlib.import_module(nom)
+    except Exception as erreur:  # noqa: BLE001
+        journal(f"Module illisible ({nom}) : {type(erreur).__name__} : {erreur}")
+        return None
+    routes = getattr(module, "ROUTES", None)
     return routes if isinstance(routes, dict) else None
 
 
