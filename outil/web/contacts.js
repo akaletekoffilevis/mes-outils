@@ -118,6 +118,9 @@
     #vue-contacts .ligne-titre .ct-nom { overflow: hidden; text-overflow: ellipsis; }
     .ct-detail { display: grid; grid-template-columns: minmax(240px, 320px) minmax(0, 1fr); gap: 28px; padding-top: 14px; padding-bottom: 16px; }
     @media (max-width: 900px) { .ct-detail { grid-template-columns: 1fr; } }
+    #vue-contacts .ligne { user-select: none; cursor: grab; }
+    #vue-contacts .ligne.glisse { opacity: .5; }
+    #vue-contacts .ligne.survol { background: var(--violet-clair); }
     .ct-titre { font-size: 11.5px; font-weight: 600; color: var(--gris); text-transform: uppercase; letter-spacing: .04em; margin: 0 0 8px; }
     .ct-titre + * { margin-top: 0; }
     .ct-bloc + .ct-bloc { margin-top: 18px; }
@@ -226,6 +229,18 @@
       return mots.every(m => texte.includes(m));
     });
     if (C.relancer) liste.sort((a, b) => a.relance.localeCompare(b.relance));
+    else {
+      const ordre = S.config?.ordre_contacts;
+      if (Array.isArray(ordre) && !C.recherche && C.statut === "tous" && !C.etiquette) {
+        liste.sort((a, b) => {
+          const ia = ordre.indexOf(a.id), ib = ordre.indexOf(b.id);
+          if (ia >= 0 && ib >= 0) return ia - ib;
+          if (ia >= 0) return -1;
+          if (ib >= 0) return 1;
+          return 0;
+        });
+      }
+    }
     return liste;
   }
 
@@ -291,7 +306,35 @@
         } }, "Effacer les filtres")));
       return;
     }
-    boite.replaceChildren(el("div", { class: "lignes" }, liste.map(ligne)));
+    const lignes = el("div", { class: "lignes" });
+    liste.forEach(c => {
+      const l = ligne(c);
+      l.setAttribute("draggable", "true");
+      l.addEventListener("dragstart", ev => { ev.dataTransfer.effectAllowed = "move"; ev.dataTransfer.setData("text/plain", c.id); l.classList.add("glisse"); });
+      l.addEventListener("dragend", () => { l.classList.remove("glisse"); lignes.querySelectorAll(".ligne").forEach(x => x.classList.remove("survol")); });
+      l.addEventListener("dragover", ev => { ev.preventDefault(); ev.dataTransfer.dropEffect = "move"; l.classList.add("survol"); });
+      l.addEventListener("dragleave", () => l.classList.remove("survol"));
+      l.addEventListener("drop", ev => {
+        ev.preventDefault();
+        l.classList.remove("survol");
+        const fromId = ev.dataTransfer.getData("text/plain");
+        const toId = c.id;
+        if (fromId === toId) return;
+        const contacts = [...C.r.contacts];
+        const fromIdx = contacts.findIndex(x => x.id === fromId);
+        const toIdx = contacts.findIndex(x => x.id === toId);
+        if (fromIdx < 0 || toIdx < 0) return;
+        const moved = contacts.splice(fromIdx, 1)[0];
+        contacts.splice(toIdx, 0, moved);
+        C.r.contacts = contacts;
+        const ordre = contacts.map(x => x.id);
+        if (S.config) S.config.ordre_contacts = ordre;
+        api("/api/reglages/enregistrer", { ordre_contacts: ordre }).catch(e => toast("😕 " + e.message, "erreur"));
+        dessinerListe();
+      });
+      lignes.append(l);
+    });
+    boite.replaceChildren(lignes);
   }
 
   function texteRelance(c) {
