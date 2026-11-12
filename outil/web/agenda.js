@@ -51,10 +51,10 @@
     "Annuler": "Cancel",
     "Enregistrer": "Save",
     "Ajouter": "Add",
-    "Donnez un titre au rendez-vous 😉": "Give the appointment a title 😉",
+    "Indiquez un titre": "Enter a title",
     "La fin doit être après le début": "The end must be after the start",
-    "📅 Rendez-vous modifié": "📅 Appointment updated",
-    "🎉 Rendez-vous ajouté !": "🎉 Appointment added!",
+    "Rendez-vous modifié": "Appointment updated",
+    "Rendez-vous ajouté": "Appointment added",
   });
 
   const COULEURS_RDV = ["#6c4cf5", "#ff7a59", "#18b597", "#ffb020", "#e5488d", "#2f8cff", "#475569"];
@@ -148,7 +148,7 @@
       dessiner();
     };
     return el("div", { class: "barre-vue" },
-      el("h2", {}, "📅 " + t("Agenda")),
+      el("h2", {}, icone("calendar"), " " + t("Agenda")),
       el("button", { class: "btn", onclick: () => { A.ref = new Date(); dessiner(); } }, "Aujourd'hui"),
       el("button", { class: "btn discret", title: "Précédent", onclick: () => decaler(-1) }, "‹"),
       el("button", { class: "btn discret", title: "Suivant", onclick: () => decaler(1) }, "›"),
@@ -343,7 +343,7 @@
 
   function dessiner() {
     $("#vue-agenda").replaceChildren(barre(),
-      el("div", { class: "astuce-agenda" }, "💡 Glissez un rendez-vous pour le déplacer · Ctrl + glisser pour le dupliquer"),
+      el("div", { class: "astuce-agenda" }, icone("lightbulb"), " Glissez un rendez-vous pour le déplacer · Ctrl + glisser pour le dupliquer"),
       A.mode === "mois" ? vueMois() : vueSemaine(A.mode === "jour" ? 1 : 7));
   }
 
@@ -372,7 +372,7 @@
     const notes = el("textarea", { rows: 3, value: e.notes || "", placeholder: "Détails, ordre du jour…" });
 
     fenetre([
-      el("h3", {}, e.id ? "✏️ Rendez-vous" : estCopie ? "⧉ Copie du rendez-vous" : "✨ Nouveau rendez-vous"),
+      el("h3", {}, e.id ? [icone("pencil"), " Rendez-vous"] : estCopie ? [icone("copy"), " Copie du rendez-vous"] : [icone("sparkles"), " Nouveau rendez-vous"]),
       champ("Titre", titre),
       el("div", { class: "grille-form" }, champ("Jour", jour),
         el("label", { class: "champ", style: "flex-direction:row;align-items:center;gap:8px;margin-top:22px" }, journee, "Toute la journée")),
@@ -382,21 +382,21 @@
       champ("Notes", notes),
       el("div", { class: "actions" },
         e.id ? el("button", { class: "btn discret", style: "margin-right:auto;color:var(--rouge)", onclick: async () => {
-          if (!(await confirmer("🗑️", "Supprimer ce rendez-vous ?", e.titre ? "« " + e.titre + " »" : "", "Supprimer"))) { editer(e); return; }
+          if (!(await confirmer(icone("trash-2"), "Supprimer ce rendez-vous ?", e.titre ? "« " + e.titre + " »" : "", "Supprimer"))) { editer(e); return; }
           await api("/api/agenda/supprimer", { id: e.id });
-          await charger(); toast("🗑️ Rendez-vous supprimé");
-        } }, "🗑 Supprimer") : null,
+          await charger(); toast("Rendez-vous supprimé");
+        } }, icone("trash-2"), " Supprimer") : null,
         e.id ? el("button", { class: "btn discret", title: "Créer une copie (choisissez ensuite le jour)", onclick: () => {
           // La copie reprend tout, sauf l'identifiant : elle s'ouvre comme un
           // nouveau rendez-vous, pour choisir le jour avant d'ajouter.
           const copie = structuredClone(source);
           delete copie.id; delete copie.cree; copie.rappel_fait = false;
           fermer(); editer(copie, true);
-          toast("⧉ Copie prête : changez le jour si besoin, puis « Ajouter »");
-        } }, "⧉ Dupliquer") : null,
+          toast("Copie prête : changez le jour si besoin, puis « Ajouter »");
+        } }, icone("copy"), " Dupliquer") : null,
         el("button", { class: "btn", onclick: fermer }, "Annuler"),
         el("button", { class: "btn principal", onclick: async () => {
-          if (!titre.value.trim()) { toast("Donnez un titre au rendez-vous 😉", "erreur"); return; }
+          if (!titre.value.trim()) { toast("Indiquez un titre", "erreur"); return; }
           e.titre = titre.value.trim(); e.lieu = lieu.value.trim(); e.notes = notes.value;
           e.journee = journee.checked;
           e.debut = `${jour.value}T${e.journee ? "08:00" : hDebut.value}`;
@@ -406,7 +406,7 @@
           try {
             await api("/api/agenda/enregistrer", { element: e });
             fermer(); A.ref = new Date(e.debut); await charger();
-            toast(source.id ? "📅 Rendez-vous modifié" : "🎉 Rendez-vous ajouté !", "succes");
+            toast(source.id ? "Rendez-vous modifié" : "Rendez-vous ajouté", "succes");
           } catch (err) { toast("😕 " + err.message, "erreur"); }
         } }, e.id ? "Enregistrer" : "Ajouter"))]);
     majJournee();
