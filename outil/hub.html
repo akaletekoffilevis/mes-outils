@@ -261,6 +261,9 @@
   .tuile .actions-edition { position: absolute; top: 8px; right: 8px; display: none; gap: 4px; z-index: 2; }
   .edition .tuile:not(.ajout) { outline: 1px dashed var(--violet); outline-offset: 2px; }
   .edition .tuile .actions-edition { display: flex; }
+  .tuile.glisse { opacity: .5; transform: scale(.98); cursor: grabbing; }
+  .tuile.survol { outline: 2px solid var(--violet); outline-offset: 2px; }
+  .edition .tuile:not(.ajout) { cursor: grab; }
   .rond { width: 26px; height: 26px; border-radius: 6px; border: 1px solid var(--ligne); cursor: pointer; display: grid; place-items: center; background: var(--carte); color: var(--doux); }
   .rond svg.ico { margin: 0; width: 14px; height: 14px; }
   .rond.suppr:hover { background: var(--rouge-clair); color: var(--rouge-texte); }
@@ -780,7 +783,36 @@ function afficherTuiles() {
   const box = $("#tuiles");
   const outils = S.config.outils;
   box.classList.toggle("edition", S.edition);
-  box.replaceChildren(...outils.map((o, i) => { const t = tuile(o); t.style.animationDelay = `${i * 60}ms`; return t; }));
+  box.replaceChildren(...outils.map((o, i) => {
+    const t = tuile(o);
+    t.style.animationDelay = `${i * 60}ms`;
+    if (S.edition) {
+      t.setAttribute("draggable", "true");
+      t.addEventListener("dragstart", ev => {
+        ev.dataTransfer.effectAllowed = "move";
+        ev.dataTransfer.setData("text/plain", String(i));
+        t.classList.add("glisse");
+      });
+      t.addEventListener("dragend", () => {
+        t.classList.remove("glisse");
+        box.querySelectorAll(".tuile").forEach(x => x.classList.remove("survol"));
+      });
+      t.addEventListener("dragover", ev => { ev.preventDefault(); ev.dataTransfer.dropEffect = "move"; t.classList.add("survol"); });
+      t.addEventListener("dragleave", () => t.classList.remove("survol"));
+      t.addEventListener("drop", ev => {
+        ev.preventDefault();
+        t.classList.remove("survol");
+        const from = Number(ev.dataTransfer.getData("text/plain"));
+        const to = i;
+        if (isNaN(from) || from === to || from < 0 || from >= S.config.outils.length) return;
+        const moved = S.config.outils.splice(from, 1)[0];
+        S.config.outils.splice(to, 0, moved);
+        enregistrer().catch(e => toast("😕 " + e.message, "erreur"));
+        afficherTuiles();
+      });
+    }
+    return t;
+  }));
   if (S.edition || !outils.length) {
     box.append(el("button", { class: "tuile ajout", onclick: () => editer(null) },
       el("div", { class: "emoji" }, "➕"), "Ajouter un outil"));
