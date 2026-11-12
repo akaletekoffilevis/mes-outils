@@ -217,10 +217,11 @@
   /* Tuiles des outils ------------------------------------------------ */
   .tuiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(250px, 100%), 1fr)); gap: 10px; }
   .tuile {
-    position: relative; border: 1px solid var(--ligne); text-align: left; cursor: pointer; padding: 12px 14px; border-radius: var(--rayon); min-height: 64px; color: var(--encre);
-    background: var(--carte); display: grid; grid-template-columns: 32px minmax(0, 1fr); column-gap: 12px; align-content: center; transition: border-color .12s, background .12s;
+    position: relative; border: 1px solid var(--ligne); text-align: left; cursor: pointer; padding: 12px 14px; border-radius: 12px; min-height: 64px; color: var(--encre);
+    background: var(--carte); display: grid; grid-template-columns: 32px minmax(0, 1fr); column-gap: 12px; align-content: center;
+    box-shadow: var(--ombre); transition: border-color .15s var(--ressort), background .15s var(--ressort), box-shadow .15s var(--ressort);
   }
-  .tuile:hover { border-color: var(--ligne-forte); background: var(--surface); }
+  .tuile:hover { border-color: var(--ligne-forte); background: var(--surface); box-shadow: var(--ombre-forte); }
   .tuile .emoji {
     grid-row: span 3; align-self: center; width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center;
     background: color-mix(in srgb, var(--c) 13%, var(--carte)); color: var(--c);
@@ -250,8 +251,10 @@
   /* Serveurs ------------------------------------------------------------ */
   .serveurs { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(360px, 100%), 1fr)); gap: 10px; }
   .serveur {
-    background: var(--carte); border: 1px solid var(--ligne); border-radius: var(--rayon); box-shadow: var(--ombre); padding: 10px 12px; display: flex; align-items: center; gap: 12px;
+    background: var(--carte); border: 1px solid var(--ligne); border-radius: 12px; box-shadow: var(--ombre); padding: 10px 12px; display: flex; align-items: center; gap: 12px;
+    transition: border-color .15s var(--ressort), box-shadow .15s var(--ressort);
   }
+  .serveur:hover { border-color: var(--ligne-forte); box-shadow: var(--ombre-forte); }
   .serveur .pastille { width: 34px; height: 34px; border-radius: 8px; display: grid; place-items: center; background: var(--surface); color: var(--doux); flex: none; position: relative; font-size: 17px; }
   .serveur .pastille svg.ico { margin: 0; width: 17px; height: 17px; }
   .serveur .pastille .point { position: absolute; right: -2px; bottom: -2px; border: 2px solid var(--carte); width: 12px; height: 12px; }
@@ -265,9 +268,10 @@
   .etiquette.vert { background: var(--vert-clair); color: var(--vert-texte); }
   .etiquette.ambre { background: var(--ambre-clair); color: var(--ambre-texte); }
   .etiquette.violet { background: var(--violet-clair); color: var(--violet); }
-  .vide { background: transparent; border: 1px dashed var(--ligne-forte); border-radius: var(--rayon); padding: 28px; color: var(--doux); text-align: center; }
+  .vide { background: transparent; border: 1px dashed var(--ligne-forte); border-radius: 12px; padding: 32px 28px; color: var(--doux); text-align: center; }
   .vide svg.ico { width: 22px; height: 22px; display: block; margin: 0 auto 8px; color: var(--gris); }
-  .carte { background: var(--carte); border: 1px solid var(--ligne); border-radius: var(--rayon); box-shadow: var(--ombre); padding: 16px; }
+  .carte { background: var(--carte); border: 1px solid var(--ligne); border-radius: 12px; box-shadow: var(--ombre); padding: 16px; transition: box-shadow .15s var(--ressort), border-color .15s; }
+  .carte:hover { border-color: var(--ligne-forte); }
   .squelette { border-radius: 8px; min-height: 60px; background: linear-gradient(90deg, var(--surface) 25%, var(--ligne) 50%, var(--surface) 75%); background-size: 200% 100%; animation: miroite 1.2s infinite; }
   @keyframes miroite { to { background-position: -200% 0; } }
 
@@ -321,8 +325,9 @@
 
   /* Aujourd'hui (accueil) ----------------------------------------------- */
   .aujourdhui { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap: 10px; margin-bottom: 4px; }
-  .carte-jour { background: var(--carte); border: 1px solid var(--ligne); border-radius: var(--rayon); padding: 12px 14px; cursor: pointer; transition: border-color .12s, background .12s; }
-  .carte-jour:hover { border-color: var(--ligne-forte); background: var(--surface); }
+  .carte-jour { background: var(--carte); border: 1px solid var(--ligne); border-radius: 12px; padding: 12px 14px; cursor: pointer; box-shadow: var(--ombre);
+    transition: border-color .15s var(--ressort), background .15s var(--ressort), box-shadow .15s var(--ressort); }
+  .carte-jour:hover { border-color: var(--ligne-forte); background: var(--surface); box-shadow: var(--ombre-forte); }
   .carte-jour h4 { margin: 0 0 8px; font-size: 11.5px; font-weight: 600; color: var(--gris); text-transform: uppercase; letter-spacing: .04em; display: flex; gap: 6px; align-items: center; }
   .carte-jour h4 svg.ico { color: var(--gris); margin: 0; width: 14px; height: 14px; }
   .carte-jour .ligne-jour { display: flex; gap: 10px; align-items: center; padding: 2px 0; font-size: 13.5px; }
