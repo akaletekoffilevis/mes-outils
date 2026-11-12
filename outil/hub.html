@@ -173,20 +173,21 @@
 
   /* Boutons ---------------------------------------------------------- */
   .btn {
-    border: 1px solid var(--ligne); border-radius: 7px; height: 32px; padding: 0 12px; cursor: pointer; font-weight: 500; font-size: 13.5px; background: var(--carte);
+    border: 1px solid var(--ligne); border-radius: 8px; height: 32px; padding: 0 14px; cursor: pointer; font-weight: 500; font-size: 13.5px; background: var(--carte);
     box-shadow: var(--ombre); display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; color: var(--encre);
-    transition: background .12s, border-color .12s, color .12s;
+    transition: background .15s, border-color .15s, color .15s, transform .15s var(--ressort);
   }
   .btn svg.ico.av { margin-right: 0; }
   .btn:hover { background: var(--surface); border-color: var(--ligne-forte); }
-  .btn:active { background: var(--ligne); }
+  .btn:active { background: var(--ligne); transform: scale(.985); }
+  .btn:disabled { transform: none; }
   .btn.principal { background: var(--violet); color: var(--sur-violet); border-color: var(--violet); }
   .btn.principal:hover { background: var(--violet-2); border-color: var(--violet-2); }
   .btn.danger { background: var(--rouge); color: #fff; border-color: var(--rouge); }
   .btn.actif { background: var(--violet-clair); color: var(--violet); border-color: color-mix(in srgb, var(--violet) 40%, transparent); }
   .btn.discret { background: transparent; box-shadow: none; border-color: transparent; color: var(--doux); }
   .btn.discret:hover { background: var(--surface); color: var(--encre); }
-  .btn.petit { height: 28px; padding: 0 9px; font-size: 12.5px; border-radius: 6px; }
+  .btn.petit { height: 28px; padding: 0 9px; font-size: 12.5px; border-radius: 7px; }
   .btn:disabled { opacity: .45; cursor: default; }
   .icone-btn { width: 30px; height: 30px; border-radius: 7px; border: 1px solid transparent; cursor: pointer; background: transparent; color: var(--doux); font-size: 15px;
     display: grid; place-items: center; flex: none; transition: background .12s, color .12s; }
@@ -200,8 +201,8 @@
   main input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]):not([type=file]),
   main select, main textarea, .fenetre input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]):not([type=file]),
   .fenetre select, .fenetre textarea {
-    border: 1px solid var(--ligne); border-radius: 7px; padding: 7px 10px; background: var(--champ); outline: none; color: var(--encre);
-    transition: border-color .12s, box-shadow .12s;
+    border: 1px solid var(--ligne); border-radius: 8px; padding: 8px 12px; background: var(--champ); outline: none; color: var(--encre);
+    transition: border-color .15s var(--ressort), box-shadow .15s var(--ressort), background .15s;
   }
   main input:focus, main select:focus, main textarea:focus, .fenetre input:focus, .fenetre select:focus, .fenetre textarea:focus {
     border-color: var(--violet); background: var(--champ-focus); box-shadow: 0 0 0 3px color-mix(in srgb, var(--violet) 18%, transparent);
