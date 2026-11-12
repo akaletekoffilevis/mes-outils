@@ -113,6 +113,9 @@ def module(nom):
 # ---------------------------------------------------------------------------
 _noyau = ctypes.WinDLL("kernel32", use_last_error=True) if systeme.WINDOWS else None
 _verrou_instance = None
+# Dernière ouverture du tableau de bord (secondes, time.time()) : garde-fou
+# pour éviter d'ouvrir une seconde fenêtre sur un double-clic rapide.
+_derniere_ouverture = 0.0
 
 
 def chemin_verrou():
@@ -183,7 +186,7 @@ def ramener_fenetre_linux(titre):
     if not shutil.which("wmctrl"):
         return False
     try:
-        r = subprocess.run(["wmctrl", "-F", "-a", titre], capture_output=True, timeout=5,
+        r = subprocess.run(["wmctrl", "-F", "-a", titre], capture_output=True, timeout=2,
                            stdin=subprocess.DEVNULL)
     except (OSError, subprocess.SubprocessError):
         return False
@@ -192,12 +195,21 @@ def ramener_fenetre_linux(titre):
 
 def ouvrir_tableau(onglet=None):
     """Ramener le tableau de bord devant (ou l'ouvrir), sur un onglet donné."""
+    global _derniere_ouverture
     if onglet:
         hub.demander_onglet(onglet)  # la page déjà ouverte le lit d'elle-même
     adresse = f"http://{hub.HOTE}:{hub.PORT}/" + (f"#{onglet}" if onglet else "")
     if not systeme.WINDOWS:
-        if not ramener_fenetre_linux(TITRE_TABLEAU):
-            systeme.ouvrir_fenetre_appli(adresse, 1180, 800)
+        if ramener_fenetre_linux(TITRE_TABLEAU):
+            return
+        # Garde-fou : si une fenêtre a été ouverte il y a moins de 3 s, ne
+        # pas en ouvrir une seconde (évite les doublons sur un double-clic
+        # rapide). La fenêtre existante, si elle est là, est au premier plan
+        # via wmctrl ci-dessus (quand wmctrl est installé).
+        if time.time() - _derniere_ouverture < 3.0:
+            return
+        systeme.ouvrir_fenetre_appli(adresse, 1180, 800)
+        _derniere_ouverture = time.time()
         return
     hwnd = trouver_fenetre(TITRE_TABLEAU)
     if hwnd:
