@@ -200,6 +200,9 @@
 
   // -------------------------------------------------------------- données
   async function charger() {
+    if (!localStorage.getItem("mes-outils-taches-vue") && S.config?.vue_taches) {
+      T.vue = S.config.vue_taches;
+    }
     T.r = await api("/api/taches/liste", {});
     dessiner();
   }

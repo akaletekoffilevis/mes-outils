@@ -20,6 +20,7 @@
     "Accent": "Accent",
     "Violet": "Violet", "Bleu": "Blue", "Vert": "Green", "Corail": "Coral", "Rose": "Rose",
     "Densité": "Density", "Confortable": "Comfortable", "Compact": "Compact",
+    "Vue par défaut des tâches": "Default task view", "Liste": "List", "Tableau": "Board",
     "Onglets affichés": "Visible tabs",
     "Choisissez les applications du menu, comme dans un ERP : les autres disparaissent, leurs données restent.":
       "Choose the apps in the menu, like in an ERP: the others leave, their data stays.",
@@ -88,6 +89,8 @@
     "Installation automatique réservée au programme installé (Setup.exe).": "Automatic installation is only for the installed program (Setup.exe).",
     "Affichage inconnu.": "Unknown display mode.",
     "Notifications": "Notifications",
+    "Raccourcis clavier": "Keyboard shortcuts",
+    "Les raccourcis disponibles dans l'application.": "Available shortcuts in the application.",
     "Relances (contacts)": "Follow-ups (contacts)",
     "Budget dépassé": "Budget exceeded",
     "Documents qui expirent": "Expiring documents",
@@ -155,6 +158,10 @@
         t(nom))));
     const densites = el("div", { class: "langues-reg" }, [["confortable", "Confortable"], ["compact", "Compact"]].map(([code, nom]) =>
       el("button", { class: "btn" + (S.densite === code ? " actif" : ""), onclick: async () => { await changerDensite(code); dessiner(); } }, t(nom))));
+    const vuesTaches = el("div", { class: "langues-reg" }, [["liste", "Liste"], ["tableau", "Tableau"]].map(([code, nom]) =>
+      el("button", { class: "btn" + (S.config?.vue_taches === code ? " actif" : ""), onclick: async () => {
+        await enregistrer({ vue_taches: code }); dessiner();
+      } }, t(nom))));
 
     const masques = new Set(i.onglets_masques);
     const onglets = listeOnglets().filter(o => o.nom !== "accueil" && o.nom !== "reglages")
@@ -216,6 +223,7 @@
           el("label", { class: "champ" }, "Thème", themes),
           el("label", { class: "champ" }, "Accent", accents),
           el("label", { class: "champ" }, "Densité", densites),
+          el("label", { class: "champ" }, "Vue par défaut des tâches", vuesTaches),
           el("label", { class: "champ" }, "Accent", accents)),
         carte("🗂️", "Applications", el("p", { class: "aide" }, "Choisissez les applications du menu, comme dans un ERP : les autres disparaissent, leurs données restent."),
           i.profil && PROFILS[i.profil] ? el("p", { class: "aide" }, t("Votre métier : {p}", { p: t(PROFILS[i.profil].titre) })) : null,
@@ -247,6 +255,15 @@
             interrupteur("bureau", "Raccourci « Mes outils » sur le Bureau")),
         carte("✉️", "Boîte mail", el("p", { class: "aide" }, "La boîte mail se connecte dans l'onglet Mails."),
           el("button", { class: "btn", onclick: () => montrerVue("mails") }, "Ouvrir l'onglet Mails")),
+        carte("⌨️", "Raccourcis clavier", el("p", { class: "aide" }, "Les raccourcis disponibles dans l'application."),
+          el("div", { class: "liste-reg" },
+            el("div", {}, el("span", {}, "Ctrl + K"), el("span", {}, "Palette de commandes (aller à un onglet, lancer un outil, une action)")),
+            el("div", {}, el("span", {}, "Ctrl + Entrée"), el("span", {}, "Valider dans une fenêtre")),
+            el("div", {}, el("span", {}, "Échap"), el("span", {}, "Fermer la fenêtre / la palette")),
+            el("div", {}, el("span", {}, "↑ / ↓"), el("span", {}, "Naviguer dans la palette")),
+            el("div", {}, el("span", {}, "Entrée"), el("span", {}, "Ouvrir l'élément sélectionné")),
+            el("div", {}, el("span", {}, "Ctrl + glisser"), el("span", {}, "Dupliquer un rendez-vous (Agenda)")),
+            el("div", {}, el("span", {}, "Glisser-déposer"), el("span", {}, "Réorganiser les tuiles, le menu, les notes, les contacts")))),
         carte("🧰", "À propos", el("p", { class: "aide" }, t("Version {v}", { v: i.version })),
           el("div", { style: "display:flex;gap:8px;flex-wrap:wrap" },
             el("button", { class: "btn", onclick: () => api("/api/github/ouvrir_page", { url: i.depot }).catch(e => toast("😕 " + e.message, "erreur")) }, "🌐 Code source sur GitHub"),

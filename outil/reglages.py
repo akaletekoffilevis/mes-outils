@@ -59,6 +59,7 @@ def lire(_d=None):
         "theme": config.theme(),
         "accent": config.accent(),
         "densite": config.densite(),
+        "vue_taches": config.vue_taches(),
         "onglets_masques": contenu.get("onglets_masques") or [],
         "notifications_desactivees": contenu.get("notifications_desactivees") or [],
         "apps_actives": contenu.get("apps_actives"),
@@ -99,6 +100,10 @@ def enregistrer(d):
         if d["densite"] not in config.DENSITES:
             raise ValueError("Densité inconnue.")
         valeurs["densite"] = d["densite"]
+    if "vue_taches" in d:
+        if d["vue_taches"] not in config.VUES_TACHES:
+            raise ValueError("Vue des tâches inconnue.")
+        valeurs["vue_taches"] = d["vue_taches"]
     if "apps_actives" in d:
         apps = d["apps_actives"]
         if apps is not None and (not isinstance(apps, list) or not all(isinstance(n, str) and n.isidentifier() for n in apps)):
