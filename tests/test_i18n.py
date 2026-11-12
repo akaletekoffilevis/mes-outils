@@ -14,7 +14,7 @@ WEB = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 
 PAGE = os.path.join(os.path.dirname(WEB), "hub.html")
 # Tous les onglets, sauf ceux sans texte d'interface : icones.js (icônes SVG
 # générées) et serveurs.js (tout son texte est dans hub.html / i18n.js).
-FICHIERS = [n for n in sorted(os.listdir(WEB)) if n.endswith(".js") and n not in ("icones.js", "serveurs.js")]
+FICHIERS = [n for n in sorted(os.listdir(WEB)) if n.endswith(".js") and n not in ("icones.js", "serveurs.js", "_qrcode_lib.js")]
 
 # Même mot français, sens différent selon le contexte : plusieurs traductions
 # anglaises sont voulues, chacune listée ici.
