@@ -358,7 +358,7 @@ def environnement(variables, outils, racine=None):
     """Patchs pour un bureau Linux imaginaire : variables d'environnement
     (les autres sont retirées), commandes installées, racine Tk éventuelle."""
     env = {k: v for k, v in os.environ.items()
-           if k not in ("WAYLAND_DISPLAY", "DISPLAY", "MES_OUTILS_PRESSE_PAPIERS")}
+           if k not in ("WAYLAND_DISPLAY", "DISPLAY", "MES_OUTILS_PRESSE_PAPIERS", "XDG_CURRENT_DESKTOP")}
     env.update(variables)
     return [mock.patch.dict(os.environ, env, clear=True),
             mock.patch.object(pp.shutil, "which", side_effect=lambda n: f"/usr/bin/{n}" if n in outils else None),
