@@ -269,7 +269,7 @@
 
   async function appel(action, donnees, message) {
     try {
-      const r = await api("/api/projets/" + action, donnees || {});
+      const r = await api("/api/projets/ " + action, donnees || {});
       if (message) toast(message, "succes");
       return r;
     } catch (e) { toast(e.message, "erreur", 7000); return null; }
@@ -343,7 +343,7 @@
     if (!puces || !zone) return;
     puces.replaceChildren(...FILTRES.filter(([v, , f]) => v !== "masques" || P.projets.some(f)).map(([v, libelle, f]) => {
       const n = P.projets.filter(f).length;
-      return el("button", { class: "puce" + (P.filtre === v ? " actif" : ""), onclick: () => { P.filtre = v; dessinerListe(); } },
+      return el("button", { class: "puce " + (P.filtre === v ? " actif" : ""), onclick: () => { P.filtre = v; dessinerListe(); } },
         libelle, v !== "tous" && n ? el("span", { class: "pj-puce-n" }, String(n)) : null);
     }));
     if (!P.projets.length) {
@@ -411,7 +411,7 @@
 
   function ligne(p) {
     const ouverte = P.ouvert === p.id;
-    return el("div", { class: "ligne cliquable pj-ligne" + (ouverte ? " ouverte" : "") + (p.masque ? " masque" : ""),
+    return el("div", { class: "ligne cliquable pj-ligne " + (ouverte ? " ouverte" : "") + (p.masque ? " masque" : ""),
         "data-id": p.id, tabindex: "0", role: "button", "aria-expanded": ouverte ? "true" : "false",
         onclick: () => basculer(p),
         onkeydown: ev => { if (ev.target === ev.currentTarget && (ev.key === "Enter" || ev.key === " ")) { ev.preventDefault(); basculer(p); } } },

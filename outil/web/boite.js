@@ -9,11 +9,11 @@
     "Copier": "Copy", "Effacer": "Clear", "Exemple": "Example",
     // JWT
     "Collez un jeton JWT (eyJ…)": "Paste a JWT (eyJ…)",
-    "⚠️ La signature n'est pas vérifiée : ce décodage montre le contenu du jeton, il ne prouve pas qu'il est authentique.":
-      "⚠️ The signature is not verified: this decoding shows the token's content, it does not prove it is genuine.",
+    " La signature n'est pas vérifiée : ce décodage montre le contenu du jeton, il ne prouve pas qu'il est authentique.":
+      " The signature is not verified: this decoding shows the token's content, it does not prove it is genuine.",
     "En-tête": "Header", "Charge utile": "Payload", "Signature": "Signature", "Dates": "Dates",
     "Émis le (iat)": "Issued at (iat)", "Valide à partir du (nbf)": "Not before (nbf)", "Expire le (exp)": "Expires (exp)", "Authentifié le (auth_time)": "Authenticated (auth_time)",
-    "⛔ Expiré depuis {d}": "⛔ Expired {d} ago", "✅ Valide encore {d}": "✅ Still valid for {d}", "⏳ Pas encore valide (dans {d})": "⏳ Not valid yet (in {d})",
+    " Expiré depuis {d}": " Expired {d} ago", " Valide encore {d}": " Still valid for {d}", " Pas encore valide (dans {d})": " Not valid yet (in {d})",
     "Pas de date d'expiration (exp).": "No expiry date (exp).",
     "Un JWT a trois parties séparées par des points.": "A JWT has three parts separated by dots.",
     "Partie illisible (Base64 URL invalide).": "Unreadable part (invalid Base64 URL).",
@@ -27,7 +27,7 @@
     // JSON
     "Collez du JSON": "Paste JSON", "Mettre en forme": "Format", "Compacter": "Minify", "Valider": "Validate",
     "Trier les clés": "Sort keys", "Indentation": "Indentation", "2 espaces": "2 spaces", "4 espaces": "4 spaces", "Tabulation": "Tab",
-    "✅ JSON valide": "✅ Valid JSON", "Ligne {l}, colonne {c}": "Line {l}, column {c}",
+    " JSON valide": " Valid JSON", "Ligne {l}, colonne {c}": "Line {l}, column {c}",
     "Fin inattendue : il manque la suite (crochet, accolade ou guillemet fermant ?).": "Unexpected end: something is missing (closing bracket, brace or quote?).",
     "Caractère inattendu : {c}": "Unexpected character: {c}",
     "{n} caractères": "{n} characters",
@@ -57,7 +57,7 @@
     // Hachage
     "Hachage": "Hashing", "Texte à hacher (UTF-8)": "Text to hash (UTF-8)", "…ou un fichier :": "…or a file:",
     "Fichier : {nom} ({taille})": "File: {nom} ({taille})", "Revenir au texte": "Back to text",
-    "Comparer avec une empreinte attendue": "Compare with an expected hash", "✅ identique": "✅ match",
+    "Comparer avec une empreinte attendue": "Compare with an expected hash", " identique": " match",
     "Calcul…": "Computing…",
     "SHA-1 est cassé pour la sécurité : ne s'en servir que pour comparer des fichiers.": "SHA-1 is broken for security: only use it to compare files.",
     // Couleurs
@@ -152,27 +152,27 @@
   function garderChoix(v) { try { localStorage.setItem("boite.outil", v); } catch { /* pas de stockage */ } }
 
   const OUTILS = [
-    ["jwt", "🎫", "JWT", outilJwt], ["base64", "🔤", "Base64", outilBase64], ["json", "🧾", "JSON", outilJson],
-    ["temps", "⏱️", "Horodatage", outilTemps], ["uuid", "🆔", "UUID", outilUuid], ["regex", "🔍", "Expressions régulières", outilRegex],
-    ["url", "🔗", "Encodage URL", outilUrl], ["hachage", "🧬", "Hachage", outilHachage], ["couleur", "🎨", "Couleurs", outilCouleur],
+    ["jwt", "", "JWT", outilJwt], ["base64", "", "Base64", outilBase64], ["json", "", "JSON", outilJson],
+    ["temps", "", "Horodatage", outilTemps], ["uuid", "", "UUID", outilUuid], ["regex", icone("search"), "Expressions régulières", outilRegex],
+    ["url", "", "Encodage URL", outilUrl], ["hachage", "", "Hachage", outilHachage], ["couleur", "", "Couleurs", outilCouleur],
   ];
   const racine = () => $("#vue-boite");
 
   function afficher() {
     if (!OUTILS.some(o => o[0] === B.outil)) B.outil = "jwt";
     const puces = el("div", { class: "bo-puces" }, OUTILS.map(([cle, icone, titre]) =>
-      el("button", { class: "puce" + (B.outil === cle ? " actif" : ""), onclick: () => { B.outil = cle; garderChoix(cle); afficher(); } },
-        icone + " " + t(titre))));
+      el("button", { class: "puce " + (B.outil === cle ? " actif" : ""), onclick: () => { B.outil = cle; garderChoix(cle); afficher(); } },
+        icone + t(titre))));
     const [, icone, titre, fabrique] = OUTILS.find(o => o[0] === B.outil);
     racine().replaceChildren(
-      el("div", { class: "barre-vue" }, el("h2", {}, "🧪 " + t("Boîte à outils")), el("div", { class: "espace" }),
-        el("span", { class: "bo-aide" }, "🔒 " + t("Tout se passe dans cette page : rien n'est envoyé."))),
+      el("div", { class: "barre-vue" }, el("h2", {}, t("Boîte à outils")), el("div", { class: "espace" }),
+        el("span", { class: "bo-aide" }, t("Tout se passe dans cette page : rien n'est envoyé."))),
       puces,
-      el("div", { class: "bo-carte" }, el("h3", {}, icone + " " + t(titre)), fabrique()));
+      el("div", { class: "bo-carte" }, el("h3", {}, icone + t(titre)), fabrique()));
   }
 
   // -- briques communes -----------------------------------------------------------
-  const boutonCopier = valeur => el("button", { class: "bo-copier", onclick: () => copier(typeof valeur === "function" ? valeur() : valeur) }, "📋 " + t("Copier"));
+  const boutonCopier = valeur => el("button", { class: "bo-copier", onclick: () => copier(typeof valeur === "function" ? valeur() : valeur) }, t("Copier"));
   /** Bloc « titre + bouton Copier + texte » ; le texte est posé en textContent. */
   function sortie(titre, valeur, coloration) {
     const pre = el("pre", { class: "bo-code" });
@@ -231,7 +231,7 @@
     return urlSure ? b.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "") : b;
   }
   function base64VersOctets(texte) {
-    let s = texte.replace(/\s+/g, "").replace(/-/g, "+").replace(/_/g, "/");
+    let s = texte.replace(/\s+/g, "").replace(/-/g, " + ").replace(/_/g, "/");
     if (!/^[A-Za-z0-9+/]*={0,2}$/.test(s) || s.replace(/=+$/, "").length % 4 === 1) throw new Error(t("Base64 invalide."));
     s = s.replace(/=+$/, "");
     s += "===".slice((s.length + 3) % 4);
@@ -248,7 +248,7 @@
       const jeton = B.jwt.trim().replace(/^Bearer\s+/i, "");
       if (!jeton) { resultat.replaceChildren(); return; }
       const parties = jeton.split(".");
-      if (parties.length < 2 || parties.length > 5) { resultat.replaceChildren(alerte("rouge", "❌ " + t("Un JWT a trois parties séparées par des points."))); return; }
+      if (parties.length < 2 || parties.length > 5) { resultat.replaceChildren(alerte("rouge", icone("x") + " " + t("Un JWT a trois parties séparées par des points."))); return; }
       const lire = p => {
         try { return new TextDecoder("utf-8", { fatal: true }).decode(base64VersOctets(p)); }
         catch { return null; }
@@ -259,7 +259,7 @@
       const teteJson = tete !== null ? json(tete) : undefined, corpsJson = corps !== null ? json(corps) : undefined;
       if (teteJson?.alg) blocs.push(el("div", { class: "bo-aide" }, t("Algorithme : {alg}", { alg: String(teteJson.alg) })));
       const colonne = (titre, brut, valeur) => brut === null
-        ? el("div", { class: "bo-sortie" }, el("div", { class: "bo-tete" }, titre), alerte("rouge", "❌ " + t("Partie illisible (Base64 URL invalide).")))
+        ? el("div", { class: "bo-sortie" }, el("div", { class: "bo-tete" }, titre), alerte("rouge", icone("x") + " " + t("Partie illisible (Base64 URL invalide).")))
         : valeur === undefined ? sortie(titre, brut) : sortie(titre, JSON.stringify(valeur, null, 2), true);
       blocs.push(el("div", { class: "bo-deux" }, colonne(t("En-tête"), tete, teteJson), colonne(t("Charge utile"), corps, corpsJson)));
       if (corpsJson && typeof corpsJson === "object") {
@@ -290,8 +290,8 @@
       el("p", { class: "bo-aide" }, "Tout se passe dans cette page : rien n'est envoyé."),
       zone(B.jwt, "Collez un jeton JWT (eyJ…)", e => { B.jwt = e.target.value; dessiner(); }, 4),
       el("div", { class: "bo-actions" },
-        el("button", { class: "btn discret", onclick: exemple }, "✨ " + t("Exemple")),
-        el("button", { class: "btn discret", onclick: () => { B.jwt = ""; afficher(); } }, "🧹 " + t("Effacer"))),
+        el("button", { class: "btn discret", onclick: exemple }, icone("sparkles") + " " + t("Exemple")),
+        el("button", { class: "btn discret", onclick: () => { B.jwt = ""; afficher(); } }, icone("brush") + " " + t("Effacer"))),
       resultat);
   }
 
@@ -301,7 +301,7 @@
     const montrer = () => {
       const s = B.b64sortie;
       if (!s) resultat.replaceChildren();
-      else if (s.erreur) resultat.replaceChildren(alerte("rouge", "❌ " + s.erreur));
+      else if (s.erreur) resultat.replaceChildren(alerte("rouge", icone("x") + " " + s.erreur));
       else if (s.binaire) resultat.replaceChildren(el("div", { class: "bo-aide", style: "margin-top:10px" }, t("Contenu binaire ({n} octets), affiché en hexadécimal :", { n: s.binaire })), sortie(t("Résultat"), s.texte));
       else resultat.replaceChildren(sortie(t("Résultat"), s.texte));
     };
@@ -318,13 +318,13 @@
     return el("div", {},
       zone(B.b64, "Texte à encoder, ou Base64 à décoder", e => { B.b64 = e.target.value; }, 5),
       el("div", { class: "bo-actions" },
-        el("button", { class: "btn principal", onclick: encoder }, "⬆️ " + t("Encoder")),
-        el("button", { class: "btn", onclick: decoder }, "⬇️ " + t("Décoder")),
+        el("button", { class: "btn principal", onclick: encoder }, "⬆ " + t("Encoder")),
+        el("button", { class: "btn", onclick: decoder }, "⬇ " + t("Décoder")),
         coche(t("Variante URL (- et _, sans =)"), B.b64url, v => { B.b64url = v; }),
         el("span", { class: "espace", style: "flex:1" }),
         el("button", { class: "btn discret", title: "Mettre le résultat dans l'entrée", onclick: () => {
           if (B.b64sortie?.texte && !B.b64sortie.binaire) { B.b64 = B.b64sortie.texte; B.b64sortie = null; afficher(); }
-        } }, "🔁 " + t("Échanger"))),
+        } }, t("Échanger"))),
       resultat);
   }
 
@@ -403,7 +403,7 @@
     const ligne = avant.split("\n").length, colonne = pos - avant.lastIndexOf("\n");
     const texteLigne = texte.split("\n")[ligne - 1] || "";
     const debut = Math.max(0, colonne - 60);
-    return { message, ligne, colonne, extrait: texteLigne.slice(debut, debut + 120) + "\n" + " ".repeat(Math.max(0, colonne - 1 - debut)) + "^" };
+    return { message, ligne, colonne, extrait: texteLigne.slice(debut, debut + 120) + "\n " + " ".repeat(Math.max(0, colonne - 1 - debut)) + "^" };
   }
   function outilJson() {
     const resultat = el("div");
@@ -417,7 +417,7 @@
         return;
       }
       resultat.replaceChildren(...[s.valide ? alerte("vert", "✅ JSON valide") : null,
-        s.texte !== undefined ? sortie(t("Résultat") + " · " + t("{n} caractères", { n: s.texte.length.toLocaleString(I18N.locale()) }), s.texte, true) : null].filter(Boolean));
+        s.texte !== undefined ? sortie(t("Résultat") + "· " + t("{n} caractères", { n: s.texte.length.toLocaleString(I18N.locale()) }), s.texte, true) : null].filter(Boolean));
     };
     const traiter = mode => {
       let v;
@@ -435,9 +435,9 @@
     return el("div", {},
       zone(B.json, "Collez du JSON", e => { B.json = e.target.value; }, 9),
       el("div", { class: "bo-actions" },
-        el("button", { class: "btn principal", onclick: () => traiter("forme") }, "✨ " + t("Mettre en forme")),
-        el("button", { class: "btn", onclick: () => traiter("compacter") }, "🗜️ " + t("Compacter")),
-        el("button", { class: "btn", onclick: () => traiter("valider") }, "✅ " + t("Valider")),
+        el("button", { class: "btn principal", onclick: () => traiter("forme") }, icone("sparkles") + " " + t("Mettre en forme")),
+        el("button", { class: "btn", onclick: () => traiter("compacter") }, t("Compacter")),
+        el("button", { class: "btn", onclick: () => traiter("valider") }, icone("check") + " " + t("Valider")),
         indentation,
         coche(t("Trier les clés"), B.jsonTri, v => { B.jsonTri = v; })),
       resultat);
@@ -454,10 +454,10 @@
       const brut = B.unix.trim();
       if (!brut) { versDate.replaceChildren(); return; }
       const n = Number(brut);
-      if (!Number.isFinite(n)) { versDate.replaceChildren(alerte("rouge", "❌ " + t("Nombre invalide."))); return; }
+      if (!Number.isFinite(n)) { versDate.replaceChildren(alerte("rouge", icone("x") + " " + t("Nombre invalide."))); return; }
       const ms = B.unite === "ms" || (B.unite === "auto" && Math.abs(n) >= 1e11) ? n : n * 1000;
       const d = new Date(ms);
-      if (isNaN(d)) { versDate.replaceChildren(alerte("rouge", "❌ " + t("Nombre invalide."))); return; }
+      if (isNaN(d)) { versDate.replaceChildren(alerte("rouge", icone("x") + " " + t("Nombre invalide."))); return; }
       versDate.replaceChildren(tableau([[t("Date locale"), dateLocale(d)], [t("ISO 8601 (UTC)"), d.toISOString()],
         [t("Par rapport à maintenant"), relatif(d)], [t("Unix (secondes)"), Math.floor(ms / 1000)], [t("Unix (millisecondes)"), Math.round(ms)]]));
     };
@@ -483,7 +483,7 @@
     };
     if (!B.unix && !B.dateLocale) maintenant(); else { dessinerUnix(); dessinerDate(); }
     return el("div", {},
-      el("div", { class: "bo-actions", style: "margin-top:0" }, el("button", { class: "btn principal", onclick: maintenant }, "🕒 " + t("Maintenant"))),
+      el("div", { class: "bo-actions", style: "margin-top:0" }, el("button", { class: "btn principal", onclick: maintenant }, t("Maintenant"))),
       el("div", { class: "bo-deux" },
         el("div", {}, el("div", { class: "bo-sortie" }, el("div", { class: "bo-tete" }, t("Unix → date"))),
           el("div", { class: "bo-ligne" }, el("label", { class: "bo-champ" }, "Horodatage Unix", champUnix), el("label", { class: "bo-champ", style: "flex:none;min-width:0" }, "Unité", unite)),
@@ -508,7 +508,7 @@
       const lignes = B.uuids.map(forme);
       resultat.replaceChildren(el("div", { class: "bo-sortie" },
         el("div", { class: "bo-tete" }, "UUID v4", el("span", { class: "espace" }),
-          el("button", { class: "bo-copier", onclick: () => copier(lignes.join("\n")) }, "📋 " + t("Tout copier"))),
+          el("button", { class: "bo-copier", onclick: () => copier(lignes.join("\n")) }, icone("clipboard") + " " + t("Tout copier"))),
         el("table", { class: "bo-table" }, lignes.map(u => el("tr", {}, el("td", { class: "bo-v", style: "width:auto" }, document.createTextNode(u)), el("td", {}, boutonCopier(u)))))));
     };
     const generer = () => { B.uuids = Array.from({ length: Math.min(Math.max(B.nbUuid, 1), 100) }, uuid4); montrer(); };
@@ -520,7 +520,7 @@
           oninput: e => { B.nbUuid = Number(e.target.value) || 1; } })),
         coche(t("Majuscules"), B.uuidMaj, v => { B.uuidMaj = v; montrer(); }),
         coche(t("Sans tirets"), B.uuidSansTirets, v => { B.uuidSansTirets = v; montrer(); }),
-        el("button", { class: "btn principal", onclick: generer }, "🎲 " + t("Générer"))),
+        el("button", { class: "btn principal", onclick: generer }, t("Générer"))),
       resultat);
   }
 
@@ -533,7 +533,7 @@
       if (!B.motif) { resultat.replaceChildren(); return; }
       let re;
       try { re = new RegExp(B.motif, B.drapeaux.includes("g") ? B.drapeaux : B.drapeaux + "g"); }
-      catch (e) { resultat.replaceChildren(alerte("rouge", "❌ " + t("Motif invalide : {m}", { m: e.message }))); return; }
+      catch (e) { resultat.replaceChildren(alerte("rouge", icone("x") + " " + t("Motif invalide : {m}", { m: e.message }))); return; }
       const texte = B.texteRegex, toutes = B.drapeaux.includes("g");
       const trouvees = [];
       let m, limite = false;
@@ -549,7 +549,7 @@
       for (const x of trouvees) {
         if (x.index > i) pre.append(texte.slice(i, x.index));
         const marque = document.createElement("mark");
-        marque.className = "bo-surligne" + (x[0] === "" ? " vide" : "");
+        marque.className = "bo-surligne " + (x[0] === "" ? " vide" : "");
         marque.textContent = x[0];
         pre.append(marque);
         i = x.index + x[0].length;
@@ -591,7 +591,7 @@
     const resultat = el("div"), detail = el("div");
     const montrer = () => {
       const s = B.urlSortie;
-      resultat.replaceChildren(...(s ? [s.erreur ? alerte("rouge", "❌ " + s.erreur) : sortie(t("Résultat"), s.texte)] : []));
+      resultat.replaceChildren(...(s ? [s.erreur ? alerte("rouge", icone("x") + " " + s.erreur) : sortie(t("Résultat"), s.texte)] : []));
     };
     const decomposer = () => {
       let u;
@@ -610,9 +610,9 @@
     return el("div", {},
       zone(B.url, "Texte ou adresse", e => { B.url = e.target.value; decomposer(); }, 3),
       el("div", { class: "bo-actions" },
-        el("button", { class: "btn principal", onclick: () => faire(encodeURIComponent) }, "⬆️ " + t("Encoder (composant)")),
-        el("button", { class: "btn", onclick: () => faire(encodeURI) }, "⬆️ " + t("Encoder (adresse entière)")),
-        el("button", { class: "btn", onclick: () => faire(s => decodeURIComponent(s.replace(/\+/g, " "))) }, "⬇️ " + t("Décoder"))),
+        el("button", { class: "btn principal", onclick: () => faire(encodeURIComponent) }, "⬆ " + t("Encoder (composant)")),
+        el("button", { class: "btn", onclick: () => faire(encodeURI) }, "⬆ " + t("Encoder (adresse entière)")),
+        el("button", { class: "btn", onclick: () => faire(s => decodeURIComponent(s.replace(/\+/g, " "))) }, "⬇ " + t("Décoder"))),
       resultat, detail);
   }
 
@@ -628,14 +628,14 @@
       if (n !== numero) return;  // un calcul plus récent est en cours
       const attendu = B.attendu.trim().toLowerCase();
       resultat.replaceChildren(...[
-        B.fichier ? el("div", { class: "bo-actions" }, el("span", { class: "bo-etat" }, "📄 " + t("Fichier : {nom} ({taille})", { nom: B.fichier.name, taille: taille(B.fichier.size) })),
-          el("button", { class: "btn discret", onclick: () => { B.fichier = null; afficher(); } }, "↩️ " + t("Revenir au texte"))) : null,
-        tableau(algos.map((a, i) => [attendu && attendu === empreintes[i] ? `${a}  ✅` : a, empreintes[i]])),
-        attendu && !empreintes.includes(attendu) ? alerte("rouge", "❌ " + t("Aucune correspondance.")) : null,
+        B.fichier ? el("div", { class: "bo-actions" }, el("span", { class: "bo-etat" }, icone("file-text") + " " + t("Fichier : {nom} ({taille})", { nom: B.fichier.name, taille: taille(B.fichier.size) })),
+          el("button", { class: "btn discret", onclick: () => { B.fichier = null; afficher(); } }, "↩ " + t("Revenir au texte"))) : null,
+        tableau(algos.map((a, i) => [attendu && attendu === empreintes[i] ? `${a}  ` : a, empreintes[i]])),
+        attendu && !empreintes.includes(attendu) ? alerte("rouge", icone("x") + " " + t("Aucune correspondance.")) : null,
         el("p", { class: "bo-aide" }, "SHA-1 est cassé pour la sécurité : ne s'en servir que pour comparer des fichiers.")].filter(Boolean));
     }
-    const lancer = () => calculer().catch(e => resultat.replaceChildren(alerte("rouge", "❌ " + e.message)));
-    const fichier = el("input", { type: "file", onchange: e => { B.fichier = e.target.files[0] || null; if (B.fichier) { resultat.replaceChildren(el("p", { class: "bo-aide" }, "⏳ " + t("Calcul…"))); lancer(); } } });
+    const lancer = () => calculer().catch(e => resultat.replaceChildren(alerte("rouge", icone("x") + " " + e.message)));
+    const fichier = el("input", { type: "file", onchange: e => { B.fichier = e.target.files[0] || null; if (B.fichier) { resultat.replaceChildren(el("p", { class: "bo-aide" }, icone("loader") + " " + t("Calcul…"))); lancer(); } } });
     lancer();
     return el("div", {},
       B.fichier ? null : zone(B.hache, "Texte à hacher (UTF-8)", e => { B.hache = e.target.value; lancer(); }, 4),
@@ -679,7 +679,7 @@
       placeholder: "Couleur (hex, rgb(), hsl() ou nom CSS)", oninput: e => { B.couleur = e.target.value; dessiner(); } });
     function dessiner() {
       const c = lireCouleur(B.couleur);
-      if (!c) { pastille.style.background = "transparent"; resultat.replaceChildren(...(B.couleur.trim() ? [alerte("rouge", "❌ " + t("Couleur non reconnue."))] : [])); return; }
+      if (!c) { pastille.style.background = "transparent"; resultat.replaceChildren(...(B.couleur.trim() ? [alerte("rouge", icone("x") + " " + t("Couleur non reconnue."))] : [])); return; }
       const h2 = n => n.toString(16).padStart(2, "0");
       const hexa = `#${h2(c.r)}${h2(c.g)}${h2(c.b)}` + (c.a < 1 ? h2(Math.round(c.a * 255)) : "");
       const { h, s, l } = versHsl(c);
@@ -697,5 +697,5 @@
       resultat);
   }
 
-  VUES.boite = { afficher, titre: "Boîte à outils", icone: "🧪", groupe: "outils", ordre: 10 };
+  VUES.boite = { afficher, titre: "Boîte à outils", icone: icone("flask-conical"), groupe: "outils", ordre: 10 };
 })();

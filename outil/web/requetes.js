@@ -10,43 +10,43 @@
     "Envoyer": "Send", "Envoi…": "Sending…", "Nouvelle requête": "New request", "Nouvelle": "New",
     "Enregistrer": "Save", "Enregistrer la requête": "Save request", "Enregistrer comme nouvelle": "Save as new",
     "Copier en cURL (bash)": "Copy as cURL (bash)", "cURL": "cURL",
-    "📋 Commande cURL copiée": "📋 cURL command copied",
+    " Commande cURL copiée": " cURL command copied",
     "Adresse, ex. https://api.exemple.com/v1/clients ou {{base_url}}/clients": "URL, e.g. https://api.example.com/v1/customers or {{base_url}}/customers",
     "Paramètres": "Parameters", "En-têtes": "Headers", "Corps": "Body", "Authentification": "Auth", "Options": "Options", "Variables": "Variables",
     "Clé": "Key", "Valeur": "Value", "Nom": "Name", "Retirer la ligne": "Remove line", "Activer / désactiver": "Enable / disable",
     "Ajoutés à l'adresse (?cle=valeur), en plus de ceux déjà écrits dedans.": "Appended to the URL (?key=value), on top of those already in it.",
     "Aucun": "None", "JSON": "JSON", "Texte": "Text", "Formulaire": "Form",
     "Cette requête n'a pas de corps.": "This request has no body.",
-    "✨ Mettre en forme": "✨ Format", "✅ JSON valide": "✅ Valid JSON", "Champs envoyés en application/x-www-form-urlencoded.": "Fields sent as application/x-www-form-urlencoded.",
+    " Mettre en forme": " Format", " JSON valide": " Valid JSON", "Champs envoyés en application/x-www-form-urlencoded.": "Fields sent as application/x-www-form-urlencoded.",
     "Aucune": "None", "Jeton": "Token", "Utilisateur": "Username", "Mot de passe": "Password",
     "Aucune authentification.": "No authentication.",
-    "🔒 Ces valeurs ne sont jamais écrites sur le disque : masquées (••••) dans l'historique, retirées des requêtes enregistrées.":
-      "🔒 These values are never written to disk: masked (••••) in the history, removed from saved requests.",
+    " Ces valeurs ne sont jamais écrites sur le disque : masquées (••••) dans l'historique, retirées des requêtes enregistrées.":
+      " These values are never written to disk: masked (••••) in the history, removed from saved requests.",
     "Délai d'attente (secondes)": "Timeout (seconds)", "Suivre les redirections": "Follow redirects",
     "Ignorer les erreurs de certificat (TLS)": "Ignore certificate errors (TLS)",
-    "⚠️ À réserver à un serveur de développement : la connexion n'est plus protégée.": "⚠️ Only for a development server: the connection is no longer protected.",
+    " À réserver à un serveur de développement : la connexion n'est plus protégée.": " Only for a development server: the connection is no longer protected.",
     "Utilisez {{nom}} dans l'adresse, les en-têtes, les paramètres, le corps et l'authentification.":
       "Use {{name}} in the URL, headers, params, body and auth.",
-    "⚠️ Enregistrées en clair dans donnees\\requetes.json : n'y mettez pas de secret.": "⚠️ Stored in plain text in donnees\\requetes.json: do not put secrets here.",
-    "Enregistrer les variables": "Save variables", "💾 Variables enregistrées": "💾 Variables saved",
+    " Enregistrées en clair dans donnees\\requetes.json : n'y mettez pas de secret.": " Stored in plain text in donnees\\requetes.json: do not put secrets here.",
+    "Enregistrer les variables": "Save variables", " Variables enregistrées": " Variables saved",
     "Historique": "History", "Enregistrées": "Saved", "Vider": "Clear", "Vider l'historique ?": "Clear the history?",
     "Les 50 dernières requêtes envoyées sont effacées.": "The last 50 sent requests are deleted.",
     "Aucune requête envoyée pour l'instant.": "No request sent yet.",
-    "Aucune requête enregistrée. Bouton 💾 pour garder la requête en cours.": "No saved request. Use 💾 to keep the current request.",
+    "Aucune requête enregistrée. Bouton  pour garder la requête en cours.": "No saved request. Use  to keep the current request.",
     "Sans collection": "No collection", "Supprimer": "Delete", "Supprimer « {nom} » ?": "Delete “{nom}”?",
     "La requête enregistrée disparaît.": "The saved request is removed.",
     "Collection (facultatif)": "Collection (optional)", "ex. API clients": "e.g. Customers API", "ex. Liste des clients": "e.g. List customers",
-    "🔒 L'authentification (jeton, mot de passe) n'est pas enregistrée et les en-têtes sensibles sont masqués : il faudra les ressaisir.":
-      "🔒 Authentication (token, password) is not saved and sensitive headers are masked: you will need to enter them again.",
-    "💾 Requête enregistrée": "💾 Request saved", "🗑️ Requête supprimée": "🗑️ Request deleted",
-    "🔒 Valeurs masquées (••••) à ressaisir avant l'envoi": "🔒 Masked values (••••) must be re-entered before sending",
-    "🔒 Authentification à ressaisir (elle n'est pas enregistrée)": "🔒 Authentication must be re-entered (it is not saved)",
+    " L'authentification (jeton, mot de passe) n'est pas enregistrée et les en-têtes sensibles sont masqués : il faudra les ressaisir.":
+      " Authentication (token, password) is not saved and sensitive headers are masked: you will need to enter them again.",
+    " Requête enregistrée": " Request saved", " Requête supprimée": " Request deleted",
+    " Valeurs masquées (••••) à ressaisir avant l'envoi": " Masked values (••••) must be re-entered before sending",
+    " Authentification à ressaisir (elle n'est pas enregistrée)": " Authentication must be re-entered (it is not saved)",
     "Réponse": "Response", "Envoyez une requête pour voir la réponse ici.": "Send a request to see the response here.",
     "Ctrl + Entrée pour envoyer": "Ctrl + Enter to send",
     "Copier le corps": "Copy body", "Copier": "Copy",
     "{n} redirection(s)": "{n} redirect(s)", "Réponse vide.": "Empty response.",
-    "📦 Contenu binaire, {n} octets": "📦 Binary content, {n} bytes",
-    "✂️ Réponse tronquée : seuls les 5 premiers Mo sont affichés (taille totale : {taille}).": "✂️ Truncated response: only the first 5 MB are shown (total size: {taille}).",
+    " Contenu binaire, {n} octets": " Binary content, {n} bytes",
+    " Réponse tronquée : seuls les 5 premiers Mo sont affichés (taille totale : {taille}).": " Truncated response: only the first 5 MB are shown (total size: {taille}).",
     "inconnue": "unknown", "Adresse finale": "Final URL",
     "Indiquez une adresse": "Enter a URL",
     "Échec de la requête": "Request failed",
@@ -199,8 +199,8 @@
     return `${(n / 1048576).toLocaleString(loc, { maximumFractionDigits: 1 })} ${t("Mo")}`;
   };
   const duree = ms => ms < 1000 ? `${Math.round(ms)} ms` : `${(ms / 1000).toLocaleString(I18N.locale(), { maximumFractionDigits: 2 })} s`;
-  const classeStatut = s => "rq-statut rq-s" + String(s)[0];
-  const badgeMethode = m => el("span", { class: "rq-methode rq-m-" + (COULEUR_METHODE[m] || "gris") }, m);
+  const classeStatut = s => "rq-statut rq-s " + String(s)[0];
+  const badgeMethode = m => el("span", { class: "rq-methode rq-m- " + (COULEUR_METHODE[m] || "gris") }, m);
 
   /** JSON coloré, construit en nœuds (jamais d'innerHTML). */
   function colorerJson(texte) {
@@ -229,7 +229,7 @@
   async function afficher() {
     if (!R.charge) {
       try { prendreEtat(await api("/api/requetes/etat", {})); R.charge = true; }
-      catch (e) { racine().replaceChildren(el("div", { class: "vide" }, "😕 " + e.message)); return; }
+      catch (e) { racine().replaceChildren(el("div", { class: "vide" }, e.message)); return; }
       R.req = completer(R.req);
     }
     dessiner();
@@ -238,11 +238,11 @@
   // -- page ------------------------------------------------------------------------
   function dessiner() {
     racine().replaceChildren(
-      el("div", { class: "barre-vue" }, el("h2", {}, "📡 " + t("Testeur d'API")), el("div", { class: "espace" }),
+      el("div", { class: "barre-vue" }, el("h2", {}, icone("radio") + " " + t("Testeur d'API")), el("div", { class: "espace" }),
         el("span", { class: "rq-info" }, "Ctrl + Entrée pour envoyer"),
         el("button", { class: "btn", title: "Nouvelle requête", onclick: () => {
-          R.req = completer(nouvelle()); R.idEnregistree = null; R.rep = null; R.erreur = null; dessinerRequete(); dessinerReponse(); } }, "✨ " + t("Nouvelle")),
-        el("button", { class: "btn", title: "Enregistrer la requête", onclick: enregistrer }, "💾 " + t("Enregistrer")),
+          R.req = completer(nouvelle()); R.idEnregistree = null; R.rep = null; R.erreur = null; dessinerRequete(); dessinerReponse(); } }, icone("sparkles") + " " + t("Nouvelle")),
+        el("button", { class: "btn", title: "Enregistrer la requête", onclick: enregistrer }, t("Enregistrer")),
         el("button", { class: "btn", title: "Copier en cURL (bash)", onclick: copierCurl }, "📋 cURL")),
       el("div", { class: "rq-grille" },
         el("div", { class: "rq-carte rq-cote", id: "rq-cote" }),
@@ -255,8 +255,8 @@
   // -- requête ---------------------------------------------------------------------
   function dessinerRequete() {
     const r = R.req;
-    const methode = el("select", { class: "rq-methode rq-m-" + COULEUR_METHODE[r.methode], title: "Méthode",
-      onchange: e => { r.methode = e.target.value; e.target.className = "rq-methode rq-m-" + COULEUR_METHODE[r.methode]; } },
+    const methode = el("select", { class: "rq-methode rq-m- " + COULEUR_METHODE[r.methode], title: "Méthode",
+      onchange: e => { r.methode = e.target.value; e.target.className = "rq-methode rq-m- " + COULEUR_METHODE[r.methode]; } },
       METHODES.map(m => el("option", { value: m }, m)));
     methode.value = r.methode;
     const url = el("input", { class: "rq-saisie rq-mono rq-url", value: r.url, spellcheck: "false",
@@ -264,16 +264,16 @@
       oninput: e => { r.url = e.target.value; },
       onkeydown: e => { if (e.key === "Enter") { e.preventDefault(); envoyer(); } } });
     const bouton = el("button", { class: "btn principal", id: "rq-envoyer", onclick: envoyer, disabled: R.envoi ? "" : null },
-      R.envoi ? "⏳ " + t("Envoi…") : "🚀 " + t("Envoyer"));
+      R.envoi ? icone("loader") + " " + t("Envoi…") : icone("rocket") + " " + t("Envoyer"));
     const compte = l => l.filter(x => x.actif && x.cle.trim()).length;
     const onglets = [
       ["params", "Paramètres", compte(r.params)], ["entetes", "En-têtes", compte(r.entetes)],
       ["corps", "Corps", r.corps.type !== "aucun" ? "•" : 0], ["auth", "Authentification", r.auth.type !== "aucune" ? "•" : 0],
       ["options", "Options", 0], ["variables", "Variables", compte(R.variables)]];
     const puces = el("div", { class: "rq-puces" }, onglets.map(([cle, titre, n]) =>
-      el("button", { class: "puce" + (R.ongletReq === cle ? " actif" : ""), onclick: () => { R.ongletReq = cle; dessinerRequete(); } },
+      el("button", { class: "puce " + (R.ongletReq === cle ? " actif" : ""), onclick: () => { R.ongletReq = cle; dessinerRequete(); } },
         titre, n ? el("small", {}, String(n)) : null)));
-    const titre = R.idEnregistree ? el("div", { class: "rq-info", style: "margin-bottom:8px" }, "💾 " + R.nomEnregistree) : null;
+    const titre = R.idEnregistree ? el("div", { class: "rq-info", style: "margin-bottom:8px" }, R.nomEnregistree) : null;
     $("#rq-requete").replaceChildren(...[titre,
       el("div", { class: "rq-ligne" }, methode, url, bouton),
       puces, editeur()].filter(Boolean));
@@ -303,7 +303,7 @@
       document.body.append(el("datalist", { id: listeSuggestions }, ENTETES_CONNUS.map(n => el("option", { value: n }))));
     }
     const ligneDom = l => {
-      const dom = el("div", { class: "rq-kv" + (l.actif ? "" : " off") });
+      const dom = el("div", { class: "rq-kv " + (l.actif ? "" : " off") });
       const suite = () => {
         if (l === liste[liste.length - 1] && (l.cle || l.valeur)) {
           const n = ligneVide(); liste.push(n); boite.append(ligneDom(n));
@@ -323,7 +323,7 @@
           if (!liste.length || liste[liste.length - 1].cle || liste[liste.length - 1].valeur) {
             const n = ligneVide(); liste.push(n); boite.append(ligneDom(n));
           }
-        } }, "✕"));
+        } }, icone("x")));
       return dom;
     };
     boite.append(...liste.map(ligneDom));
@@ -334,7 +334,7 @@
     const c = R.req.corps;
     const choix = el("div", { class: "rq-puces", style: "margin-top:0" },
       [["aucun", "Aucun"], ["json", "JSON"], ["texte", "Texte"], ["formulaire", "Formulaire"]].map(([v, titre]) =>
-        el("button", { class: "puce" + (c.type === v ? " actif" : ""), onclick: () => { c.type = v; dessinerRequete(); } }, titre)));
+        el("button", { class: "puce " + (c.type === v ? " actif" : ""), onclick: () => { c.type = v; dessinerRequete(); } }, titre)));
     if (c.type === "aucun") return el("div", {}, choix, el("p", { class: "rq-aide" }, "Cette requête n'a pas de corps."));
     if (c.type === "formulaire") {
       return el("div", {}, choix, lignes(c.champs, "Clé", "Valeur"),
@@ -344,7 +344,7 @@
     const verifier = () => {
       if (c.type !== "json" || !c.texte.trim()) { etat.textContent = ""; return; }
       try { JSON.parse(c.texte); etat.textContent = t("✅ JSON valide"); etat.style.color = "var(--vert-texte)"; }
-      catch (e) { etat.textContent = "❌ " + e.message; etat.style.color = "var(--rouge-texte)"; }
+      catch (e) { etat.textContent = icone("x") + " " + e.message; etat.style.color = "var(--rouge-texte)"; }
     };
     const zone = el("textarea", { value: c.texte, spellcheck: "false", rows: 10,
       placeholder: c.type === "json" ? '{\n  "nom": "valeur"\n}' : "",
@@ -404,7 +404,7 @@
         for (const l of R.variables) if (l.actif && l.cle.trim()) variables[l.cle.trim()] = l.valeur;
         try { prendreEtat(await api("/api/requetes/variables", { variables })); toast("Variables enregistrées", "succes"); dessinerRequete(); }
         catch (e) { toast(e.message, "erreur", 6000); }
-      } }, "💾 " + t("Enregistrer les variables")));
+      } }, t("Enregistrer les variables")));
   }
 
   // -- actions ---------------------------------------------------------------------
@@ -458,7 +458,7 @@
       } catch (e) { toast(e.message, "erreur", 6000); }
     };
     fenetre([
-      el("h3", {}, "💾 " + t("Enregistrer la requête")),
+      el("h3", {}, t("Enregistrer la requête")),
       el("label", { class: "champ" }, "Nom", nom),
       el("label", { class: "champ" }, "Collection (facultatif)", collection,
         el("datalist", { id: "rq-collections" }, collections.map(c => el("option", { value: c })))),
@@ -476,10 +476,10 @@
     const zone = $("#rq-cote");
     if (!zone) return;
     const puces = el("div", { class: "rq-puces" },
-      el("button", { class: "puce" + (R.ongletListe === "historique" ? " actif" : ""), onclick: () => { R.ongletListe = "historique"; dessinerCote(); } },
-        "🕘 " + t("Historique")),
-      el("button", { class: "puce" + (R.ongletListe === "enregistrees" ? " actif" : ""), onclick: () => { R.ongletListe = "enregistrees"; dessinerCote(); } },
-        "💾 " + t("Enregistrées")));
+      el("button", { class: "puce " + (R.ongletListe === "historique" ? " actif" : ""), onclick: () => { R.ongletListe = "historique"; dessinerCote(); } },
+        t("Historique")),
+      el("button", { class: "puce " + (R.ongletListe === "enregistrees" ? " actif" : ""), onclick: () => { R.ongletListe = "enregistrees"; dessinerCote(); } },
+        t("Enregistrées")));
     const liste = el("div", { class: "rq-liste" });
     if (R.ongletListe === "historique") {
       if (!R.historique.length) liste.append(el("div", { class: "rq-vide" }, "Aucune requête envoyée pour l'instant."));
@@ -490,11 +490,11 @@
           : d.toLocaleDateString(I18N.locale(), { day: "numeric", month: "short" });
         liste.append(el("div", { class: "rq-elt", title: h.requete.url, onclick: () => charger(h.requete) },
           badgeMethode(h.requete.methode),
-          el("div", { class: "rq-texte" }, cheminCourt(h.requete.url), el("small", {}, quand + " · " + duree(h.duree_ms))),
+          el("div", { class: "rq-texte" }, cheminCourt(h.requete.url), el("small", {}, quand + "· " + duree(h.duree_ms))),
           el("span", { class: "rq-mini " + classeStatut(h.statut).replace("rq-statut ", "") }, String(h.statut))));
       }
       zone.replaceChildren(...[puces, liste, R.historique.length ? el("div", { style: "margin-top:8px;text-align:right" },
-        el("button", { class: "btn discret", onclick: viderHistorique }, "🗑️ " + t("Vider"))) : null].filter(Boolean));
+        el("button", { class: "btn discret", onclick: viderHistorique }, icone("trash-2") + " " + t("Vider"))) : null].filter(Boolean));
       return;
     }
     if (!R.enregistrees.length) liste.append(el("div", { class: "rq-vide" }, "Aucune requête enregistrée. Bouton 💾 pour garder la requête en cours."));
@@ -502,13 +502,13 @@
     for (const e of R.enregistrees) (groupes[e.collection || ""] ||= []).push(e);
     const noms = Object.keys(groupes).sort((a, b) => (a === "") - (b === "") || a.localeCompare(b));
     for (const g of noms) {
-      liste.append(el("div", { class: "rq-groupe" }, g ? "📁 " + g : t("Sans collection")));
+      liste.append(el("div", { class: "rq-groupe" }, g ? icone("folder") + " " + g : t("Sans collection")));
       for (const e of groupes[g].sort((a, b) => a.nom.localeCompare(b.nom))) {
         liste.append(el("div", { class: "rq-elt", title: e.requete.url, style: e.id === R.idEnregistree ? "background:var(--violet-clair)" : "",
           onclick: () => charger(e.requete, e.id, e.nom) },
           badgeMethode(e.requete.methode),
           el("div", { class: "rq-texte" }, e.nom, el("small", {}, cheminCourt(e.requete.url))),
-          el("button", { class: "icone-btn", title: "Supprimer", onclick: ev => { ev.stopPropagation(); supprimer(e); } }, "✕")));
+          el("button", { class: "icone-btn", title: "Supprimer", onclick: ev => { ev.stopPropagation(); supprimer(e); } }, icone("x"))));
       }
     }
     zone.replaceChildren(puces, liste);
@@ -519,13 +519,13 @@
   }
 
   async function viderHistorique() {
-    if (!(await confirmer("🗑️", "Vider l'historique ?", "Les 50 dernières requêtes envoyées sont effacées.", "Vider"))) return;
+    if (!(await confirmer(icone("trash-2"), "Vider l'historique ?", "Les 50 dernières requêtes envoyées sont effacées.", "Vider"))) return;
     try { prendreEtatSansVariables(await api("/api/requetes/historique/vider", {})); dessinerCote(); }
     catch (e) { toast(e.message, "erreur"); }
   }
 
   async function supprimer(e) {
-    if (!(await confirmer("🗑️", t("Supprimer « {nom} » ?", { nom: e.nom }), "La requête enregistrée disparaît.", "Supprimer"))) return;
+    if (!(await confirmer(icone("trash-2"), t("Supprimer « {nom} » ?", { nom: e.nom }), "La requête enregistrée disparaît.", "Supprimer"))) return;
     try {
       prendreEtatSansVariables(await api("/api/requetes/supprimer", { id: e.id }));
       if (R.idEnregistree === e.id) { R.idEnregistree = null; dessinerRequete(); }
@@ -537,25 +537,25 @@
   function dessinerReponse() {
     const zone = $("#rq-reponse");
     if (!zone) return;
-    if (R.envoi) { zone.replaceChildren(el("div", { class: "rq-vide" }, "⏳ " + t("Envoi…"))); return; }
+    if (R.envoi) { zone.replaceChildren(el("div", { class: "rq-vide" }, icone("loader") + " " + t("Envoi…"))); return; }
     if (R.erreur) {
       zone.replaceChildren(el("div", { class: "rq-tete" }, el("b", {}, "Réponse")),
-        el("div", { class: "rq-alerte rouge" }, "❌ " + t("Échec de la requête") + " : " + R.erreur));
+        el("div", { class: "rq-alerte rouge" }, icone("x") + " " + t("Échec de la requête") + ": " + R.erreur));
       return;
     }
     const rep = R.rep;
-    if (!rep) { zone.replaceChildren(el("div", { class: "rq-vide" }, "📡 " + t("Envoyez une requête pour voir la réponse ici."))); return; }
+    if (!rep) { zone.replaceChildren(el("div", { class: "rq-vide" }, icone("radio") + " " + t("Envoyez une requête pour voir la réponse ici."))); return; }
     const puces = el("div", { class: "puces" },
-      el("button", { class: "puce" + (R.ongletRep === "corps" ? " actif" : ""), onclick: () => { R.ongletRep = "corps"; dessinerReponse(); } }, "Corps"),
-      el("button", { class: "puce" + (R.ongletRep === "entetes" ? " actif" : ""), onclick: () => { R.ongletRep = "entetes"; dessinerReponse(); } },
-        t("En-têtes") + " (" + rep.entetes.length + ")"));
+      el("button", { class: "puce " + (R.ongletRep === "corps" ? " actif" : ""), onclick: () => { R.ongletRep = "corps"; dessinerReponse(); } }, "Corps"),
+      el("button", { class: "puce " + (R.ongletRep === "entetes" ? " actif" : ""), onclick: () => { R.ongletRep = "entetes"; dessinerReponse(); } },
+        t("En-têtes") + "( " + rep.entetes.length + ")"));
     const tete = el("div", { class: "rq-tete" },
       el("span", { class: classeStatut(rep.statut) }, `${rep.statut} ${rep.raison || ""}`.trim()),
-      el("span", { class: "rq-info" }, "⏱️ " + duree(rep.duree_ms)),
-      el("span", { class: "rq-info" }, "📦 " + taille(rep.taille)),
-      rep.redirections ? el("span", { class: "rq-info", title: t("Adresse finale") + " : " + rep.url_finale }, "↪️ " + t("{n} redirection(s)", { n: rep.redirections })) : null,
+      el("span", { class: "rq-info" }, duree(rep.duree_ms)),
+      el("span", { class: "rq-info" }, icone("package") + " " + taille(rep.taille)),
+      rep.redirections ? el("span", { class: "rq-info", title: t("Adresse finale") + ": " + rep.url_finale }, "↪ " + t("{n} redirection(s)", { n: rep.redirections })) : null,
       el("span", { class: "espace" }), puces,
-      R.ongletRep === "corps" && rep.corps ? el("button", { class: "btn", onclick: () => copier(rep.corps) }, "📋 " + t("Copier")) : null);
+      R.ongletRep === "corps" && rep.corps ? el("button", { class: "btn", onclick: () => copier(rep.corps) }, icone("clipboard") + " " + t("Copier")) : null);
     const blocs = [tete];
     if (R.ongletRep === "entetes") {
       blocs.push(el("table", { class: "rq-table" }, rep.entetes.map(([k, v]) => el("tr", {}, el("td", {}, k), el("td", {}, v)))));
@@ -580,5 +580,5 @@
     }
   });
 
-  VUES.requetes = { afficher, titre: "Testeur d'API", icone: "📡", groupe: "dev", ordre: 50 };
+  VUES.requetes = { afficher, titre: "Testeur d'API", icone: icone("radio"), groupe: "dev", ordre: 50 };
 })();

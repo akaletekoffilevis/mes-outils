@@ -36,7 +36,7 @@
       qr.make();
       Q.svg = qr.createSvgTag(Q.taille, 4);
       dessiner();
-    } catch (e) { toast("Probleme :" + e.message, "erreur"); }
+    } catch (e) { toast("Probleme : " + e.message, "erreur"); }
   }
 
   function dessiner() {
@@ -48,9 +48,9 @@
     else apercu.append(el("div", { style: "color:var(--gris);font-size:13px" }, t("Le contenu est vide.")));
 
     const boutons = el("div", { class: "qrcode-actions" },
-      el("button", { class: "btn principal", onclick: generer }, icone("square"), " " + t("Générer")),
-      Q.svg ? el("button", { class: "btn", onclick: () => telechargerSvg() }, icone("download"), " " + t("Télécharger (SVG)")) : null,
-      Q.svg ? el("button", { class: "btn discret", onclick: () => copier(Q.svg, t("SVG copié")) }, icone("copy"), " " + t("Copier le SVG")) : null);
+      el("button", { class: "btn principal", onclick: generer }, icone("square"), t("Générer")),
+      Q.svg ? el("button", { class: "btn", onclick: () => telechargerSvg() }, icone("download"), t("Télécharger (SVG)")) : null,
+      Q.svg ? el("button", { class: "btn discret", onclick: () => copier(Q.svg, t("SVG copié")) }, icone("copy"), t("Copier le SVG")) : null);
 
     const carte = el("div", { class: "qrcode-carte" });
     const labelContenu = el("label", { class: "champ" }, t("Contenu"),
@@ -68,7 +68,7 @@
     const qrcodeDiv = el("div", { class: "qrcode" }, carte, apercu);
 
     zone.replaceChildren(
-      el("div", { class: "barre-vue" }, el("h2", {}, icone("square"), " " + t("QR code")), el("span", { class: "espace" })),
+      el("div", { class: "barre-vue" }, el("h2", {}, icone("square"), t("QR code")), el("span", { class: "espace" })),
       qrcodeDiv);
 
     if (Q.svg) apercu.innerHTML = Q.svg;

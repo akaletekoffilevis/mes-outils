@@ -60,7 +60,7 @@
     const a = s * Math.min(l, 1 - l);
     const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
     const toHex = x => Math.round(x * 255).toString(16).padStart(2, "0");
-    return "#" + toHex(f(0)) + toHex(f(8)) + toHex(f(4));
+    return "# " + toHex(f(0)) + toHex(f(8)) + toHex(f(4));
   }
 
   function generer() {
@@ -89,7 +89,7 @@
   function dessiner() {
     if (!PA.couleurs.length) generer();
     $("#vue-palette").replaceChildren(
-      el("div", { class: "barre-vue" }, el("h2", {}, icone("palette"), " " + t("Palette")), el("span", { class: "espace" })),
+      el("div", { class: "barre-vue" }, el("h2", {}, icone("palette"), t("Palette")), el("span", { class: "espace" })),
       el("div", { class: "pal" },
         el("div", { class: "pal-carte" },
           el("div", { class: "pal-ligne" }, el("label", {}, t("Couleur de base")), el("input", { type: "color", value: PA.hex, oninput: e => { PA.hex = e.target.value; generer(); dessiner(); } }), el("span", {}, PA.hex)),
@@ -99,7 +99,7 @@
           el("div", { class: "pal-couleurs" }, PA.couleurs.map(c =>
             el("div", { class: "pal-couleur", style: `background:${c}`, onclick: () => copier(c) }, c))),
           el("div", { style: "display:flex;gap:8px;margin-top:12px" },
-            el("button", { class: "btn discret", onclick: () => copier(PA.couleurs.join(", ")) }, icone("copy"), " " + t("Copier tout"))))));
+            el("button", { class: "btn discret", onclick: () => copier(PA.couleurs.join(", ")) }, icone("copy"), t("Copier tout"))))));
   }
 
   VUES.palette = { afficher: () => dessiner(), titre: "Palette", icone: "palette", groupe: "outils", ordre: 70,

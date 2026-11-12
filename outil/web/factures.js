@@ -115,7 +115,7 @@
         minimumFractionDigits: d.decimales, maximumFractionDigits: d.decimales }).format(n));
     } catch {
       return espaces(new Intl.NumberFormat(I18N.locale(), { minimumFractionDigits: d.decimales, maximumFractionDigits: d.decimales }).format(n))
-        + " " + (d.symbole || d.code);
+        + (d.symbole || d.code);
     }
   }
   const espaces = s => s.replace(/ /g, " ");
@@ -188,7 +188,7 @@
       el("div", { class: "fa-chiffre" }, el("div", { class: "lib" }, "Impayé"), el("div", { class: "val" }, somme("impaye")),
         el("div", { class: "sous" }, r.devis_attente ? t(r.devis_attente > 1 ? "{n} devis en attente" : "{n} devis en attente", { n: r.devis_attente }) : t("factures émises non réglées"))),
       el("div", { class: "fa-chiffre" }, el("div", { class: "lib" }, "En retard"),
-        el("div", { class: "val" + (enRetard ? " rouge" : "") }, enRetard ? somme("retard") : "—"),
+        el("div", { class: "val " + (enRetard ? " rouge" : "") }, enRetard ? somme("retard") : "—"),
         el("div", { class: "sous" }, t(r.nb_retard > 1 ? "{n} factures" : "{n} facture", { n: r.nb_retard }))));
   }
 
@@ -212,7 +212,7 @@
       el("div", { class: "fa-outils" },
         el("div", { class: "puces" }, puces.map(([v, lib]) => {
           const n = v === "tout" ? docs.length : compte(v);
-          return el("button", { class: "puce" + (F.filtre === v ? " actif" : ""), onclick: () => { F.filtre = v; ecranListe(); } },
+          return el("button", { class: "puce " + (F.filtre === v ? " actif" : ""), onclick: () => { F.filtre = v; ecranListe(); } },
             lib, n ? el("span", { class: "compteur" }, String(n)) : null);
         })),
         el("div", { class: "espace" }),
@@ -344,7 +344,7 @@
     const prochains = el("div", { class: "fa-somme" });
     const annee = new Date().getFullYear();
     function majProchains() {
-      const p = k => (v["prefixe_" + k] || "").toUpperCase().replace(/\s+/g, "");
+      const p = k => (v["prefixe_ " + k] || "").toUpperCase().replace(/\s+/g, "");
       prochains.textContent = t("Prochains numéros : {d}, {f}, {a}", {
         d: r.prochains.devis.replace(/^[^-]+-\d+-/, `${p("devis")}-${annee}-`),
         f: r.prochains.facture.replace(/^[^-]+-\d+-/, `${p("facture")}-${annee}-`),
@@ -528,7 +528,7 @@
       const remise = Number(r.remise) > 0;
       totaux.replaceChildren(
         remise ? l(tva ? "Sous-total HT" : "Sous-total", montant(r.sous_total, r.devise)) : null,
-        remise ? l(d.remise.type === "pourcent" ? t("Remise ({p} %)", { p: nombreAffiche(d.remise.valeur) }) : t("Remise"), "−" + montant(r.remise, r.devise)) : null,
+        remise ? l(d.remise.type === "pourcent" ? t("Remise ({p} %)", { p: nombreAffiche(d.remise.valeur) }) : t("Remise"), "− " + montant(r.remise, r.devise)) : null,
         tva ? l("Total HT", montant(r.total_ht, r.devise)) : null,
         ...(tva ? r.tva.map(x => l(t("TVA {t} %", { t: nombreAffiche(x.taux) }), montant(x.montant, r.devise))) : []),
         l(tva ? "Total TTC" : "Total", montant(r.total_ttc, r.devise), "fort"),
@@ -728,7 +728,7 @@
     if (doc.type === "devis") infos.push(["Valable jusqu'au", dateCourte(doc.validite)]);
     infos.push([doc.totaux.avec_tva ? "Total TTC" : "Total", montant(doc.totaux.total_ttc, dev)]);
     if (doc.type === "facture") {
-      if (Number(r.avoirs) > 0) infos.push(["Avoirs", "−" + montant(r.avoirs, dev)]);
+      if (Number(r.avoirs) > 0) infos.push(["Avoirs", "− " + montant(r.avoirs, dev)]);
       infos.push(["Payé", montant(r.paye, dev)]);
       infos.push(["Reste à payer", montant(r.reste, dev)]);
     }
@@ -799,7 +799,7 @@
 
   async function action(nom, id, extra = {}) {
     try {
-      const doc = await api("/api/factures/" + nom, { id, ...extra });
+      const doc = await api("/api/factures/ " + nom, { id, ...extra });
       await charger();
       if (doc.numero) return ouvrirFiche(doc.id);
       F.doc = brouillonDepuis(doc); F.modifie = false;

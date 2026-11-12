@@ -6,6 +6,6 @@
 (() => {
   VUES.serveurs = {
     afficher: () => { rafraichirServeurs(); I18N.traduirePage($("#vue-serveurs")); },
-    titre: "Serveurs", icone: "🖥️", groupe: "dev", ordre: 5,
+    titre: "Serveurs", icone: icone("monitor"), groupe: "dev", ordre: 5,
   };
 })();

@@ -30,7 +30,7 @@ window.I18N = (() => {
     if (langue === "fr" || typeof texte !== "string" || !texte.trim()) return texte;
     const direct = chercher(texte);
     if (direct !== undefined) return direct;
-    // « 😕 Message » : on traduit la partie après l'emoji.
+    // «  Message » : on traduit la partie après l'emoji.
     const m = texte.match(PREFIXE);
     if (m && m[0].length < texte.length) {
       const reste = chercher(texte.slice(m[0].length));

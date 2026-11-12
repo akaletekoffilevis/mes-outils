@@ -428,9 +428,9 @@
     const aVenir = tous.filter(x => !fini(x)), passes = tous.filter(fini).reverse();
     const mots = R.recherche.trim().toLowerCase().split(/\s+/).filter(Boolean);
     const texte = x => (estReunion
-      ? [x.titre, x.lieu, ...(x.participants || []).map(p => p.nom + " " + p.email), ...(x.actions || []).map(a => a.qui + " " + a.quoi)]
+      ? [x.titre, x.lieu, ...(x.participants || []).map(p => p.nom + p.email), ...(x.actions || []).map(a => a.qui + a.quoi)]
       : [x.destination, x.note, ...(x.voyageurs || []), ...(x.etapes || []).map(e => [e.de, e.vers, e.numero, e.reference].join(" ")),
-         ...(x.hebergements || []).map(h => h.nom + " " + h.adresse)]).join(" ").toLowerCase();
+         ...(x.hebergements || []).map(h => h.nom + h.adresse)]).join(" ").toLowerCase();
     const choisis = (R.periode === "a_venir" ? aVenir : passes).filter(x => mots.every(m => texte(x).includes(m)));
 
     const recherche = el("input", { type: "search", value: R.recherche, placeholder: estReunion ? "Rechercher une réunion…" : "Rechercher un déplacement…",
@@ -440,18 +440,18 @@
       el("div", { class: "barre-vue" },
         el("h2", {}, icone("presentation"), "Réunions et déplacements"),
         el("div", { class: "puces" },
-          el("button", { class: "puce" + (estReunion ? " actif" : ""), onclick: () => { R.onglet = "reunions"; R.recherche = ""; dessinerListe(); } },
+          el("button", { class: "puce " + (estReunion ? " actif" : ""), onclick: () => { R.onglet = "reunions"; R.recherche = ""; dessinerListe(); } },
             icone("presentation"), "Réunions"),
-          el("button", { class: "puce" + (!estReunion ? " actif" : ""), onclick: () => { R.onglet = "deplacements"; R.recherche = ""; dessinerListe(); } },
+          el("button", { class: "puce " + (!estReunion ? " actif" : ""), onclick: () => { R.onglet = "deplacements"; R.recherche = ""; dessinerListe(); } },
             icone("plane"), "Déplacements")),
         el("span", { class: "espace" }),
         el("button", { class: "btn principal", onclick: () => estReunion ? nouvelleReunion() : nouveauDeplacement() },
           icone("plus"), estReunion ? "Nouvelle réunion" : "Nouveau déplacement")),
       el("div", { class: "rn-barre2" },
         el("div", { class: "puces" },
-          el("button", { class: "puce" + (R.periode === "a_venir" ? " actif" : ""), onclick: () => { R.periode = "a_venir"; dessinerListe(); } },
+          el("button", { class: "puce " + (R.periode === "a_venir" ? " actif" : ""), onclick: () => { R.periode = "a_venir"; dessinerListe(); } },
             "À venir", el("span", { class: "rn-compte" }, String(aVenir.length))),
-          el("button", { class: "puce" + (R.periode === "passes" ? " actif" : ""), onclick: () => { R.periode = "passes"; dessinerListe(); } },
+          el("button", { class: "puce " + (R.periode === "passes" ? " actif" : ""), onclick: () => { R.periode = "passes"; dessinerListe(); } },
             estReunion ? "Passées" : "Passés", el("span", { class: "rn-compte" }, String(passes.length)))),
         el("span", { class: "espace" }),
         el("div", { class: "champ-recherche rn-recherche" }, el("span", {}, icone("search")), recherche)),
@@ -621,7 +621,7 @@
       const champ = el("input", { class: "rn-texte", value: texte, maxlength: 500,
         oninput: e => { if (typeof liste[i] === "object") liste[i].texte = e.target.value; else liste[i] = e.target.value; modifie(); },
         onkeydown: e => { if (e.key === "Enter") ajout.focus(); } });
-      const rang = el("div", { class: "rn-point" + (cases && p.fait ? " fait" : "") },
+      const rang = el("div", { class: "rn-point " + (cases && p.fait ? " fait" : "") },
         cases ? el("input", { type: "checkbox", checked: p.fait ? "" : null, onchange: e => {
           p.fait = e.target.checked; rang.classList.toggle("fait", p.fait); apres?.(); modifie(); } })
           : el("span", { class: "rn-puce" }),
@@ -759,7 +759,7 @@
     if (!a.quoi.trim()) { toast("Indiquez d'abord ce qu'il faut faire.", "erreur"); return; }
     const participant = r.participants.find(p => p.contact_id && [p.nom, p.email].includes(a.qui.trim()));
     const description = t("Réunion « {titre} » du {date}", { titre: r.titre, date: jourMois(r.debut) }) +
-      (a.qui.trim() ? "\n" + t("Responsable : {qui}", { qui: a.qui.trim() }) : "");
+      (a.qui.trim() ? "\n " + t("Responsable : {qui}", { qui: a.qui.trim() }) : "");
     try {
       const tache = await api("/api/taches/creer", { titre: a.quoi.trim(), echeance: a.echeance || "", description,
         contact_id: participant?.contact_id || "", origine: t("Réunion : {titre}", { titre: r.titre }) });
@@ -846,8 +846,8 @@
     const titre = saisie(d, "destination", { class: "rn-titre-saisie", maxlength: 200, placeholder: "Destination" });
     const vue = R.fiche.vue;
     const puces = el("div", { class: "puces" },
-      el("button", { class: "puce" + (vue === "details" ? " actif" : ""), onclick: () => { R.fiche.vue = "details"; dessiner(); } }, "Détails"),
-      el("button", { class: "puce" + (vue === "feuille" ? " actif" : ""), onclick: async () => { if (await vider()) { R.fiche.vue = "feuille"; dessiner(); } } },
+      el("button", { class: "puce " + (vue === "details" ? " actif" : ""), onclick: () => { R.fiche.vue = "details"; dessiner(); } }, "Détails"),
+      el("button", { class: "puce " + (vue === "feuille" ? " actif" : ""), onclick: async () => { if (await vider()) { R.fiche.vue = "feuille"; dessiner(); } } },
         "Feuille de route"));
     const entete = enteteFiche("Déplacements", titre, puces,
       el("button", { class: "btn", onclick: () => ajouterAgenda("deplacement", d) }, icone("calendar-check"),
@@ -889,7 +889,7 @@
   function quandEtape(e) {
     if (!e.depart) return "";
     let s = `${jourCourt(e.depart)} ${hhmm(e.depart)}`;
-    if (e.arrivee) s += " – " + (e.arrivee.slice(0, 10) === e.depart.slice(0, 10) ? hhmm(e.arrivee) : `${jourCourt(e.arrivee)} ${hhmm(e.arrivee)}`);
+    if (e.arrivee) s += "– " + (e.arrivee.slice(0, 10) === e.depart.slice(0, 10) ? hhmm(e.arrivee) : `${jourCourt(e.arrivee)} ${hhmm(e.arrivee)}`);
     return s;
   }
   function blocEtapes(d) {
@@ -898,7 +898,7 @@
       tries.length ? el("div", { class: "lignes" }, tries.map(e => el("div", { class: "ligne cliquable", onclick: () => editerEtape(d, e) },
         el("span", { class: "ligne-ic" }, icone(ICONES_TYPES[e.type] || "map-pin")),
         el("div", { class: "ligne-corps" },
-          el("div", { class: "ligne-titre" }, el("span", {}, t(LIBELLES_TYPES[e.type] || "Autre"), brut(e.de || e.vers ? " " + [e.de, e.vers].filter(Boolean).join(" → ") : ""))),
+          el("div", { class: "ligne-titre" }, el("span", {}, t(LIBELLES_TYPES[e.type] || "Autre"), brut(e.de || e.vers ? [e.de, e.vers].filter(Boolean).join(" → ") : ""))),
           el("div", { class: "ligne-meta" }, brut([quandEtape(e), e.numero ? t("n° {valeur}", { valeur: e.numero }) : "",
             e.reference ? t("réf. {valeur}", { valeur: e.reference }) : "", e.note].filter(Boolean).join(" · ")))),
         el("div", { class: "ligne-actions" },
@@ -982,7 +982,7 @@
       if (await modifie(true)) dessiner();
       else annuler(() => d.documents.splice(avant));
     };
-    const action = (route, doc) => api("/api/reunions/document/" + route, { id: d.id, chemin: doc.chemin }).catch(erreur);
+    const action = (route, doc) => api("/api/reunions/document/ " + route, { id: d.id, chemin: doc.chemin }).catch(erreur);
     return bloc("Documents", "paperclip",
       d.documents.length ? el("div", { class: "lignes" }, d.documents.map(doc => el("div", { class: "ligne cliquable", title: doc.chemin, onclick: () => action("ouvrir", doc) },
         el("span", { class: "ligne-ic" }, icone(/\.[a-z0-9]{1,5}$/i.test(doc.nom) ? "file-text" : "folder")),

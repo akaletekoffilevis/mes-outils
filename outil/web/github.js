@@ -292,7 +292,7 @@
   function chargerSuivi(forcer) {
     for (const cle of ["prs", "issues", "actions"]) {
       if (forcer) G[cle] = null;
-      api("/api/github/" + cle, { forcer })
+      api("/api/github/ " + cle, { forcer })
         .then(r => { G[cle] = r; })
         .catch(e => { G[cle] = { erreur: e.message }; })
         .finally(() => { majPuces(); if (G.sous === cle) dessinerListe(); });
@@ -361,7 +361,7 @@
       : a.depots.some(d => d.etat === "en_cours") ? el("span", { class: "nb-gh etat-txt ambre", title: "En cours" }, icone("loader"))
       : el("span", { class: "nb-gh etat-txt vert", title: "Tous les derniers runs ont réussi." }, icone("check"));
     const puce = (cle, libelle, badge) => el("button", {
-      class: "puce" + (G.sous === cle ? " actif" : ""),
+      class: "puce " + (G.sous === cle ? " actif" : ""),
       onclick: () => { if (G.sous !== cle) { G.sous = cle; G.recherche = ""; dessiner(); } } }, libelle, badge);
     zone.replaceChildren(
       puce("depots", "Dépôts", el("span", { class: "nb-gh" }, String(G.depots ? G.depots.length : "…"))),
@@ -443,17 +443,17 @@
   // -- pull requests et issues -------------------------------------------------------
   /** Étiquette GitHub : neutre, avec un petit point de sa couleur. */
   function etiquette(e) {
-    const c = /^[0-9a-f]{6}$/i.test(e.couleur) ? "#" + e.couleur : "var(--gris)";
+    const c = /^[0-9a-f]{6}$/i.test(e.couleur) ? "# " + e.couleur : "var(--gris)";
     return el("span", { class: "tag" }, el("span", { class: "pt-gh", style: `background:${c}` }), brut(e.nom));
   }
 
   function ligneSuivi(x, nomIcone) {
-    return el("div", { class: "ligne" + (x.brouillon ? " brouillon" : "") },
+    return el("div", { class: "ligne " + (x.brouillon ? " brouillon" : "") },
       el("span", { class: "ligne-ic" }, icone(nomIcone)),
       el("div", { class: "ligne-corps" },
         el("div", { class: "ligne-titre" },
           el("span", { title: x.titre }, brut(x.titre)),
-          el("span", { class: "num-gh" }, brut("#" + x.numero)),
+          el("span", { class: "num-gh" }, brut("# " + x.numero)),
           x.brouillon ? el("span", { class: "tag" }, "Brouillon") : null,
           (x.etiquettes || []).slice(0, 3).map(etiquette)),
         el("div", { class: "ligne-meta" }, nomDepot(x.depot), sep(), brut(t("par {auteur}", { auteur: x.auteur })))),
@@ -493,7 +493,7 @@
       el("div", { class: "ligne-corps" },
         el("div", { class: "ligne-titre" }, nomDepot(d.complet)),
         el("div", { class: "ligne-meta", title: d.titre || "" },
-          brut(`${d.workflow}${d.numero ? " #" + d.numero : ""}`), sep(), brut(t("branche {branche}", { branche: d.branche })))),
+          brut(`${d.workflow}${d.numero ? "# " + d.numero : ""}`), sep(), brut(t("branche {branche}", { branche: d.branche })))),
       el("div", { class: "ligne-cote" },
         // Les autres workflows du dépôt : une petite icône d'état chacun.
         autres.map(w => el("button", { class: "wf-gh etat-txt " + infoEtat(w.etat).couleur,
@@ -533,7 +533,7 @@
   }
 
   async function action(nom, donnees, message) {
-    try { await api("/api/github/" + nom, donnees); if (message) toast(message, "succes"); }
+    try { await api("/api/github/ " + nom, donnees); if (message) toast(message, "succes"); }
     catch (e) { toast(e.message, "erreur", 6000); }
   }
   const ouvrirPage = url => action("ouvrir_page", { url });

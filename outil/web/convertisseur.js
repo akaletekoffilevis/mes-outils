@@ -106,18 +106,18 @@
     const texte = `${valeur} ${C.de} = ${resultat.toLocaleString(I18N.locale(), { maximumFractionDigits: 6 })} ${C.vers}`;
 
     $("#vue-convertisseur").replaceChildren(
-      el("div", { class: "barre-vue" }, el("h2", {}, icone("repeat"), " " + t("Convertisseur")), el("span", { class: "espace" })),
+      el("div", { class: "barre-vue" }, el("h2", {}, icone("repeat"), t("Convertisseur")), el("span", { class: "espace" })),
       el("div", { class: "conv" },
         el("div", { class: "conv-carte" },
           el("div", { class: "conv-puces" }, CATEGORIES.map((c, i) =>
-            el("button", { class: "conv-puce" + (i === C.categorie ? " actif" : ""), onclick: () => { C.categorie = i; const u = Object.keys(CATEGORIES[i].unites); C.de = u[0]; C.vers = u[1] || u[0]; dessiner(); } }, t(c.nom)))),
+            el("button", { class: "conv-puce " + (i === C.categorie ? " actif" : ""), onclick: () => { C.categorie = i; const u = Object.keys(CATEGORIES[i].unites); C.de = u[0]; C.vers = u[1] || u[0]; dessiner(); } }, t(c.nom)))),
           el("div", { class: "conv-ligne" }, el("label", {}, t("Valeur")), el("input", { type: "number", value: C.valeur, step: "any", oninput: e => { C.valeur = e.target.value; dessiner(); } })),
           el("div", { class: "conv-ligne" }, el("label", {}, t("De")), el("select", { onchange: e => { C.de = e.target.value; dessiner(); } },
             unites.map(u => el("option", { value: u, selected: u === C.de ? "" : null }, u)))),
           el("div", { class: "conv-ligne" }, el("label", {}, t("Vers")), el("select", { onchange: e => { C.vers = e.target.value; dessiner(); } },
             unites.map(u => el("option", { value: u, selected: u === C.vers ? "" : null }, u)))),
           el("div", { class: "conv-resultat" }, `${resultat.toLocaleString(I18N.locale(), { maximumFractionDigits: 6 })} ${C.vers}`, el("small", {}, ` = ${valeur} ${C.de}`)),
-          el("button", { class: "btn", onclick: () => copier(texte) }, icone("copy"), " " + t("Copier")))));
+          el("button", { class: "btn", onclick: () => copier(texte) }, icone("copy"), t("Copier")))));
   }
 
   VUES.convertisseur = { afficher: () => dessiner(), titre: "Convertisseur", icone: "repeat", groupe: "outils", ordre: 30,

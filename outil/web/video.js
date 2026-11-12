@@ -174,7 +174,7 @@
       el("input", { type: "range", min: 0, max: 1, step: 0.01, value: V.volume, oninput: e => { V.volume = Number(e.target.value); if (V.video) V.video.volume = V.volume; } }));
     const liste = V.videos.length
       ? el("div", { class: "video-liste" }, V.videos.map((v, i) =>
-          el("div", { class: "video-ligne" + (i === V.index ? " actif" : ""), onclick: () => jouer(i) },
+          el("div", { class: "video-ligne " + (i === V.index ? " actif" : ""), onclick: () => jouer(i) },
             el("span", { class: "numero" }, String(i + 1)),
             el("span", { class: "titre" }, v.titre),
             el("button", { class: "icone-btn suppr", title: "Supprimer", onclick: e => { e.stopPropagation(); supprimer(v.id); } }, icone("trash-2")))))
@@ -185,8 +185,8 @@
     videoContainer.append(V.video);
 
     $("#vue-video").replaceChildren(
-      el("div", { class: "barre-vue" }, el("h2", {}, icone("video"), " " + t("Vidéo")), el("span", { class: "espace" }),
-        el("button", { class: "btn", onclick: ajouter }, icone("plus"), " " + t("Ajouter des fichiers")),
+      el("div", { class: "barre-vue" }, el("h2", {}, icone("video"), t("Vidéo")), el("span", { class: "espace" }),
+        el("button", { class: "btn", onclick: ajouter }, icone("plus"), t("Ajouter des fichiers")),
         V.videos.length ? el("button", { class: "btn discret", onclick: vider }, "Vider") : null),
       el("div", { class: "video" },
         videoContainer,

@@ -383,11 +383,11 @@
   const erreur = e => toast(e.message, "erreur", 5000);
 
   function piste(ratio, couleur, fine = false) {
-    return el("div", { class: "dp-piste" + (fine ? " fine" : "") },
+    return el("div", { class: "dp-piste " + (fine ? " fine" : "") },
       el("div", { style: `width:${Math.min(100, Math.max(0, ratio * 100)).toFixed(1)}%;background:${couleur}` }));
   }
   function tuile(ic, lib, valeur, aide, action) {
-    return el("div", { class: "dp-tuile" + (action ? " cliquable" : ""), onclick: action || null },
+    return el("div", { class: "dp-tuile " + (action ? " cliquable" : ""), onclick: action || null },
       el("div", { class: "dp-t-lib" }, icone(ic), lib),
       el("div", { class: "dp-t-val" }, tx(valeur)),
       aide ? el("div", { class: "dp-t-aide" }, tx(aide)) : null);
@@ -435,7 +435,7 @@
         el("span", { class: "espace" }),
         el("button", { class: "btn principal", onclick: () => formulaire() }, icone("plus", "av"), "Ajouter une dépense")),
       el("div", { class: "puces dp-onglets" }, ONGLETS.map(([cle, lib]) =>
-        el("button", { class: "puce" + (D.onglet === cle ? " actif" : ""), onclick: () => aller(cle) }, lib))),
+        el("button", { class: "puce " + (D.onglet === cle ? " actif" : ""), onclick: () => aller(cle) }, lib))),
       zone);
     const vues = { accueil: vueAccueil, depenses: vueDepenses, charges: vueCharges, budget: vueBudget, epargne: vueEpargne,
       statistiques: vueStatistiques, notes: vueNotes, reglages: vueReglages };
@@ -483,7 +483,7 @@
       el("div", { class: "dp-b" },
         el("div", { class: "dp-b-haut" },
           el("span", { class: "nom" }, icone(x.icone), tx(nomCat(x))),
-          el("span", { class: "val" }, el("b", {}, tx(fmt(x.total))), tx(" · " + pourcent(x.part)))),
+          el("span", { class: "val" }, el("b", {}, tx(fmt(x.total))), tx("· " + pourcent(x.part)))),
         piste(nb(x.total) / max, "var(--violet)", true))));
   }
 
@@ -614,7 +614,7 @@
       const jours = [];
       for (const x of r.depenses) { const j = jours.at(-1); if (j && j.date === x.date) j.liste.push(x); else jours.push({ date: x.date, liste: [x] }); }
       liste = el("div", { class: "lignes" }, jours.map(j => [
-        el("div", { class: "titre-lignes dp-jour" }, el("span", {}, tx(dateJour(j.date) + (r.recherche ? " " + j.date.slice(0, 4) : ""))),
+        el("div", { class: "titre-lignes dp-jour" }, el("span", {}, tx(dateJour(j.date) + (r.recherche ? j.date.slice(0, 4) : ""))),
           el("span", {}, tx(fmt(j.liste.reduce((s, x) => s + centimes(x.montant), 0) / 100)))),
         j.liste.map(x => ligneDepense(x, { sansDate: true }))]));
     } else liste = el("div", { class: "lignes" }, r.depenses.map(x => ligneDepense(x)));
@@ -689,7 +689,7 @@
     blocs.push(el("div", { class: "carte" }, titreCarte("Historique", t("6 derniers mois")),
       el("div", { class: "dp-barres" }, r.historique.map(h => el("div", { class: "dp-b" },
         el("div", { class: "dp-b-haut" }, el("span", { class: "nom", style: "font-weight:500" }, tx(libMois(h.mois))),
-          el("span", { class: "val" }, el("b", {}, tx(fmt(h.depense))), h.budget ? tx(" / " + fmt(h.budget)) : null)),
+          el("span", { class: "val" }, el("b", {}, tx(fmt(h.depense))), h.budget ? tx("/ " + fmt(h.budget)) : null)),
         piste(h.ratio || 0, h.niveau ? NIVEAUX[h.niveau].barre : "var(--violet)", true))))));
     return blocs;
   }
@@ -707,7 +707,7 @@
         el("div", { class: "dp-lib" }, "Épargne disponible"),
         el("div", { class: "dp-gros" }, tx(fmt(r.disponible))),
         el("div", { class: "dp-sous" }, tx(t("{montant} mis de côté depuis le début", { montant: fmt(r.verse) }) +
-          (centimes(r.repris) ? " · " + t("{montant} repris", { montant: fmt(r.repris) }) : ""))),
+          (centimes(r.repris) ? "· " + t("{montant} repris", { montant: fmt(r.repris) }) : ""))),
         r.charges.map(c => el("div", { class: "dp-note-info", style: "margin:12px 0 0" }, icone("repeat"),
           tx(t("{nom} : {montant} mis de côté le {jour} de chaque mois", { nom: c.description, montant: fmt(c.montant), jour: c.jour }))))),
       el("div", { class: "dp-grille dp-g3" },
@@ -722,7 +722,7 @@
             el("div", { class: "ligne-corps" },
               el("div", { class: "ligne-titre" }, el("span", {}, tx(dep?.description || (dep ? nomCat(categorie(dep.categorie)) : t("Dépenses"))))),
               el("div", { class: "ligne-meta" }, tx(dep ? `${dateCourte(dep.date)} · ${t("Dépense de {montant}", { montant: fmt(dep.montant) })}` : libMois(w.mois)))),
-            el("div", { class: "ligne-cote" }, el("span", { class: "dp-montant", style: "color:var(--rouge-texte)" }, tx("−" + fmt(w.montant)))),
+            el("div", { class: "ligne-cote" }, el("span", { class: "dp-montant", style: "color:var(--rouge-texte)" }, tx("− " + fmt(w.montant)))),
             el("div", { class: "ligne-actions" }, el("button", { class: "icone-btn", title: "Annuler cette reprise", onclick: () => annulerReprise(w) }, icone("undo-2"))));
         })) : el("p", { class: "dp-p", style: "margin:0" }, "Vous n'avez jamais eu à toucher à votre épargne. Bravo !")),
       r.historique.length ? el("div", { class: "carte" }, titreCarte("Historique", t("12 derniers mois")),
@@ -730,7 +730,7 @@
           el("thead", {}, el("tr", {}, el("th", {}, "Mois"), el("th", { class: "d" }, "Prévu"), el("th", { class: "d" }, "Repris"), el("th", { class: "d" }, "Épargné"))),
           el("tbody", {}, r.historique.map(h => el("tr", {},
             el("td", {}, tx(libMois(h.mois))), el("td", { class: "d" }, tx(fmt(h.verse))),
-            el("td", { class: "d", style: centimes(h.repris) ? "color:var(--rouge-texte)" : "color:var(--gris)" }, tx(centimes(h.repris) ? "−" + fmt(h.repris) : "—")),
+            el("td", { class: "d", style: centimes(h.repris) ? "color:var(--rouge-texte)" : "color:var(--gris)" }, tx(centimes(h.repris) ? "− " + fmt(h.repris) : "—")),
             el("td", { class: "d", style: "font-weight:600" }, tx(fmt(h.net)))))))) : null];
   }
   async function annulerReprise(w) {
@@ -786,7 +786,7 @@
     if (v === null || v === undefined) return el("span", { class: "etat-txt gris" }, "—");
     const plat = Math.abs(v) < 0.005;
     return el("span", { class: "etat-txt " + (plat ? "gris" : v < 0 ? "vert" : "rouge") },
-      icone(plat ? "minus" : v < 0 ? "trending-down" : "trending-up"), tx((v > 0 ? "+" : "") + pourcent(v, 1)));
+      icone(plat ? "minus" : v < 0 ? "trending-down" : "trending-up"), tx((v > 0 ? " + " : "") + pourcent(v, 1)));
   }
   async function vueStatistiques() {
     const r = garder(await api("/api/depenses/statistiques", { periode: D.periode }));
@@ -804,7 +804,7 @@
     }[D.evolution];
     return [
       el("div", { class: "puces", style: "margin-bottom:14px" }, PERIODES.map(([cle, lib]) =>
-        el("button", { class: "puce" + (D.periode === cle ? " actif" : ""), onclick: () => { D.periode = cle; recharger(); } }, lib))),
+        el("button", { class: "puce " + (D.periode === cle ? " actif" : ""), onclick: () => { D.periode = cle; recharger(); } }, lib))),
       el("div", { class: "carte", style: "margin-bottom:14px" }, titreCarte("Comparaison avec le mois précédent"),
         el("div", { class: "dp-comp" },
           el("div", {}, el("div", { class: "l" }, "Ce mois"), el("div", { class: "v" }, tx(fmt(c.ce_mois)))),
@@ -824,7 +824,7 @@
           r.par_categorie.length ? barresCategories(r.par_categorie, 5) : el("p", { class: "dp-p" }, "Aucune dépense sur cette période."))),
       el("div", { class: "carte", style: "margin-bottom:14px" },
         titreCarte("Évolution des dépenses", null, el("div", { class: "puces" }, [["jour", "Par jour"], ["semaine", "Par semaine"], ["mois", "Par mois"]].map(([cle, lib]) =>
-          el("button", { class: "puce" + (D.evolution === cle ? " actif" : ""), onclick: () => { D.evolution = cle; recharger(); } }, lib)))),
+          el("button", { class: "puce " + (D.evolution === cle ? " actif" : ""), onclick: () => { D.evolution = cle; recharger(); } }, lib)))),
         colonnes(serie, libelles[0], libelles[1])),
       el("div", { class: "carte" }, titreCarte("Dépenses mensuelles", t("6 derniers mois")),
         el("table", { class: "dp-table" }, el("tbody", {}, r.derniers_mois.map(m => el("tr", {},
@@ -846,7 +846,7 @@
           pluriel(tot[cle].nombre, "1 note de frais", "{n} notes de frais"), () => { D.statut = cle; recharger(); }))),
       el("div", { class: "dp-filtres" },
         el("div", { class: "puces" }, choix.map(([cle, lib]) =>
-          el("button", { class: "puce" + (D.statut === cle ? " actif" : ""), onclick: () => { D.statut = cle; recharger(); } }, lib))),
+          el("button", { class: "puce " + (D.statut === cle ? " actif" : ""), onclick: () => { D.statut = cle; recharger(); } }, lib))),
         el("span", { style: "flex:1" }),
         r.sans_justificatif ? el("span", { class: "etat-txt ambre" }, icone("circle-alert"), tx(t("{n} sans justificatif", { n: r.sans_justificatif }))) : null,
         el("button", { class: "btn", title: "Pour Excel (séparateur « ; »)", onclick: () => exporter({ mois: "tout", pro: true, statut: D.statut || null }) },
@@ -873,7 +873,7 @@
     const r = garder(await api("/api/depenses/reglages", {}));
     return [
       el("div", { class: "carte", style: "margin-bottom:14px" }, titreCarte("Devise"),
-        el("div", { class: "puces" }, r.devises.map(code => el("button", { class: "puce" + (r.devise === code ? " actif" : ""), onclick: async () => {
+        el("div", { class: "puces" }, r.devises.map(code => el("button", { class: "puce " + (r.devise === code ? " actif" : ""), onclick: async () => {
           try { await api("/api/depenses/devise", { devise: code }); toast("Devise enregistrée", "succes"); recharger(); } catch (e) { erreur(e); }
         } }, tx(code + " · "), DEVISES[code]))),
         el("p", { class: "dp-p" }, "Changer la devise ne convertit pas les montants : seul l'affichage change.")),
@@ -968,13 +968,13 @@
 
     // Charge fixe (création seulement)
     const caseFixe = el("input", { type: "checkbox", checked: b.fixe ? "" : null });
-    const basculeFixe = el("label", { class: "dp-bascule" + (b.fixe ? " actif" : "") }, caseFixe,
+    const basculeFixe = el("label", { class: "dp-bascule " + (b.fixe ? " actif" : "") }, caseFixe,
       el("span", {}, el("b", {}, "Charge fixe"), el("small", {})));
     caseFixe.addEventListener("change", () => { b.fixe = caseFixe.checked; majInfos(); });
 
     // Notes de frais
     const casePro = el("input", { type: "checkbox", checked: b.pro ? "" : null });
-    const basculePro = el("label", { class: "dp-bascule" + (b.pro ? " actif" : "") }, casePro,
+    const basculePro = el("label", { class: "dp-bascule " + (b.pro ? " actif" : "") }, casePro,
       el("span", {}, el("b", {}, "Dépense professionnelle"), el("small", {}, "Note de frais : à rembourser ou à refacturer à un client")));
     const client = el("input", { value: b.client_nom, maxlength: 120, placeholder: "Nom du client", list: "dp-contacts",
       oninput: e => { b.client_nom = e.target.value; const c = D.contacts.find(x => x.nom === b.client_nom); b.client_id = c ? String(c.id) : ""; } });

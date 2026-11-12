@@ -58,11 +58,11 @@
     const affichage = T.mode === "chrono" ? T.ecoule : T.restant;
     const ms = T.mode === "chrono" ? T.ecoule : T.restant;
     $("#vue-minuteur").replaceChildren(
-      el("div", { class: "barre-vue" }, el("h2", {}, icone("timer"), " " + t("Minuteur")), el("span", { class: "espace" })),
+      el("div", { class: "barre-vue" }, el("h2", {}, icone("timer"), t("Minuteur")), el("span", { class: "espace" })),
       el("div", { class: "minuteur" },
         el("div", { class: "minuteur-modes" },
-          el("button", { class: "btn" + (T.mode === "chrono" ? " actif" : ""), onclick: () => { T.mode = "chrono"; dessiner(); } }, t("Chronomètre")),
-          el("button", { class: "btn" + (T.mode === "compte" ? " actif" : ""), onclick: () => { T.mode = "compte"; dessiner(); } }, t("Compte à rebours"))),
+          el("button", { class: "btn " + (T.mode === "chrono" ? " actif" : ""), onclick: () => { T.mode = "chrono"; dessiner(); } }, t("Chronomètre")),
+          el("button", { class: "btn " + (T.mode === "compte" ? " actif" : ""), onclick: () => { T.mode = "compte"; dessiner(); } }, t("Compte à rebours"))),
         T.mode === "chrono"
           ? el("div", { class: "minuteur-affichage" }, formater(T.ecoule))
           : el("div", { class: "minuteur-affichage" }, formater(T.restant)),
@@ -74,13 +74,13 @@
           : null,
         el("div", { class: "minuteur-controles" },
           !T.enCours
-            ? el("button", { class: "btn principal", onclick: demarrer }, icone("play"), " " + t("Démarrer"))
-            : el("button", { class: "btn", onclick: pause }, icone("pause"), " " + t("Pause")),
-          T.mode === "chrono" ? el("button", { class: "btn", onclick: tour }, icone("flag"), " " + t("Tour")) : null,
-          el("button", { class: "btn discret", onclick: reinitialiser }, icone("rotate-ccw"), " " + t("Réinitialiser"))),
+            ? el("button", { class: "btn principal", onclick: demarrer }, icone("play"), t("Démarrer"))
+            : el("button", { class: "btn", onclick: pause }, icone("pause"), t("Pause")),
+          T.mode === "chrono" ? el("button", { class: "btn", onclick: tour }, icone("flag"), t("Tour")) : null,
+          el("button", { class: "btn discret", onclick: reinitialiser }, icone("rotate-ccw"), t("Réinitialiser"))),
         T.mode === "chrono" && T.tours.length
           ? el("div", { class: "minuteur-tours" }, T.tours.map((t, i) =>
-              el("div", { class: "minuteur-tour" }, el("span", { class: "num" }, "#" + (i + 1)), el("span", {}, formater(t.temps)), el("span", { class: "delta" }, "+" + formater(t.delta)))))
+              el("div", { class: "minuteur-tour" }, el("span", { class: "num" }, "# " + (i + 1)), el("span", {}, formater(t.temps)), el("span", { class: "delta"}, " + " + formater(t.delta)))))
           : (T.mode === "chrono" ? el("div", { class: "minuteur-vide" }, t("Aucun tour")) : null)));
   }
 

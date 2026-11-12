@@ -6,20 +6,20 @@
   I18N.ajouter({
     "Mots de passe": "Passwords",
     "Clients Odoo": "Odoo clients", "Serveurs": "Servers", "Mails": "Mail", "Banque": "Bank", "Travail": "Work", "Personnel": "Personal",
-    "Faible 😟": "Weak 😟", "Moyen 😐": "Fair 😐", "Bon 🙂": "Good 🙂", "Excellent 💪": "Excellent 💪",
+    "Faible ": "Weak ", "Moyen ": "Fair ", "Bon ": "Good ", "Excellent ": "Excellent ",
     "{n} caractères": "{n} characters",
-    "🎲 Générateur de mot de passe": "🎲 Password generator",
+    " Générateur de mot de passe": " Password generator",
     "Majuscules": "Uppercase", "Chiffres": "Digits", "Symboles": "Symbols",
-    "🔄 Un autre": "🔄 Another one",
-    "✅ Utiliser": "✅ Use",
-    "📋 Copier": "📋 Copy",
-    "📋 Copié — effacé du presse-papiers dans 30 s": "📋 Copied — cleared from the clipboard in 30 s",
-    "🔒 se verrouille dans {temps}": "🔒 locks in {temps}",
+    " Un autre": " Another one",
+    " Utiliser": " Use",
+    " Copier": " Copy",
+    " Copié — effacé du presse-papiers dans 30 s": " Copied — cleared from the clipboard in 30 s",
+    " se verrouille dans {temps}": " locks in {temps}",
     "ex. une phrase de 4 ou 5 mots": "e.g. a sentence of 4 or 5 words",
     "Les deux mots de passe ne sont pas identiques": "The two passwords do not match",
-    "Cochez la case : c'est important 🙏": "Tick the box: it matters 🙏",
+    "Cochez la case : c'est important ": "Tick the box: it matters ",
     "Création…": "Creating…",
-    "🎉 Coffre créé et ouvert !": "🎉 Vault created and opened!",
+    " Coffre créé et ouvert !": " Vault created and opened!",
     "Créer le coffre": "Create the vault",
     "Créer votre coffre": "Create your vault",
     "Choisissez un mot de passe maître : c'est le seul que vous aurez à retenir. Il ouvre le coffre, et il n'est enregistré nulle part.":
@@ -29,35 +29,35 @@
     "Si vous l'oubliez, personne ne pourra ouvrir le coffre": "If you forget it, nobody will be able to open the vault",
     " — ni vous, ni moi : c'est ce qui le rend sûr. Notez-le sur papier, rangé en lieu sûr.": " — not you, not me: that is what makes it safe. Write it down on paper, kept somewhere safe.",
     "J'ai compris et noté mon mot de passe maître": "I understand and have written down my master password",
-    "🔓 Déverrouiller": "🔓 Unlock",
+    " Déverrouiller": " Unlock",
     "Ouverture…": "Opening…",
     "Coffre verrouillé": "Vault locked",
     "Il se referme tout seul après 5 minutes sans utilisation.": "It locks itself after 5 minutes without use.",
     "Chercher un mot de passe…": "Search passwords…",
     "＋ Nouveau": "＋ New",
-    "🎲 Générateur": "🎲 Generator",
+    " Générateur": " Generator",
     "Verrouiller maintenant": "Lock now",
     "Toutes": "All",
     "Aucune entrée ne correspond.": "No matching entry.",
-    "Le coffre est vide. Ajoutez votre premier mot de passe ! ✨": "The vault is empty. Add your first password! ✨",
+    "Le coffre est vide. Ajoutez votre premier mot de passe ! ": "The vault is empty. Add your first password! ",
     "Copier l'identifiant": "Copy the username",
     "Copier le mot de passe (effacé du presse-papiers après 30 s)": "Copy the password (cleared from the clipboard after 30 s)",
     "Afficher 15 secondes": "Show for 15 seconds",
     "(vide)": "(empty)",
     "Ouvrir le site": "Open the site",
     "Modifier": "Edit",
-    "🔑 Mot de passe copié — effacé dans 30 s": "🔑 Password copied — cleared in 30 s",
-    "👤 Identifiant copié": "👤 Username copied",
+    " Mot de passe copié — effacé dans 30 s": " Password copied — cleared in 30 s",
+    " Identifiant copié": " Username copied",
     "ex. Odoo (production)": "e.g. Odoo (production)",
     "ex. monentreprise.odoo.com": "e.g. mycompany.odoo.com",
-    "(inchangé — 👁 pour l'afficher)": "(unchanged — 👁 to show it)",
+    "(inchangé —  pour l'afficher)": "(unchanged —  to show it)",
     "Afficher": "Show",
     "Générer un mot de passe solide": "Generate a strong password",
     "ex. Clients Odoo": "e.g. Odoo clients",
     "Infos utiles (base, port, question secrète…)": "Useful info (database, port, secret question…)",
-    "🔓 Afficher la note": "🔓 Show the note",
-    "✏️ Modifier": "✏️ Edit",
-    "🗝️ Nouvelle entrée": "🗝️ New entry",
+    " Afficher la note": " Show the note",
+    " Modifier": " Edit",
+    " Nouvelle entrée": " New entry",
     "Nom": "Name",
     "Site ou adresse": "Site or address",
     "Identifiant": "Username",
@@ -67,13 +67,13 @@
     "Supprimer « {nom} » ?": "Delete “{nom}”?",
     "L'entrée disparaît du coffre. Rien ne pourra la récupérer.": "The entry is removed from the vault. Nothing can bring it back.",
     "Supprimer": "Delete",
-    "🗑 Supprimer": "🗑 Delete",
-    "🗑️ Entrée supprimée": "🗑️ Entry deleted",
+    " Supprimer": " Delete",
+    " Entrée supprimée": " Entry deleted",
     "Annuler": "Cancel",
     "Enregistrer": "Save",
     "Ajouter": "Add",
-    "✏️ Entrée modifiée": "✏️ Entry updated",
-    "🎉 Ajouté au coffre !": "🎉 Added to the vault!",
+    " Entrée modifiée": " Entry updated",
+    " Ajouté au coffre !": " Added to the vault!",
     // messages du serveur (coffre.py)
     "Le coffre est verrouillé.": "The vault is locked.",
     "Un coffre existe déjà.": "A vault already exists.",
@@ -139,10 +139,10 @@
     if (/[^a-zA-Z0-9]/.test(mdp)) jeu += 32;
     let bits = mdp.length * Math.log2(Math.max(jeu, 2));
     if (/(.)\1\1/.test(mdp) || /^(?:123|abc|azerty|qwerty|password|motdepasse)/i.test(mdp)) bits *= 0.6;
-    if (bits < 40) return { score: 20, texte: "Faible 😟", couleur: "#e5484d" };
-    if (bits < 60) return { score: 50, texte: "Moyen 😐", couleur: "#ffb020" };
-    if (bits < 80) return { score: 78, texte: "Bon 🙂", couleur: "#2f8cff" };
-    return { score: 100, texte: "Excellent 💪", couleur: "#18b597" };
+    if (bits < 40) return { score: 20, texte: "Faible ", couleur: "#e5484d" };
+    if (bits < 60) return { score: 50, texte: "Moyen ", couleur: "#ffb020" };
+    if (bits < 80) return { score: 78, texte: "Bon ", couleur: "#2f8cff" };
+    return { score: 100, texte: "Excellent ", couleur: "#18b597" };
   }
   function jauge(champ) {
     const barre = el("div", { style: "width:0" }), texte = el("div", { class: "jauge-texte" });
@@ -177,17 +177,17 @@
     longueur.addEventListener("input", () => { opts.longueur = Number(longueur.value); etiquette.textContent = t("{n} caractères", { n: opts.longueur }); relancer(); });
     const coche = (cle, texte) => el("label", {}, el("input", { type: "checkbox", checked: opts[cle] ? "" : null, style: "accent-color:var(--violet)", onchange: e => { opts[cle] = e.target.checked; relancer(); } }), texte);
     fenetre([
-      el("h3", {}, "🎲 Générateur de mot de passe"),
+      el("h3", {}, " Générateur de mot de passe"),
       sortie, s,
       el("label", { class: "champ" }, etiquette, longueur),
       el("div", { class: "options-gen" }, coche("majuscules", "Majuscules"), coche("chiffres", "Chiffres"), coche("symboles", "Symboles")),
       el("div", { class: "actions" },
-        el("button", { class: "btn", onclick: relancer }, "🔄 Un autre"),
-        versChamp ? el("button", { class: "btn principal", onclick: () => { versChamp(valeur.textContent); } }, "✅ Utiliser")
+        el("button", { class: "btn", onclick: relancer }, " Un autre"),
+        versChamp ? el("button", { class: "btn principal", onclick: () => { versChamp(valeur.textContent); } }, " Utiliser")
           : el("button", { class: "btn principal", onclick: async () => {
             await api("/api/coffre/presse_papiers", { texte: valeur.textContent });
             toast("Copié — effacé du presse-papiers dans 30 s", "succes");
-          } }, "📋 Copier"))]);
+          } }, " Copier"))]);
     relancer();
   }
 
@@ -201,7 +201,7 @@
     const m = $("#minuterie-coffre");
     if (!C.etat?.ouvert) return;
     const reste = Math.max(0, Math.round((C.fin - Date.now()) / 1000));
-    if (m) m.textContent = t("🔒 se verrouille dans {temps}", { temps: `${Math.floor(reste / 60)}:${String(reste % 60).padStart(2, "0")}` });
+    if (m) m.textContent = t(" se verrouille dans {temps}", { temps: `${Math.floor(reste / 60)}:${String(reste % 60).padStart(2, "0")}` });
     if (reste <= 0) { C.etat.ouvert = false; C.entrees = []; if (S.vue === "motsdepasse") ecranVerrouille(); }
   }
   async function appel(chemin, corps) {
@@ -234,12 +234,12 @@
       catch (e) { toast(e.message, "erreur", 6000); bouton.disabled = false; bouton.textContent = t("Créer le coffre"); }
     } }, "Créer le coffre");
     racine().replaceChildren(el("div", { class: "coffre-ecran" },
-      el("div", { class: "cadenas" }, "🔐"),
+      el("div", { class: "cadenas" }, icone("lock")),
       el("h3", {}, "Créer votre coffre"),
       el("p", {}, "Choisissez un mot de passe maître : c'est le seul que vous aurez à retenir. Il ouvre le coffre, et il n'est enregistré nulle part."),
       el("label", { class: "champ" }, "Mot de passe maître", m1, ...jauge(m1)),
       el("label", { class: "champ" }, "Le retaper", m2),
-      el("div", { class: "alerte" }, "⚠️ ", el("b", {}, "Si vous l'oubliez, personne ne pourra ouvrir le coffre"), " — ni vous, ni moi : c'est ce qui le rend sûr. Notez-le sur papier, rangé en lieu sûr."),
+      el("div", { class: "alerte" }, " ", el("b", {}, "Si vous l'oubliez, personne ne pourra ouvrir le coffre"), " — ni vous, ni moi : c'est ce qui le rend sûr. Notez-le sur papier, rangé en lieu sûr."),
       el("label", { class: "champ", style: "flex-direction:row;align-items:center;gap:8px" }, compris, "J'ai compris et noté mon mot de passe maître"),
       el("div", { class: "actions", style: "justify-content:center" }, bouton)));
     setTimeout(() => m1.focus(), 50);
@@ -248,14 +248,14 @@
   function ecranVerrouille() {
     const m = el("input", { type: "password", autocomplete: "current-password", placeholder: "Mot de passe maître",
       onkeydown: e => { if (e.key === "Enter") ouvrir(); } });
-    const bouton = el("button", { class: "btn principal", onclick: () => ouvrir() }, "🔓 Déverrouiller");
+    const bouton = el("button", { class: "btn principal", onclick: () => ouvrir() }, " Déverrouiller");
     async function ouvrir() {
       bouton.disabled = true; bouton.textContent = t("Ouverture…");
       try { await appel("/api/coffre/ouvrir", { maitre: m.value }); m.value = ""; await chargerListe(); }
-      catch (e) { toast(e.message, "erreur", 5000); m.select(); bouton.disabled = false; bouton.textContent = t("🔓 Déverrouiller"); }
+      catch (e) { toast(e.message, "erreur", 5000); m.select(); bouton.disabled = false; bouton.textContent = t(" Déverrouiller"); }
     }
     racine().replaceChildren(el("div", { class: "coffre-ecran" },
-      el("div", { class: "cadenas" }, "🔒"),
+      el("div", { class: "cadenas" }, icone("lock")),
       el("h3", {}, "Coffre verrouillé"),
       el("p", {}, "Il se referme tout seul après 5 minutes sans utilisation."),
       el("label", { class: "champ" }, m),
@@ -275,16 +275,16 @@
       oninput: e => { C.recherche = e.target.value; dessinerListe(); } });
     racine().replaceChildren(...[
       el("div", { class: "barre-vue" },
-        el("h2", {}, "🔐 " + t("Mots de passe") + " ", el("span", { class: "compte" }, String(C.entrees.length))),
+        el("h2", {}, t("Mots de passe") + " ", el("span", { class: "compte" }, String(C.entrees.length))),
         el("span", { class: "minuterie", id: "minuterie-coffre" }),
         el("div", { class: "espace" }),
-        el("div", { class: "champ-recherche" }, el("span", {}, "🔎"), recherche),
+        el("div", { class: "champ-recherche" }, el("span", {}, icone("search")), recherche),
         el("button", { class: "btn principal", onclick: () => editer({}) }, "＋ Nouveau"),
-        el("button", { class: "btn", onclick: () => fenetreGenerateur() }, "🎲 Générateur"),
-        el("button", { class: "btn", title: "Verrouiller maintenant", onclick: async () => { await appel("/api/coffre/fermer", {}); C.entrees = []; ecranVerrouille(); } }, "🔒")),
+        el("button", { class: "btn", onclick: () => fenetreGenerateur() }, " Générateur"),
+        el("button", { class: "btn", title: "Verrouiller maintenant", onclick: async () => { await appel("/api/coffre/fermer", {}); C.entrees = []; ecranVerrouille(); } }, icone("lock"))),
       cats.length ? el("div", { class: "puces", style: "margin:-6px 0 16px;flex-wrap:wrap" },
         [["toutes", t("Toutes")], ...cats.map(c => [c, c])].map(([v, libelle]) =>
-          el("button", { class: "puce" + (C.categorie === v ? " actif" : ""), onclick: () => { C.categorie = v; dessiner(); } }, brut(libelle)))) : null,
+          el("button", { class: "puce " + (C.categorie === v ? " actif" : ""), onclick: () => { C.categorie = v; dessiner(); } }, brut(libelle)))) : null,
       el("div", { id: "liste-mdp" })].filter(Boolean));  // sans catégorie : rien à la place des puces
     dessinerListe(); tictac();
   }
@@ -298,8 +298,8 @@
     if (!box) return;
     if (!liste.length) {
       box.replaceChildren(el("div", { class: "notes-vide", style: "text-align:center;padding:40px;color:var(--doux)" },
-        el("div", { style: "font-size:56px" }, C.entrees.length ? "🔍" : "🗝️"),
-        C.entrees.length ? "Aucune entrée ne correspond." : "Le coffre est vide. Ajoutez votre premier mot de passe ! ✨"));
+        el("div", { style: "font-size:56px" }, C.entrees.length ? icone("search") : ""),
+        C.entrees.length ? "Aucune entrée ne correspond." : "Le coffre est vide. Ajoutez votre premier mot de passe ! "));
       return;
     }
     box.replaceChildren(el("div", { class: "liste-mdp" }, liste.map((e, i) => {
@@ -312,21 +312,21 @@
           el("div", { class: "u" }, brut([e.identifiant, e.categorie].filter(Boolean).join(" · ") || "—")),
           secret),
         el("div", { class: "actions-mdp" },
-          e.identifiant ? el("button", { class: "icone-btn", title: "Copier l'identifiant", onclick: () => copier(e, "identifiant") }, "👤") : null,
-          el("button", { class: "icone-btn", title: "Copier le mot de passe (effacé du presse-papiers après 30 s)", onclick: () => copier(e, "mot_de_passe") }, "🔑"),
+          e.identifiant ? el("button", { class: "icone-btn", title: "Copier l'identifiant", onclick: () => copier(e, "identifiant") }, icone("user")) : null,
+          el("button", { class: "icone-btn", title: "Copier le mot de passe (effacé du presse-papiers après 30 s)", onclick: () => copier(e, "mot_de_passe") }, icone("key")),
           el("button", { class: "icone-btn", title: "Afficher 15 secondes", onclick: async () => {
             const { valeur } = await appel("/api/coffre/reveler", { id: e.id, champ: "mot_de_passe" });
             secret.textContent = valeur || t("(vide)"); secret.hidden = false;
             setTimeout(() => { secret.textContent = ""; secret.hidden = true; }, 15000);
-          } }, "👁"),
-          e.site ? el("button", { class: "icone-btn", title: "Ouvrir le site", onclick: () => window.open(/^https?:\/\//.test(e.site) ? e.site : "https://" + e.site, "_blank", "noopener") }, "↗") : null,
-          el("button", { class: "icone-btn", title: "Modifier", onclick: () => editer(e) }, "✎")));
+          } }, icone("eye")),
+          e.site ? el("button", { class: "icone-btn", title: "Ouvrir le site", onclick: () => window.open(/^https?:\/\//.test(e.site) ? e.site : "https:// " + e.site, "_blank", "noopener") }, "↗") : null,
+          el("button", { class: "icone-btn", title: "Modifier", onclick: () => editer(e) }, "")));
     })));
   }
   async function copier(e, champ) {
     try {
       await appel("/api/coffre/copier", { id: e.id, champ });
-      toast(champ === "mot_de_passe" ? "🔑 Mot de passe copié — effacé dans 30 s" : "👤 Identifiant copié", "succes");
+      toast(champ === "mot_de_passe" ? " Mot de passe copié — effacé dans 30 s" : " Identifiant copié", "succes");
     } catch (err) { toast(err.message, "erreur"); }
   }
 
@@ -336,16 +336,16 @@
     const titre = el("input", { value: e.titre || "", placeholder: "ex. Odoo (production)" });
     const site = el("input", { value: e.site || "", placeholder: "ex. monentreprise.odoo.com" });
     const identifiant = el("input", { value: e.identifiant || "", autocomplete: "off" });
-    const mdp = el("input", { type: "password", autocomplete: "new-password", placeholder: e.id ? "(inchangé — 👁 pour l'afficher)" : "" });
+    const mdp = el("input", { type: "password", autocomplete: "new-password", placeholder: e.id ? "(inchangé —  pour l'afficher)" : "" });
     let mdpModifie = !e.id;
     mdp.addEventListener("input", () => { mdpModifie = true; });
     const oeil = el("button", { class: "btn", title: "Afficher", onclick: async () => {
       if (e.id && !mdpModifie && !mdp.value) { mdp.value = (await appel("/api/coffre/reveler", { id: e.id, champ: "mot_de_passe" })).valeur; mdp.dispatchEvent(new Event("input")); mdpModifie = false; }
       mdp.type = mdp.type === "password" ? "text" : "password";
-    } }, "👁");
+    } }, icone("eye"));
     const de = el("button", { class: "btn", title: "Générer un mot de passe solide", onclick: () => {
       const v = generer({ longueur: 20 }); mdp.value = v; mdp.type = "text"; mdpModifie = true; mdp.dispatchEvent(new Event("input"));
-    } }, "🎲");
+    } }, "");
     const categorie = el("input", { value: e.categorie || "", list: "cat-mdp", placeholder: "ex. Clients Odoo" });
     const note = el("textarea", { rows: 3, style: "width:100%", placeholder: "Infos utiles (base, port, question secrète…)" });
     let noteChargee = !e.id || !e.a_note;
@@ -353,10 +353,10 @@
     if (noteChargee) zoneNote.append(note);
     else zoneNote.append(el("button", { class: "btn discret", onclick: async () => {
       note.value = (await appel("/api/coffre/reveler", { id: e.id, champ: "note" })).valeur; noteChargee = true; zoneNote.replaceChildren(note);
-    } }, "🔓 Afficher la note"));
+    } }, " Afficher la note"));
 
     fenetre([
-      el("h3", {}, e.id ? "✏️ Modifier" : "🗝️ Nouvelle entrée"),
+      el("h3", {}, e.id ? " Modifier" : " Nouvelle entrée"),
       el("label", { class: "champ" }, "Nom", titre),
       el("label", { class: "champ" }, "Site ou adresse", site),
       el("label", { class: "champ" }, "Identifiant", identifiant),
@@ -366,19 +366,19 @@
       el("label", { class: "champ" }, "Note (chiffrée)", zoneNote),
       el("div", { class: "actions" },
         e.id ? el("button", { class: "btn discret", style: "margin-right:auto;color:var(--rouge)", onclick: async () => {
-          if (!(await confirmer("🗑️", t("Supprimer « {nom} » ?", { nom: e.titre }), "L'entrée disparaît du coffre. Rien ne pourra la récupérer.", "Supprimer"))) { editer(entree); return; }
+          if (!(await confirmer(icone("trash-2"), t("Supprimer « {nom} » ?", { nom: e.titre }), "L'entrée disparaît du coffre. Rien ne pourra la récupérer.", "Supprimer"))) { editer(entree); return; }
           await appel("/api/coffre/supprimer", { id: e.id }); await chargerListe(); toast("Entrée supprimée");
-        } }, "🗑 Supprimer") : null,
+        } }, " Supprimer") : null,
         el("button", { class: "btn", onclick: fermer }, "Annuler"),
         el("button", { class: "btn principal", onclick: async () => {
           const x = { id: e.id, titre: titre.value, site: site.value, identifiant: identifiant.value, categorie: categorie.value };
           if (mdpModifie) x.mot_de_passe = mdp.value;
           if (noteChargee) x.note = note.value;
-          try { await appel("/api/coffre/enregistrer", { entree: x }); fermer(); await chargerListe(); toast(e.id ? "✏️ Entrée modifiée" : "🎉 Ajouté au coffre !", "succes"); }
+          try { await appel("/api/coffre/enregistrer", { entree: x }); fermer(); await chargerListe(); toast(e.id ? " Entrée modifiée" : " Ajouté au coffre !", "succes"); }
           catch (err) { toast(err.message, "erreur"); }
         } }, e.id ? "Enregistrer" : "Ajouter"))]);
     setTimeout(() => titre.focus(), 60);
   }
 
-  VUES.motsdepasse = { afficher, titre: "Mots de passe", icone: "🔐", groupe: "quotidien", ordre: 40 };
+  VUES.motsdepasse = { afficher, titre: "Mots de passe", icone: icone("lock"), groupe: "quotidien", ordre: 40 };
 })();

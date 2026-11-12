@@ -8,15 +8,15 @@
     // Linux : le trousseau du bureau (GNOME Keyring, KWallet) remplace le coffre de Windows.
     "Une seule fois. Le mot de passe est rangé dans le trousseau du bureau, jamais dans un fichier.":
       "Only once. The password is stored in the desktop keyring, never in a file.",
-    "🔒 Il est rangé dans le trousseau du bureau (GNOME Keyring, KWallet), jamais dans un fichier.":
-      "🔒 It is stored in the desktop keyring (GNOME Keyring, KWallet), never in a file.",
+    " Il est rangé dans le trousseau du bureau (GNOME Keyring, KWallet), jamais dans un fichier.":
+      " It is stored in the desktop keyring (GNOME Keyring, KWallet), never in a file.",
     "Le mot de passe est retiré du trousseau du bureau. Vos mails ne sont pas touchés.":
       "The password is removed from the desktop keyring. Your emails are not affected.",
     "Impossible d'enregistrer le mot de passe dans le trousseau du bureau.":
       "Unable to save the password in the desktop keyring.",
     "Modèle": "Template",
     "Mails": "Mail",
-    "✉️ Mails": "✉️ Mail",
+    " Mails": " Mail",
     // connexion
     "Connecter votre boîte mail": "Connect your mailbox",
     "Une seule fois. Le mot de passe est rangé dans le coffre de Windows, jamais dans un fichier.":
@@ -27,13 +27,13 @@
     "Mot de passe d'application": "App password",
     "Mot de passe": "Password",
     "Mot de passe de la boîte mail": "Mailbox password",
-    "🔒 Il est rangé dans le coffre de Windows (Gestionnaire d'identification), jamais dans un fichier.":
-      "🔒 It is stored in the Windows vault (Credential Manager), never in a file.",
+    " Il est rangé dans le coffre de Windows (Gestionnaire d'identification), jamais dans un fichier.":
+      " It is stored in the Windows vault (Credential Manager), never in a file.",
     "Connecter": "Connect",
     "16 lettres, ex. abcd efgh ijkl mnop": "16 letters, e.g. abcd efgh ijkl mnop",
     "prenom@exemple.com": "name@example.com",
     "Connexion…": "Connecting…",
-    "🎉 Boîte mail connectée !": "🎉 Mailbox connected!",
+    " Boîte mail connectée !": " Mailbox connected!",
     "{nom} demande un « mot de passe d'application » : un code réservé à cet outil, que vous pouvez révoquer à tout moment.":
       "{nom} requires an “app password”: a code reserved for this tool, which you can revoke at any time.",
     "La validation en deux étapes doit être activée sur votre compte.": "Two-step verification must be turned on for your account.",
@@ -62,17 +62,17 @@
     "ex. smtp.exemple.com": "e.g. smtp.example.com",
     "l'adresse mail, en général": "usually the email address",
     // boîte
-    "✏️ Nouveau mail": "✏️ New email",
+    " Nouveau mail": " New email",
     "Déconnecter la boîte (le mot de passe est retiré du coffre)": "Disconnect the mailbox (the password is removed from the vault)",
     "Déconnecter la boîte mail ?": "Disconnect the mailbox?",
     "Le mot de passe est retiré du coffre Windows. Vos mails ne sont pas touchés.": "The password is removed from the Windows vault. Your emails are not affected.",
     "Déconnecter": "Disconnect",
-    "📥 Reçus": "📥 Inbox",
-    "📤 Envoyés": "📤 Sent",
+    " Reçus": " Inbox",
+    " Envoyés": " Sent",
     "Actualiser": "Refresh",
     "Rechercher (expéditeur, objet, texte…)": "Search (sender, subject, text…)",
     "Chargement…": "Loading…",
-    "Aucun mail 🎈": "No email 🎈",
+    "Aucun mail ": "No email ",
     "Choisissez un mail à lire": "Choose an email to read",
     "Ouverture…": "Opening…",
     "À : ": "To: ",
@@ -84,10 +84,10 @@
     "(mail vide)": "(empty email)",
     "(sans objet)": "(no subject)",
     "pièce jointe": "attachment",
-    "↩️ Répondre": "↩️ Reply",
-    "↩️ Répondre à tous": "↩️ Reply all",
-    "➡️ Transférer": "➡️ Forward",
-    "🖼️ Afficher les images": "🖼️ Show images",
+    "↩ Répondre": "↩ Reply",
+    "↩ Répondre à tous": "↩ Reply all",
+    " Transférer": " Forward",
+    " Afficher les images": " Show images",
     "{pieces} — à ouvrir depuis votre webmail": "{pieces} — open them from your webmail",
     "{n} Ko": "{n} KB",
     "Le {date}, {qui} a écrit :": "On {date}, {qui} wrote:",
@@ -96,9 +96,9 @@
     "Date : ": "Date: ",
     "Objet : ": "Subject: ",
     "Annuler": "Cancel",
-    "📨 Envoyer": "📨 Send",
+    " Envoyer": " Send",
     "Envoi…": "Sending…",
-    "🚀 Mail envoyé !": "🚀 Email sent!",
+    " Mail envoyé !": " Email sent!",
     "adresse@exemple.com, autre@exemple.com": "address@example.com, other@example.com",
     // messages du serveur (mail.py)
     "Boîte mail pas encore connectée.": "Mailbox not connected yet.",
@@ -202,7 +202,7 @@
 
   async function afficher() {
     try { M.etat = await api("/api/mail/etat"); }
-    catch (e) { racine().replaceChildren(el("div", { class: "vide" }, "😕 " + e.message)); return; }
+    catch (e) { racine().replaceChildren(el("div", { class: "vide" }, e.message)); return; }
     if (!M.etat.configuree) return ecranConnexion();
     if (!M.charge) dessinerBoite();
     rafraichir();
@@ -244,8 +244,8 @@
     const guide = el("div");
     const libelleSecret = el("span");
     const zoneSecret = el("label", { class: "champ" }, libelleSecret, secret,
-      el("small", {}, selonSysteme("🔒 Il est rangé dans le coffre de Windows (Gestionnaire d'identification), jamais dans un fichier.",
-        "🔒 Il est rangé dans le trousseau du bureau (GNOME Keyring, KWallet), jamais dans un fichier.")));
+      el("small", {}, selonSysteme(" Il est rangé dans le coffre de Windows (Gestionnaire d'identification), jamais dans un fichier.",
+        " Il est rangé dans le trousseau du bureau (GNOME Keyring, KWallet), jamais dans un fichier.")));
     const bouton = el("button", { class: "btn principal", onclick: connecter }, "Connecter");
     const actions = el("div", { class: "actions" }, bouton);
 
@@ -263,7 +263,7 @@
       zoneSecret.hidden = actions.hidden = microsoft;
       if (microsoft) {
         guide.replaceChildren(el("div", { class: "alerte-ms" },
-          el("b", {}, "🚧 " + t("Outlook, Hotmail et Live ne sont pas encore pris en charge")),
+          el("b", {}, t("Outlook, Hotmail et Live ne sont pas encore pris en charge")),
           "Microsoft n'accepte plus les mots de passe pour les logiciels de messagerie : il faut une connexion « OAuth », que Mes outils ne sait pas encore faire."));
         return;
       }
@@ -310,7 +310,7 @@
     secret.addEventListener("keydown", e => { if (e.key === "Enter") connecter(); });
 
     racine().replaceChildren(el("div", { class: "connexion" },
-      el("div", { style: "font-size:48px" }, "✉️"),
+      el("div", { style: "font-size:48px" }, icone("mail")),
       el("h3", {}, "Connecter votre boîte mail"),
       el("p", { style: "color:var(--doux);margin-top:0" }, selonSysteme("Une seule fois. Le mot de passe est rangé dans le coffre de Windows, jamais dans un fichier.",
         "Une seule fois. Le mot de passe est rangé dans le trousseau du bureau, jamais dans un fichier.")),
@@ -329,27 +329,27 @@
     const fourn = M.etat.reglages?.fournisseur;
     racine().replaceChildren(
       el("div", { class: "barre-vue" },
-        el("h2", {}, "✉️ Mails"),
-        el("span", { style: "color:var(--doux);font-size:13px" }, brut(M.etat.adresse + (fourn && fourn !== "autre" ? " · " + nomFournisseur(fourn) : ""))),
+        el("h2", {}, " Mails"),
+        el("span", { style: "color:var(--doux);font-size:13px" }, brut(M.etat.adresse + (fourn && fourn !== "autre" ? "· " + nomFournisseur(fourn) : ""))),
         el("div", { class: "espace" }),
-        el("button", { class: "btn principal", onclick: () => composer({}) }, "✏️ Nouveau mail"),
+        el("button", { class: "btn principal", onclick: () => composer({}) }, " Nouveau mail"),
         el("button", { class: "btn discret", title: "Déconnecter la boîte (le mot de passe est retiré du coffre)", onclick: async () => {
-          if (!(await confirmer("🔌", "Déconnecter la boîte mail ?", selonSysteme("Le mot de passe est retiré du coffre Windows. Vos mails ne sont pas touchés.",
+          if (!(await confirmer(icone("plug"), "Déconnecter la boîte mail ?", selonSysteme("Le mot de passe est retiré du coffre Windows. Vos mails ne sont pas touchés.",
             "Le mot de passe est retiré du trousseau du bureau. Vos mails ne sont pas touchés."), "Déconnecter"))) return;
           await api("/api/mail/deconnexion", {}); M.etat.configuree = false; ecranConnexion(); compterMails();
-        } }, "🔌")),
+        } }, icone("plug"))),
       el("div", { class: "boite" },
         el("div", { class: "colonne-liste" },
           el("div", { class: "entete-liste" },
-            el("div", { class: "puces" }, [["recus", "📥 Reçus"], ["envoyes", "📤 Envoyés"]].map(([d, libelle]) =>
-              el("button", { class: "puce" + (M.dossier === d ? " actif" : ""), onclick: ev => {
+            el("div", { class: "puces" }, [["recus", " Reçus"], ["envoyes", " Envoyés"]].map(([d, libelle]) =>
+              el("button", { class: "puce " + (M.dossier === d ? " actif" : ""), onclick: ev => {
                 M.dossier = d; ev.currentTarget.parentNode.querySelectorAll(".puce").forEach(p => p.classList.toggle("actif", p === ev.currentTarget)); rafraichir(true);
               } }, libelle))),
             el("button", { class: "btn discret", title: "Actualiser", onclick: () => rafraichir(true) }, "⟳"),
             recherche),
           el("div", { class: "liste-mails", id: "liste-mails" }, el("div", { class: "chargement-mails" }, "Chargement…"))),
         el("div", { class: "lecture", id: "lecture" },
-          el("div", { class: "vide-lecture" }, el("div", {}, el("div", {}, "📬"), "Choisissez un mail à lire")))));
+          el("div", { class: "vide-lecture" }, el("div", {}, el("div", {}, icone("mail-open")), "Choisissez un mail à lire")))));
   }
 
   async function rafraichir(montrerChargement = false) {
@@ -358,11 +358,11 @@
     if (montrerChargement) box.replaceChildren(el("div", { class: "chargement-mails" }, "Chargement…"));
     try {
       M.liste = await api("/api/mail/liste", { dossier: M.dossier, recherche: M.recherche });
-    } catch (e) { box.replaceChildren(el("div", { class: "chargement-mails" }, "😕 " + e.message)); return; }
-    if (!M.liste.length) { box.replaceChildren(el("div", { class: "chargement-mails" }, "Aucun mail 🎈")); return; }
+    } catch (e) { box.replaceChildren(el("div", { class: "chargement-mails" }, e.message)); return; }
+    if (!M.liste.length) { box.replaceChildren(el("div", { class: "chargement-mails" }, "Aucun mail ")); return; }
     box.replaceChildren(...M.liste.map(m => {
       const qui = M.dossier === "envoyes" ? m.a : m.de;
-      return el("div", { class: "mail" + (m.lu ? "" : " non-lu") + (M.ouvert?.uid === m.uid ? " actif" : ""), onclick: () => ouvrir(m) },
+      return el("div", { class: "mail " + (m.lu ? "" : " non-lu") + (M.ouvert?.uid === m.uid ? " actif" : ""), onclick: () => ouvrir(m) },
         el("div", { class: "av", style: `background:${couleur(qui.adresse)}` }, brut(initiale(qui.nom))),
         el("div", { class: "contenu" },
           el("div", { class: "l1" }, el("span", { class: "qui" }, brut((M.dossier === "envoyes" ? t("À : ") : "") + (qui.nom || qui.adresse))), el("span", { class: "quand" }, quand(m.date))),
@@ -380,7 +380,7 @@
       m.lu = true;
       dessinerLecture();
       rafraichir(); compterMails();
-    } catch (e) { zone.replaceChildren(el("div", { class: "vide-lecture" }, "😕 " + e.message)); }
+    } catch (e) { zone.replaceChildren(el("div", { class: "vide-lecture" }, e.message)); }
   }
 
   function srcdoc(html, images) {
@@ -408,21 +408,20 @@
           el("span", { class: "av", style: `background:${couleur(m.de.adresse)};width:30px;height:30px;border-radius:10px;display:grid;place-items:center;color:#fff;font-weight: 600` }, brut(initiale(m.de.nom))),
           el("b", { style: "color:var(--encre)" }, brut(m.de.nom)), el("span", {}, brut(`<${m.de.adresse}>`)),
           el("span", {}, "· " + dateLongue(m.date))),
-        el("div", { class: "meta", style: "margin-top:4px" }, brut(t("À : ") + (m.a || "") + (m.cc ? " · Cc : " + m.cc : ""))),
+        el("div", { class: "meta", style: "margin-top:4px" }, brut(t("À : ") + (m.a || "") + (m.cc ? "· Cc : " + m.cc : ""))),
         el("div", { class: "actions-mail" },
-          el("button", { class: "btn principal", onclick: () => repondre(false) }, "↩️ Répondre"),
-          m.cc || (m.a || "").includes(",") ? el("button", { class: "btn", onclick: () => repondre(true) }, "↩️ Répondre à tous") : null,
-          el("button", { class: "btn", onclick: transferer }, "➡️ Transférer"),
-          m.html && !M.images ? el("button", { class: "btn discret", onclick: () => { M.images = true; dessinerLecture(); } }, "🖼️ Afficher les images") : null)),
+          el("button", { class: "btn principal", onclick: () => repondre(false) }, "↩ Répondre"),
+          m.cc || (m.a || "").includes(",") ? el("button", { class: "btn", onclick: () => repondre(true) }, "↩ Répondre à tous") : null,
+          el("button", { class: "btn", onclick: transferer }, " Transférer"),
+          m.html && !M.images ? el("button", { class: "btn discret", onclick: () => { M.images = true; dessinerLecture(); } }, " Afficher les images") : null)),
       contenu,
-      m.pieces.length ? el("div", { class: "pieces" }, brut("📎 " + t("{pieces} — à ouvrir depuis votre webmail", { pieces }))) : null);
+      m.pieces.length ? el("div", { class: "pieces" }, brut(t("{pieces} — à ouvrir depuis votre webmail", { pieces }))) : null);
   }
 
   // -- écrire --------------------------------------------------------------------
   const texteDe = m => m.texte || (m.html ? new DOMParser().parseFromString(m.html, "text/html").body.innerText : "");
   function citation(m) {
-    return "\n\n\n" + t("Le {date}, {qui} a écrit :", { date: dateLongue(m.date, "long"), qui: `${m.de.nom} <${m.de.adresse}>` }) + "\n"
-      + texteDe(m).split("\n").map(l => "> " + l).join("\n");
+    return "\n\n\n " + t("Le {date}, {qui} a écrit :", { date: dateLongue(m.date, "long"), qui: `${m.de.nom} <${m.de.adresse}>` }) + "\n " + texteDe(m).split("\n").map(l => "> " + l).join("\n");
   }
   function repondre(tous) {
     const m = M.ouvert;
@@ -448,8 +447,8 @@
         await api("/api/mail/envoyer", { a: a.value, cc: cc.value, sujet: objet.value, corps: corps.value, reponse_a: v.reponse_a, references: v.references });
         fermer(); toast("Mail envoyé !", "succes");
         if (M.dossier === "envoyes") rafraichir();
-      } catch (e) { toast(e.message, "erreur", 7000); envoyer.disabled = false; envoyer.textContent = t("📨 Envoyer"); }
-    } }, "📨 Envoyer");
+      } catch (e) { toast(e.message, "erreur", 7000); envoyer.disabled = false; envoyer.textContent = t(" Envoyer"); }
+    } }, " Envoyer");
     // Application Modèles de messages : insérer un texte prêt à l'emploi.
     // Le mail en cours est gardé (la fenêtre est remplacée le temps du choix).
     const boutonModele = window.Modeles && appActive("modeles")
@@ -458,11 +457,11 @@
           Modeles.choisir(r => composer({ ...enCours,
             a: enCours.a || r.a || "",
             sujet: enCours.sujet || r.objet || "",
-            corps: (r.texte || "") + (enCours.corps ? "\n\n" + enCours.corps : "") }));
+            corps: (r.texte || "") + (enCours.corps ? "\n\n " + enCours.corps : "") }));
         } }, icone("message-square-text"), "Modèle")
       : null;
     fenetre([
-      el("h3", {}, v.reponse_a ? "↩️ Répondre" : "✏️ Nouveau mail"),
+      el("h3", {}, v.reponse_a ? "↩ Répondre" : " Nouveau mail"),
       el("label", { class: "champ" }, "À", a),
       el("label", { class: "champ" }, "Cc", cc),
       el("label", { class: "champ" }, "Objet", objet),
@@ -472,5 +471,5 @@
     setTimeout(() => { (v.a ? corps : a).focus(); if (v.a) corps.setSelectionRange(0, 0); }, 60);
   }
 
-  VUES.mails = { afficher, titre: "Mails", icone: "✉️", groupe: "quotidien", ordre: 10 };
+  VUES.mails = { afficher, titre: "Mails", icone: icone("mail"), groupe: "quotidien", ordre: 10 };
 })();

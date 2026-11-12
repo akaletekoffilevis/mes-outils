@@ -214,7 +214,7 @@
 
   function puces(options, valeur, choisir) {
     return el("div", { class: "puces" }, options.map(([cle, lib, n]) =>
-      el("button", { class: "puce" + (cle === valeur ? " actif" : ""), onclick: () => { choisir(cle); dessiner(); } },
+      el("button", { class: "puce " + (cle === valeur ? " actif" : ""), onclick: () => { choisir(cle); dessiner(); } },
         lib, n ? el("span", { class: "n" }, String(n)) : null)));
   }
 
@@ -294,7 +294,7 @@
       el("span", { class: "etat-txt rouge", title: "Le fichier a été déplacé ou supprimé. Choisissez son nouvel emplacement." },
         icone("circle-alert"), "Introuvable"),
       el("button", { class: "btn petit", onclick: e => { e.stopPropagation(); retrouver(f); } }, "Retrouver…")];
-    const bloc = el("div", { class: "ligne cliquable dc-ligne" + (ouverte ? " ouverte" : "") + (f.existe ? "" : " perdu"),
+    const bloc = el("div", { class: "ligne cliquable dc-ligne " + (ouverte ? " ouverte" : "") + (f.existe ? "" : " perdu"),
       ondblclick: () => f.existe && ouvrir(f),
       onclick: () => { ouverte ? D.ouverts.delete(f.id) : D.ouverts.add(f.id); dessiner(); } },
       el("span", { class: "ligne-ic" }, iconeFiche(f)),
@@ -316,7 +316,7 @@
       f.date_document ? [el("dt", {}, "Date du document"), el("dd", {}, dateCourte(f.date_document))] : null,
       f.expiration ? [el("dt", {}, "Expiration"), el("dd", {}, dateCourte(f.expiration))] : null,
       f.note ? [el("dt", {}, "Note"), el("dd", { class: "note" }, f.note)] : null,
-      el("dt", {}, ""), el("dd", { class: "dc-ajoute" }, t("Ajouté le {date}", { date: dateCourte(f.ajoute) }) + (f.copie ? " · " + t("Copié dans le classeur") : ""))))];
+      el("dt", {}, ""), el("dd", { class: "dc-ajoute" }, t("Ajouté le {date}", { date: dateCourte(f.ajoute) }) + (f.copie ? "· " + t("Copié dans le classeur") : ""))))];
   }
 
   // -------------------------------------------------------------- actions
@@ -332,7 +332,7 @@
     const depart = f.dossier_parent || D.r?.dernier_dossier || "";
     if (f.genre === "dossier") chemin = await choisirDossier("Retrouver…", depart);
     else {
-      const r = await action("/api/documents/choisir_fichiers", { titre: I18N.traduire("Retrouver…") + " " + f.nom, depart, multi: false });
+      const r = await action("/api/documents/choisir_fichiers", { titre: I18N.traduire("Retrouver…") + f.nom, depart, multi: false });
       chemin = r?.chemins?.[0] || null;
     }
     if (!chemin) return;

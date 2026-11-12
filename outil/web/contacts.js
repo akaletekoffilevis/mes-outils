@@ -264,7 +264,7 @@
   function dessinerFiltres() {
     const n = C.r.compteurs;
     const puce = (actif, lib, nombre, action) =>
-      el("button", { class: "puce" + (actif ? " actif" : ""), onclick: action }, lib,
+      el("button", { class: "puce " + (actif ? " actif" : ""), onclick: action }, lib,
         nombre !== null ? el("span", { class: "ct-nb" }, String(nombre)) : null);
     const filtres = [
       el("div", { class: "puces" },
@@ -272,7 +272,7 @@
         STATUTS.filter(([cle]) => n[cle] || C.statut === cle).map(([cle]) =>
           puce(C.statut === cle, libStatut(cle, true), n[cle], () => { C.statut = cle; dessinerListe(); }))),
       n.relancer || C.relancer ? el("div", { class: "puces" },
-        el("button", { class: "puce" + (C.relancer ? " actif" : ""), onclick: () => { C.relancer = !C.relancer; dessinerListe(); } },
+        el("button", { class: "puce " + (C.relancer ? " actif" : ""), onclick: () => { C.relancer = !C.relancer; dessinerListe(); } },
           icone("bell"), "À relancer", el("span", { class: "ct-nb" }, String(n.relancer)))) : null,
     ];
     if (C.r.etiquettes.length) {
@@ -364,7 +364,7 @@
     const ouvert = C.ouvert === c.id;
     const stop = f => e => { e.stopPropagation(); f(); };
     return [
-      el("div", { class: "ligne cliquable" + (ouvert ? " ouverte" : ""), "data-id": c.id, onclick: () => basculer(c.id) },
+      el("div", { class: "ligne cliquable " + (ouvert ? " ouverte" : ""), "data-id": c.id, onclick: () => basculer(c.id) },
         el("span", { class: "ligne-ic" }, icone(c.type === "entreprise" ? "building-2" : "user")),
         el("div", { class: "ligne-corps" },
           el("div", { class: "ligne-titre" }, el("span", { class: "ct-nom sans-icone" }, txt(c.nom_affiche)),
@@ -373,9 +373,9 @@
         el("div", { class: "ligne-cote" }, texteRelance(c), texteStatut(c.statut)),
         el("div", { class: "ligne-actions" },
           el("button", { class: "icone-btn", title: c.email ? "Écrire" : "Pas d'adresse e-mail", disabled: c.email ? null : "",
-            onclick: stop(() => ouvrirLien("mailto:" + c.email)) }, icone("mail")),
+            onclick: stop(() => ouvrirLien("mailto: " + c.email)) }, icone("mail")),
           el("button", { class: "icone-btn", title: c.telephone ? "Appeler" : "Pas de numéro", disabled: c.telephone ? null : "",
-            onclick: stop(() => ouvrirLien("tel:" + c.telephone.replace(/[^\d+]/g, ""))) }, icone("phone")),
+            onclick: stop(() => ouvrirLien("tel: " + c.telephone.replace(/[^\d+]/g, ""))) }, icone("phone")),
           el("button", { class: "icone-btn", title: "Copier les coordonnées", onclick: stop(() => copier(coordonnees(c), "Coordonnées copiées")) }, icone("copy")),
           el("button", { class: "icone-btn", title: "Modifier", onclick: stop(() => editer(c)) }, icone("pencil")),
           el("button", { class: "icone-btn danger", title: "Supprimer", onclick: stop(() => supprimer(c)) }, icone("trash-2")))),
@@ -418,8 +418,8 @@
       ? el("div", { class: "ct-info" }, icone("building-2"),
         el("div", { class: "ct-val" }, el("a", { href: "#contacts", title: "Ouvrir la fiche", onclick: e => { e.preventDefault(); allerA(c.entreprise_id); } }, txt(c.entreprise))))
       : null;
-    const coord = [entreprise, info("briefcase", c.poste, null, false), info("mail", c.email, "mailto:" + c.email),
-      info("phone", c.telephone, "tel:" + chiffresTel(c.telephone)), info("map-pin", c.adresse), info("globe", c.site, c.site)].filter(Boolean);
+    const coord = [entreprise, info("briefcase", c.poste, null, false), info("mail", c.email, "mailto: " + c.email),
+      info("phone", c.telephone, "tel: " + chiffresTel(c.telephone)), info("map-pin", c.adresse), info("globe", c.site, c.site)].filter(Boolean);
     return el("div", { class: "ligne-detail ct-detail" },
       el("div", {},
         el("div", { class: "ct-bloc" }, coord.length ? coord : el("div", { class: "ct-rien" }, "Aucune coordonnée")),
@@ -458,7 +458,7 @@
     const quand = el("input", { type: "datetime-local", value: isoMinute(new Date()), "aria-label": "Date" });
     const types = el("div", { class: "puces" });
     const dessinerTypes = () => types.replaceChildren(...Object.entries(TYPES_NOTES).map(([cle, [ic, lib]]) =>
-      el("button", { class: "puce" + (C.typeNote === cle ? " actif" : ""), onclick: () => { C.typeNote = cle; dessinerTypes(); } }, icone(ic), lib)));
+      el("button", { class: "puce " + (C.typeNote === cle ? " actif" : ""), onclick: () => { C.typeNote = cle; dessinerTypes(); } }, icone(ic), lib)));
     dessinerTypes();
     const ajouter = async () => {
       try {
@@ -480,7 +480,7 @@
           const d = new Date(n.date);
           return el("div", { class: "ct-note" }, icone(ic),
             el("div", { class: "ct-corps" },
-              el("div", { class: "ct-quand" }, t(lib) + " · " + d.toLocaleString(I18N.locale(),
+              el("div", { class: "ct-quand" }, t(lib) + "· " + d.toLocaleString(I18N.locale(),
                 { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })),
               el("div", { class: "ct-texte sans-icone" }, txt(n.texte))),
             el("button", { class: "icone-btn danger", title: "Supprimer", onclick: () => supprimerNote(c, n) }, icone("trash-2")));
@@ -532,7 +532,7 @@
     const types = el("div", { class: "puces" });
     const majType = () => {
       types.replaceChildren(...[["personne", "user", "Personne"], ["entreprise", "building-2", "Entreprise"]].map(([cle, ic, lib]) =>
-        el("button", { type: "button", class: "puce" + (b.type === cle ? " actif" : ""), onclick: () => { b.type = cle; majType(); } }, icone(ic), lib)));
+        el("button", { type: "button", class: "puce " + (b.type === cle ? " actif" : ""), onclick: () => { b.type = cle; majType(); } }, icone(ic), lib)));
       const personne = b.type === "personne";
       blocPrenom.hidden = !personne;
       lignePersonne.hidden = !personne;
@@ -662,8 +662,8 @@
     return el("div", { class: "carte-jour", onclick: () => ouvrirAvec(() => { Object.assign(C, { relancer: true, statut: "tous" }); dessiner(); }) },
       el("h4", {}, icone("bell"), "À relancer"),
       r.relances.map(x => el("div", { class: "ligne-jour" },
-        el("span", { class: "heure" + (x.retard > 0 ? " ct-retard" : "") }, x.retard > 0 ? dateCourte(x.relance) : t("Auj.")),
-        el("span", { class: "ct-carte-nom sans-icone" }, txt(x.nom + (x.entreprise ? " · " + x.entreprise : ""))))));
+        el("span", { class: "heure " + (x.retard > 0 ? " ct-retard" : "") }, x.retard > 0 ? dateCourte(x.relance) : t("Auj.")),
+        el("span", { class: "ct-carte-nom sans-icone" }, txt(x.nom + (x.entreprise ? "· " + x.entreprise : ""))))));
   }
 
   VUES.contacts = {

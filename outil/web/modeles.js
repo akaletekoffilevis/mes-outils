@@ -238,7 +238,7 @@
         X.categories.length ? categorie : null,
         el("div", { class: "espace" }),
         el("div", { class: "puces" }, tris.map(([v, lib]) =>
-          el("button", { class: "puce" + (X.tri === v ? " actif" : ""), onclick: () => { X.tri = v; recharger(); } }, lib)))) : null,
+          el("button", { class: "puce " + (X.tri === v ? " actif" : ""), onclick: () => { X.tri = v; recharger(); } }, lib)))) : null,
       liste());
     if (avaitFocus) { recherche.focus(); recherche.setSelectionRange(recherche.value.length, recherche.value.length); }
   }
@@ -270,7 +270,7 @@
         el("span", {}, usage(m.utilisations || 0)),
         m.favori ? el("span", { class: "mo-favori", title: "Favori" }, icone("star")) : null),
       el("div", { class: "ligne-actions" },
-        el("button", { class: "icone-btn" + (m.favori ? " mo-actif" : ""), title: m.favori ? "Retirer des favoris" : "Ajouter aux favoris",
+        el("button", { class: "icone-btn " + (m.favori ? " mo-actif" : ""), title: m.favori ? "Retirer des favoris" : "Ajouter aux favoris",
           onclick: stop(() => basculerFavori(m)) }, icone("star")),
         el("button", { class: "icone-btn", title: "Modifier", onclick: stop(() => editer(m)) }, icone("pencil")),
         el("button", { class: "icone-btn", title: "Dupliquer", onclick: stop(() => dupliquer(m)) }, icone("files")),
@@ -319,7 +319,7 @@
         const details = [r.doublons ? t("{n} déjà présents, ignorés", { n: r.doublons }) : "",
           r.invalides ? t("{n} invalides, ignorés", { n: r.invalides }) : ""].filter(Boolean).join(" · ");
         toast((r.ajoutes ? t("{n} modèles importés", { n: r.ajoutes }) : t("Aucun nouveau modèle dans ce fichier"))
-          + (details ? " (" + details + ")" : ""), r.ajoutes ? "succes" : "", 4500);
+          + (details ? "( " + details + ")" : ""), r.ajoutes ? "succes" : "", 4500);
         recharger();
       } catch (e) { erreur(e); }
     });
@@ -346,7 +346,7 @@
     const majDetectees = () => {
       const vars = variablesDe(objet.value, texte.value);
       detectees.replaceChildren(el("span", {}, "Variables détectées :"),
-        ...(vars.length ? vars.map(v => el("span", { class: "tag sans-icone" }, brut("{" + v.nom + "}")))
+        ...(vars.length ? vars.map(v => el("span", { class: "tag sans-icone" }, brut("{ " + v.nom + "}")))
           : [el("span", { style: "color:var(--gris)" }, "Aucune variable pour l'instant.")]));
     };
     objet.addEventListener("input", majDetectees);
@@ -354,7 +354,7 @@
     majDetectees();
     const inserer = nom => {
       const champ = dernierChamp, debut = champ.selectionStart ?? champ.value.length;
-      champ.setRangeText("{" + nom + "}", debut, champ.selectionEnd ?? debut, "end");
+      champ.setRangeText("{ " + nom + "}", debut, champ.selectionEnd ?? debut, "end");
       champ.focus(); majDetectees();
     };
     const libre = el("button", { class: "btn petit discret", type: "button", title: "Nom de la variable (lettres, chiffres, _ ou -)", onclick: () => {
@@ -371,7 +371,7 @@
       setTimeout(() => champ.focus(), 20);
     } }, icone("plus"), t("Variable libre"));
     const boutonsInserer = () => [el("span", {}, "Insérer :"),
-      STANDARD.map(v => el("button", { class: "btn petit mo-var", type: "button", title: LIBELLES[v], onclick: () => inserer(v) }, brut("{" + v + "}"))), libre];
+      STANDARD.map(v => el("button", { class: "btn petit mo-var", type: "button", title: LIBELLES[v], onclick: () => inserer(v) }, brut("{ " + v + "}"))), libre];
     const ligneInserer = el("div", { class: "mo-inserer" }, boutonsInserer());
 
     const valider = async () => {
@@ -390,7 +390,7 @@
         el("label", { class: "champ" }, "Catégorie", categorie,
           el("datalist", { id: "mo-categories" }, categories.map(c => el("option", { value: c })))),
         el("label", { class: "champ" }, "Langue", langue),
-        el("label", { class: "champ large" }, el("span", {}, t("Objet") + " ", el("small", {}, "(" + t("facultatif, pour un mail") + ")")), objet),
+        el("label", { class: "champ large" }, el("span", {}, t("Objet") + " ", el("small", {}, "( " + t("facultatif, pour un mail") + ")")), objet),
         el("label", { class: "champ large" }, "Texte", texte)),
       ligneInserer,
       detectees,
@@ -450,7 +450,7 @@
       if (c.email) destinataire.value = c.email;
       majApercu();
     } }, el("option", { value: "" }, "Aucun contact"),
-      liste.map(c => el("option", { value: String(c.id) }, brut(c.nom + (c.entreprise ? " · " + c.entreprise : ""))))) : null;
+      liste.map(c => el("option", { value: String(c.id) }, brut(c.nom + (c.entreprise ? "· " + c.entreprise : ""))))) : null;
     majApercu();
 
     const final = () => ({ a: destinataire.value.trim(), objet: remplir(m.objet, valeurs), texte: remplir(m.texte, valeurs) });
@@ -472,8 +472,8 @@
       el("div", { class: "mo-sous-titre sans-icone" }, m.categorie ? el("span", { class: "tag" }, brut(m.categorie)) : null, usage(m.utilisations || 0)),
       choixContact || !rappel ? el("div", { class: "mo-grille" },
         choixContact ? el("label", { class: "champ" }, "Contact", choixContact) : null,
-        !rappel ? el("label", { class: "champ" + (choixContact ? "" : " large") },
-          el("span", {}, t("Destinataire") + " ", el("small", {}, "(" + t("pour « Écrire le mail »") + ")")), destinataire) : null) : null,
+        !rappel ? el("label", { class: "champ " + (choixContact ? "" : " large") },
+          el("span", {}, t("Destinataire") + " ", el("small", {}, "( " + t("pour « Écrire le mail »") + ")")), destinataire) : null) : null,
       vars.length ? el("div", { class: "mo-grille" }, champs) : el("p", { class: "mo-note" }, "Ce modèle n'a pas de variable."),
       el("div", { class: "mo-section" }, "Aperçu"),
       el("div", { class: "mo-apercu sans-icone" },

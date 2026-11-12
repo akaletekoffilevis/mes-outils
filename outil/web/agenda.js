@@ -21,11 +21,10 @@
     "jour": "all day",
     "à {heure}": "at {heure}",
     "⧉ Copié au {quand}": "⧉ Copied to {quand}",
-    "📅 Déplacé au {quand}": "📅 Moved to {quand}",
+    " Déplacé au {quand}": " Moved to {quand}",
     "glisser pour déplacer, Ctrl + glisser pour dupliquer": "drag to move, Ctrl + drag to duplicate",
-    "copie": "copy",
-    "+ {n} autres": "+ {n} more",
-    "💡 Glissez un rendez-vous pour le déplacer · Ctrl + glisser pour le dupliquer": "💡 Drag an appointment to move it · Ctrl + drag to duplicate it",
+    "copie": "copy", " + {n} autres": "+ {n} more",
+    " Glissez un rendez-vous pour le déplacer · Ctrl + glisser pour le dupliquer": " Drag an appointment to move it · Ctrl + drag to duplicate it",
     "Début": "Start",
     "Fin": "End",
     "Titre": "Title",
@@ -44,13 +43,13 @@
     "ex. Réunion client": "e.g. Client meeting",
     "ex. Bureau, Teams…": "e.g. Office, Teams…",
     "Détails, ordre du jour…": "Details, agenda…",
-    "✏️ Rendez-vous": "✏️ Appointment",
+    " Rendez-vous": " Appointment",
     "⧉ Copie du rendez-vous": "⧉ Copy of the appointment",
-    "✨ Nouveau rendez-vous": "✨ New appointment",
+    " Nouveau rendez-vous": " New appointment",
     "Supprimer ce rendez-vous ?": "Delete this appointment?",
     "Supprimer": "Delete",
-    "🗑 Supprimer": "🗑 Delete",
-    "🗑️ Rendez-vous supprimé": "🗑️ Appointment deleted",
+    " Supprimer": " Delete",
+    " Rendez-vous supprimé": " Appointment deleted",
     "Créer une copie (choisissez ensuite le jour)": "Create a copy (then choose the day)",
     "⧉ Dupliquer": "⧉ Duplicate",
     "⧉ Copie prête : changez le jour si besoin, puis « Ajouter »": "⧉ Copy ready: change the day if needed, then “Add”",
@@ -131,7 +130,7 @@
   // Données de l'utilisateur (titres, lieux) : jamais traduites.
   const brut = s => document.createTextNode(s ?? "");
   const titreDe = e => (e.titre ? brut(e.titre) : t("Rendez-vous"));
-  const astuce = e => (e.titre || "") + " — " + t("glisser pour déplacer, Ctrl + glisser pour dupliquer");
+  const astuce = e => (e.titre || "") + "— " + t("glisser pour déplacer, Ctrl + glisser pour dupliquer");
 
   /** Étend les rendez-vous récurrents en instances sur la plage visible
    *  (±2 mois autour de la date de référence), sans toucher aux données. */
@@ -197,14 +196,14 @@
       dessiner();
     };
     return el("div", { class: "barre-vue" },
-      el("h2", {}, icone("calendar"), " " + t("Agenda")),
+      el("h2", {}, icone("calendar"), t("Agenda")),
       el("button", { class: "btn", onclick: () => { A.ref = new Date(); dessiner(); } }, "Aujourd'hui"),
       el("button", { class: "btn discret", title: "Précédent", onclick: () => decaler(-1) }, "‹"),
       el("button", { class: "btn discret", title: "Suivant", onclick: () => decaler(1) }, "›"),
       el("span", { class: "titre-periode" }, titre.charAt(0).toUpperCase() + titre.slice(1)),
       el("div", { class: "espace" }),
       el("div", { class: "puces" }, [["jour", "Jour"], ["semaine", "Semaine"], ["mois", "Mois"]].map(([m, libelle]) =>
-        el("button", { class: "puce" + (A.mode === m ? " actif" : ""), onclick: () => { A.mode = m; dessiner(); } }, libelle))),
+        el("button", { class: "puce " + (A.mode === m ? " actif" : ""), onclick: () => { A.mode = m; dessiner(); } }, libelle))),
       el("button", { class: "btn principal", onclick: () => editer(nouveau(new Date())) }, "＋ Rendez-vous"));
   }
 
@@ -233,8 +232,8 @@
     try {
       await api("/api/agenda/enregistrer", { element: x });
       await charger();
-      const quand = nouveauDebut.toLocaleDateString(I18N.locale(), { weekday: "short", day: "numeric", month: "short" }) + (x.journee ? "" : " " + t("à {heure}", { heure: x.debut.slice(11, 16) }));
-      toast(t(copier ? "⧉ Copié au {quand}" : "📅 Déplacé au {quand}", { quand }), "succes");
+      const quand = nouveauDebut.toLocaleDateString(I18N.locale(), { weekday: "short", day: "numeric", month: "short" }) + (x.journee ? "" : t("à {heure}", { heure: x.debut.slice(11, 16) }));
+      toast(t(copier ? "⧉ Copié au {quand}" : " Déplacé au {quand}", { quand }), "succes");
     } catch (err) { toast(err.message, "erreur"); await charger(); }
   }
 
@@ -288,7 +287,7 @@
       bloc.style.top = `${top0 + minutes / 60 * PX}px`;
       bloc.style.left = "3px"; bloc.style.width = "calc(100% - 6px)";
       const d = nouveauDebut();
-      etiquette.textContent = `${isoMinute(d).slice(11, 16)} – ${isoMinute(new Date(d.getTime() + duree)).slice(11, 16)}${mv.ctrlKey ? " · " + t("copie") : ""}`;
+      etiquette.textContent = `${isoMinute(d).slice(11, 16)} – ${isoMinute(new Date(d.getTime() + duree)).slice(11, 16)}${mv.ctrlKey ? "· " + t("copie") : ""}`;
     };
     const lacher = up => {
       document.removeEventListener("mousemove", suivre);
@@ -318,7 +317,7 @@
     const grille = el("div", { class: "semaine" },
       el("div", { class: "entete-semaine", style: `grid-template-columns: ${cols}; padding-right: 8px;` },
         el("div", { class: "tete-jour" }),
-        jours.map((d, i) => el("div", { class: "tete-jour" + (memeJourA(d, auj) ? " auj" : "") },
+        jours.map((d, i) => el("div", { class: "tete-jour " + (memeJourA(d, auj) ? " auj" : "") },
           noms[nbJours === 1 ? (d.getDay() === 0 ? 6 : d.getDay() - 1) : i],
           el("b", {}, String(d.getDate()))))));
     // Rendez-vous de la journée entière
@@ -329,7 +328,7 @@
     const corps = el("div", { class: "corps-semaine", style: `grid-template-columns: ${cols};` },
       el("div", { class: "heures" }, [...Array(H1 - H0)].map((_, i) => el("div", {}, i ? `${H0 + i}:00` : ""))));
     jours.forEach(d => {
-      const col = el("div", { class: "colonne" + (memeJourA(d, auj) ? " auj" : ""), style: `height:${(H1 - H0) * PX}px`,
+      const col = el("div", { class: "colonne " + (memeJourA(d, auj) ? " auj" : ""), style: `height:${(H1 - H0) * PX}px`,
         onclick: ev => { if (ev.target !== col) return; editer(nouveau(d, H0 + Math.floor(ev.offsetY / PX))); } });
       const duJour = A.evenements.filter(e => !e.journee && memeJourA(debutDe(e), d)).sort((a, b) => a.debut.localeCompare(b.debut));
       placer(duJour).forEach(({ e, voie, voies }) => {
@@ -340,7 +339,7 @@
           title: astuce(e),
           onmousedown: ev => glisserRdv(ev, e, bloc, jours), onclick: ev => ev.stopPropagation() },
           el("b", {}, e.recurrence ? icone("arrow-left-right") : null, titreDe(e)),
-          el("span", {}, brut(`${e.debut.slice(11, 16)} – ${isoMinute(fin).slice(11, 16)}${e.lieu ? " · " + e.lieu : ""}`)));
+          el("span", {}, brut(`${e.debut.slice(11, 16)} – ${isoMinute(fin).slice(11, 16)}${e.lieu ? "· " + e.lieu : ""}`)));
         col.append(bloc);
       });
       if (memeJourA(d, auj)) {
@@ -388,11 +387,11 @@
     for (let i = 0; i < 42; i++) {
       const d = plusJours(debut, i);
       const duJour = A.evenements.filter(e => memeJourA(debutDe(e), d)).sort((a, b) => (b.journee ? 1 : 0) - (a.journee ? 1 : 0) || a.debut.localeCompare(b.debut));
-      grille.append(el("div", { class: "jour" + (d.getMonth() !== premier.getMonth() ? " autre" : "") + (memeJourA(d, auj) ? " auj" : ""),
+      grille.append(el("div", { class: "jour " + (d.getMonth() !== premier.getMonth() ? " autre" : "") + (memeJourA(d, auj) ? " auj" : ""),
         onclick: () => editer(nouveau(d)), ...zoneDepot(d) },
         el("span", { class: "num" }, String(d.getDate())),
         duJour.slice(0, 3).map(puce),
-        duJour.length > 3 ? el("div", { class: "plus-rdv", onclick: ev => { ev.stopPropagation(); A.mode = "semaine"; A.ref = d; dessiner(); } }, t("+ {n} autres", { n: duJour.length - 3 })) : null));
+        duJour.length > 3 ? el("div", { class: "plus-rdv", onclick: ev => { ev.stopPropagation(); A.mode = "semaine"; A.ref = d; dessiner(); } }, t( " + {n} autres", { n: duJour.length - 3 })) : null));
     }
     return el("div", { class: "agenda-carte" }, grille);
   }
@@ -482,5 +481,5 @@
   setInterval(() => { if (S.vue === "agenda" && A.mode === "semaine" && !$("#voile").classList.contains("visible")) dessiner(); }, 300000);
 
   VUES.agenda = { afficher: () => charger().catch(err => toast(err.message, "erreur")),
-    titre: "Agenda", icone: "📅", groupe: "quotidien", ordre: 30 };
+    titre: "Agenda", icone: icone("calendar"), groupe: "quotidien", ordre: 30 };
 })();

@@ -32,15 +32,15 @@
     "Annuler": "Cancel",
     "Enregistrer": "Save",
     "Ajouter": "Add",
-    "✏️ Modifier l'extrait": "✏️ Edit snippet",
-    "✨ Nouvel extrait": "✨ New snippet",
-    "📋 Copié": "📋 Copied",
-    "✅ Extrait enregistré": "✅ Snippet saved",
-    "🗑️ Extrait supprimé": "🗑️ Snippet deleted",
+    " Modifier l'extrait": " Edit snippet",
+    " Nouvel extrait": " New snippet",
+    " Copié": " Copied",
+    " Extrait enregistré": " Snippet saved",
+    " Extrait supprimé": " Snippet deleted",
     "Supprimer cet extrait ?": "Delete this snippet?",
     "Il disparaît définitivement.": "It will be gone for good.",
-    "Pas encore d'extrait. Gardez ici vos commandes et bouts de code favoris ✍️":
-      "No snippet yet. Keep your favourite commands and code here ✍️",
+    "Pas encore d'extrait. Gardez ici vos commandes et bouts de code favoris ":
+      "No snippet yet. Keep your favourite commands and code here ",
     "Aucun extrait ne correspond.": "No snippet matches.",
     "Tab insère deux espaces.": "Tab inserts two spaces.",
     "{n} utilisations": "used {n} times",
@@ -103,11 +103,11 @@
     const tris = [["usage", "Les plus utilisés"], ["titre", "A → Z"], ["recent", "Récents"]];
     vue.replaceChildren(
       el("div", { class: "barre-vue" },
-        el("h2", {}, "✂️ " + t("Mes extraits") + " ", el("span", { class: "compte" }, String(X.total))),
+        el("h2", {}, t("Mes extraits") + " ", el("span", { class: "compte" }, String(X.total))),
         el("div", { class: "puces" }, tris.map(([v, lib]) =>
-          el("button", { class: "puce" + (X.tri === v ? " actif" : ""), onclick: () => { X.tri = v; recharger(); } }, lib))),
+          el("button", { class: "puce " + (X.tri === v ? " actif" : ""), onclick: () => { X.tri = v; recharger(); } }, lib))),
         el("div", { class: "espace" }),
-        el("div", { class: "champ-recherche" }, el("span", {}, "🔎"), recherche),
+        el("div", { class: "champ-recherche" }, el("span", {}, icone("search")), recherche),
         el("button", { class: "btn principal", onclick: () => editer(null) }, "＋ Extrait")),
       ...[filtres(), grille()].filter(Boolean));
     if (avaitFocus) { recherche.focus(); recherche.setSelectionRange(recherche.value.length, recherche.value.length); }
@@ -116,20 +116,20 @@
   function filtres() {
     if (!X.langages.length && !X.etiquettes.length) return null;
     const puce = (valeur, actuel, lib, choisir) =>
-      el("button", { class: "etiquette" + (valeur === actuel ? " actif" : ""), onclick: () => { choisir(valeur); recharger(); } }, lib);
+      el("button", { class: "etiquette " + (valeur === actuel ? " actif" : ""), onclick: () => { choisir(valeur); recharger(); } }, lib);
     return el("div", { class: "ex-filtres" },
       X.langages.length ? [el("span", { class: "lib" }, "Langage"),
         puce("", X.langage, "Tous", v => (X.langage = v)),
         X.langages.map(l => puce(l, X.langage, l, v => (X.langage = v)))] : null,
       X.etiquettes.length ? [el("span", { class: "lib", style: "margin-left:8px" }, "Étiquette"),
         puce("", X.etiquette, "Tous", v => (X.etiquette = v)),
-        X.etiquettes.map(l => puce(l, X.etiquette, "#" + l, v => (X.etiquette = v)))] : null);
+        X.etiquettes.map(l => puce(l, X.etiquette, "# " + l, v => (X.etiquette = v)))] : null);
   }
 
   function grille() {
     if (!X.extraits.length) {
-      return el("div", { class: "vide" }, X.total ? "🔍 " + t("Aucun extrait ne correspond.")
-        : "✂️ " + t("Pas encore d'extrait. Gardez ici vos commandes et bouts de code favoris ✍️"));
+      return el("div", { class: "vide" }, X.total ? t("Aucun extrait ne correspond.")
+        : t("Pas encore d'extrait. Gardez ici vos commandes et bouts de code favoris "));
     }
     return el("div", { class: "ex-grille" }, X.extraits.map((x, i) => carte(x, i)));
   }
@@ -142,19 +142,19 @@
     const long = x.contenu.split("\n").length > 8 || x.contenu.length > 600;
     return el("div", { class: "carte ex-carte", style: `animation-delay:${Math.min(i, 12) * 25}ms` },
       el("div", { class: "ex-tete" },
-        x.epingle ? el("span", { class: "ex-epingle", title: "Épinglé" }, "📌") : null,
+        x.epingle ? el("span", { class: "ex-epingle", title: "Épinglé" }, icone("pin")) : null,
         el("span", { class: "titre", title: x.titre }, x.titre),
         x.langage ? el("span", { class: "etiquette violet" }, x.langage) : null),
-      el("pre", { class: "ex-code" + (long ? " long" : ""), title: "Cliquer pour copier", onclick: () => copierExtrait(x) },
+      el("pre", { class: "ex-code " + (long ? " long" : ""), title: "Cliquer pour copier", onclick: () => copierExtrait(x) },
         x.contenu.length > 2000 ? x.contenu.slice(0, 2000) : x.contenu),
       x.etiquettes.length ? el("div", { class: "ex-bas" }, x.etiquettes.map(e =>
-        el("span", { class: "etiquette", style: "cursor:pointer", onclick: () => { X.etiquette = e; recharger(); } }, "#" + e))) : null,
+        el("span", { class: "etiquette", style: "cursor:pointer", onclick: () => { X.etiquette = e; recharger(); } }, "# " + e))) : null,
       el("div", { class: "ex-bas" },
-        el("span", { class: "usage" }, "📋 " + usage(x.utilisations || 0)),
-        el("button", { class: "icone-btn", title: x.epingle ? "Désépingler" : "Épingler", onclick: () => epingler(x) }, x.epingle ? "📍" : "📌"),
-        el("button", { class: "icone-btn", title: "Modifier", onclick: () => editer(x) }, "✏️"),
-        el("button", { class: "icone-btn danger", title: "Supprimer", onclick: () => supprimer(x) }, "🗑️"),
-        el("button", { class: "btn principal", onclick: () => copierExtrait(x) }, "📋 " + t("Copier"))));
+        el("span", { class: "usage" }, usage(x.utilisations || 0)),
+        el("button", { class: "icone-btn", title: x.epingle ? "Désépingler" : "Épingler", onclick: () => epingler(x) }, x.epingle ? "" : icone("pin")),
+        el("button", { class: "icone-btn", title: "Modifier", onclick: () => editer(x) }, icone("pencil")),
+        el("button", { class: "icone-btn danger", title: "Supprimer", onclick: () => supprimer(x) }, icone("trash-2")),
+        el("button", { class: "btn principal", onclick: () => copierExtrait(x) }, t("Copier"))));
   }
 
   async function copierExtrait(x) {
@@ -175,7 +175,7 @@
   }
 
   async function supprimer(x) {
-    if (!(await confirmer("🗑️", "Supprimer cet extrait ?", "Il disparaît définitivement.", "Supprimer"))) return;
+    if (!(await confirmer(icone("trash-2"), "Supprimer cet extrait ?", "Il disparaît définitivement.", "Supprimer"))) return;
     try { await api("/api/extraits/supprimer", { id: x.id }); toast("Extrait supprimé"); recharger(); }
     catch (e) { toast(e.message, "erreur"); }
   }
@@ -201,12 +201,12 @@
       } catch (e) { toast(e.message, "erreur"); }
     };
     fenetre([el("div", { class: "ex-editeur" },
-      el("h3", {}, x ? "✏️ Modifier l'extrait" : "✨ Nouvel extrait"),
+      el("h3", {}, x ? " Modifier l'extrait" : " Nouvel extrait"),
       el("label", { class: "champ" }, "Titre", titre),
       el("div", { style: "display:grid;grid-template-columns:1fr 1.4fr;gap:12px" },
         el("label", { class: "champ" }, "Langage", langage,
           el("datalist", { id: "ex-langages" }, X.langages.map(l => el("option", { value: l })))),
-        el("label", { class: "champ" }, el("span", {}, t("Étiquettes") + " ", el("small", {}, "(" + t("séparées par des virgules") + ")")), etiquettes)),
+        el("label", { class: "champ" }, el("span", {}, t("Étiquettes") + " ", el("small", {}, "( " + t("séparées par des virgules") + ")")), etiquettes)),
       el("label", { class: "champ" }, "Contenu", contenu, el("small", {}, "Tab insère deux espaces.")),
       el("label", { class: "ex-case" }, epingle, "Épingler en haut"),
       el("div", { class: "actions" },
@@ -216,5 +216,5 @@
     setTimeout(() => (x ? contenu : titre).focus(), 60);
   }
 
-  VUES.extraits = { afficher: recharger, titre: "Extraits", icone: "✂️", groupe: "outils", ordre: 20 };
+  VUES.extraits = { afficher: recharger, titre: "Extraits", icone: icone("scissors"), groupe: "outils", ordre: 20 };
 })();

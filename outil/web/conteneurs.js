@@ -152,9 +152,9 @@
 
   // -- affichage -----------------------------------------------------------------
   async function afficher() {
-    if (!D.donnees) racine().replaceChildren(el("div", { class: "vide" }, el("span", { class: "attente" }, "⏳"), " Lecture des conteneurs…"));
+    if (!D.donnees) racine().replaceChildren(el("div", { class: "vide" }, el("span", { class: "attente" }, icone("loader")), " Lecture des conteneurs…"));
     try { D.donnees = await api("/api/conteneurs/liste", {}); }
-    catch (e) { racine().replaceChildren(el("div", { class: "vide" }, "😕 " + e.message)); return; }
+    catch (e) { racine().replaceChildren(el("div", { class: "vide" }, e.message)); return; }
     if (!D.donnees.installe) return ecranAbsent();
     if (!D.donnees.demarre) return ecranArrete();
     dessiner();
@@ -162,25 +162,25 @@
 
   function ecranAbsent() {
     racine().replaceChildren(
-      el("div", { class: "barre-vue" }, el("h2", {}, "🐳 Docker")),
+      el("div", { class: "barre-vue" }, el("h2", {}, " Docker")),
       el("div", { class: "dk-ecran" },
-        el("div", { class: "gros" }, "🐳"),
+        el("div", { class: "gros" }, icone("container")),
         el("h3", {}, "Docker n'est pas installé"),
         el("p", {}, "Docker sert à faire tourner des bases de données et des applis dans des conteneurs, sans rien installer d'autre sur ce PC."),
         el("div", { class: "boutons" },
           el("button", { class: "btn principal", onclick: () => api("/api/conteneurs/telecharger", {}).catch(e => toast(e.message, "erreur")) },
-            "🌐 " + t("Télécharger Docker Desktop")),
-          el("button", { class: "btn", onclick: afficher }, "🔄 " + t("Réessayer")))));
+            t("Télécharger Docker Desktop")),
+          el("button", { class: "btn", onclick: afficher }, t("Réessayer")))));
   }
 
   function ecranArrete() {
     const boutons = [];
-    if (D.donnees.desktop) boutons.push(el("button", { class: "btn principal", onclick: e => demarrerDesktop(e.currentTarget) }, "▶️ " + t("Démarrer Docker Desktop")));
-    boutons.push(el("button", { class: "btn", onclick: afficher }, "🔄 " + t("Réessayer")));
+    if (D.donnees.desktop) boutons.push(el("button", { class: "btn principal", onclick: e => demarrerDesktop(e.currentTarget) }, "▶ " + t("Démarrer Docker Desktop")));
+    boutons.push(el("button", { class: "btn", onclick: afficher }, t("Réessayer")));
     racine().replaceChildren(
-      el("div", { class: "barre-vue" }, el("h2", {}, "🐳 Docker")),
+      el("div", { class: "barre-vue" }, el("h2", {}, " Docker")),
       el("div", { class: "dk-ecran" },
-        el("div", { class: "gros" }, "💤"),
+        el("div", { class: "gros" }, icone("moon")),
         el("h3", {}, "Docker Desktop n'est pas démarré"),
         el("p", {}, D.donnees.desktop ? "Démarrez-le pour voir vos conteneurs. Le premier démarrage peut prendre une minute."
           : selonSysteme("Lancez Docker Desktop depuis le menu Démarrer, puis réessayez.",
@@ -194,7 +194,7 @@
     catch (e) { toast(e.message, "erreur", 6000); return; }
     D.attente = true;
     bouton.disabled = true;
-    bouton.replaceChildren(el("span", { class: "attente" }, "⏳"), " " + t("Docker Desktop démarre…"));
+    bouton.replaceChildren(el("span", { class: "attente" }, icone("loader")), t("Docker Desktop démarre…"));
     const fin = Date.now() + 120000;
     try {
       while (Date.now() < fin) {
@@ -214,12 +214,12 @@
       oninput: e => { D.recherche = e.target.value; dessinerGroupes(); } });
     racine().replaceChildren(
       el("div", { class: "barre-vue" },
-        el("h2", {}, "🐳 Docker ", el("span", { class: "compte" }, String(D.donnees.nombre || 0))),
-        el("span", { class: "dk-version" }, "v" + D.donnees.version),
+        el("h2", {}, " Docker ", el("span", { class: "compte" }, String(D.donnees.nombre || 0))),
+        el("span", { class: "dk-version" }, "v " + D.donnees.version),
         el("div", { class: "espace" }),
-        el("div", { class: "champ-recherche" }, el("span", {}, "🔍"), recherche),
-        el("button", { class: "btn", onclick: fenetreRessources }, "💽 " + t("Images et espace disque")),
-        el("button", { class: "icone-btn", title: "Actualiser", onclick: afficher }, "🔄")),
+        el("div", { class: "champ-recherche" }, el("span", {}, icone("search")), recherche),
+        el("button", { class: "btn", onclick: fenetreRessources }, t("Images et espace disque")),
+        el("button", { class: "icone-btn", title: "Actualiser", onclick: afficher }, icone("refresh-cw"))),
       el("div", { id: "dk-groupes", class: "dk-groupes" }));
     dessinerGroupes();
   }
@@ -241,13 +241,13 @@
   function groupe(g, i) {
     const total = D.donnees.groupes.find(x => x.projet === g.projet).conteneurs.length;
     const tete = el("div", { class: "dk-tete" },
-      el("span", { class: "titre" }, g.projet ? "📦 " + g.projet : "🧊 " + t("Sans projet")),
+      el("span", { class: "titre" }, g.projet ? g.projet : " " + t("Sans projet")),
       el("span", { class: "compte-dk" }, t("{n} en marche sur {total}", { n: g.en_marche, total })),
       el("span", { class: "espace" }),
       g.projet ? el("button", { class: "btn", disabled: g.en_marche === total ? "" : null,
-        onclick: e => actionProjet("demarrer", g.projet, e.currentTarget) }, "▶️ " + t("Tout démarrer")) : null,
+        onclick: e => actionProjet("demarrer", g.projet, e.currentTarget) }, "▶ " + t("Tout démarrer")) : null,
       g.projet ? el("button", { class: "btn", disabled: g.en_marche === 0 ? "" : null,
-        onclick: e => actionProjet("arreter", g.projet, e.currentTarget) }, "⏹️ " + t("Tout arrêter")) : null);
+        onclick: e => actionProjet("arreter", g.projet, e.currentTarget) }, t("Tout arrêter")) : null);
     return el("div", { class: "dk-groupe", style: `animation-delay:${Math.min(i, 10) * 40}ms` }, tete, g.conteneurs.map(ligne));
   }
 
@@ -258,12 +258,12 @@
       ? el("button", { class: "dk-port", title: "Ouvrir dans le navigateur", onclick: () => ouvrir(p.hote) }, `${p.hote}→${p.conteneur}`)
       : el("span", { class: "dk-port" }, `${p.conteneur}/${p.proto}`));
     const actions = marche
-      ? [el("button", { class: "icone-btn", title: "Redémarrer", onclick: e => action("redemarrer", c, e.currentTarget) }, "🔁"),
-         el("button", { class: "icone-btn stop", title: "Arrêter", onclick: e => arreter(c, e.currentTarget) }, "⏹️")]
-      : [el("button", { class: "icone-btn go", title: "Démarrer", onclick: e => action("demarrer", c, e.currentTarget) }, "▶️")];
-    actions.push(el("button", { class: "icone-btn", title: "Journal", onclick: () => journal(c) }, "📜"));
+      ? [el("button", { class: "icone-btn", title: "Redémarrer", onclick: e => action("redemarrer", c, e.currentTarget) }, ""),
+         el("button", { class: "icone-btn stop", title: "Arrêter", onclick: e => arreter(c, e.currentTarget) }, "")]
+      : [el("button", { class: "icone-btn go", title: "Démarrer", onclick: e => action("demarrer", c, e.currentTarget) }, "▶")];
+    actions.push(el("button", { class: "icone-btn", title: "Journal", onclick: () => journal(c) }, ""));
     actions.push(el("button", { class: "icone-btn stop", title: marche ? "Arrêtez d'abord le conteneur" : "Supprimer",
-      disabled: marche ? "" : null, onclick: () => supprimer(c) }, "🗑️"));
+      disabled: marche ? "" : null, onclick: () => supprimer(c) }, icone("trash-2")));
     return el("div", { class: "dk-ligne" },
       el("span", { class: "point " + point }),
       el("div", { class: "dk-infos" },
@@ -277,29 +277,29 @@
   const MESSAGES = { demarrer: "Conteneur démarré", arreter: "Conteneur arrêté", redemarrer: "Conteneur redémarré" };
 
   async function action(nom, c, bouton) {
-    if (bouton) { bouton.disabled = true; bouton.replaceChildren(el("span", { class: "attente" }, "⏳")); }
-    try { await api("/api/conteneurs/" + nom, { id: c.id }); toast(t(MESSAGES[nom]), "succes"); }
+    if (bouton) { bouton.disabled = true; bouton.replaceChildren(el("span", { class: "attente" }, icone("loader"))); }
+    try { await api("/api/conteneurs/ " + nom, { id: c.id }); toast(t(MESSAGES[nom]), "succes"); }
     catch (e) { toast(e.message, "erreur", 8000); }
     afficher();
   }
 
   async function arreter(c, bouton) {
-    if (!(await confirmer("⏹️", "Arrêter ce conteneur ?", "Le service qu'il fait tourner ne répondra plus.", "Arrêter"))) return;
+    if (!(await confirmer("", "Arrêter ce conteneur ?", "Le service qu'il fait tourner ne répondra plus.", "Arrêter"))) return;
     action("arreter", c, bouton);
   }
 
   async function supprimer(c) {
-    if (!(await confirmer("🗑️", "Supprimer ce conteneur ?", "Le conteneur est retiré. Ses volumes et son image restent sur ce PC.", "Supprimer"))) return;
+    if (!(await confirmer(icone("trash-2"), "Supprimer ce conteneur ?", "Le conteneur est retiré. Ses volumes et son image restent sur ce PC.", "Supprimer"))) return;
     try { await api("/api/conteneurs/supprimer", { id: c.id }); toast(t("Conteneur supprimé"), "succes"); }
     catch (e) { toast(e.message, "erreur", 8000); }
     afficher();
   }
 
   async function actionProjet(nom, projet, bouton) {
-    if (nom === "arreter" && !(await confirmer("⏹️", "Arrêter tout le projet ?", t("Tous les conteneurs de « {projet} » seront arrêtés.", { projet }), "Tout arrêter"))) return;
-    if (bouton) { bouton.disabled = true; bouton.replaceChildren(el("span", { class: "attente" }, "⏳")); }
+    if (nom === "arreter" && !(await confirmer("", "Arrêter tout le projet ?", t("Tous les conteneurs de « {projet} » seront arrêtés.", { projet }), "Tout arrêter"))) return;
+    if (bouton) { bouton.disabled = true; bouton.replaceChildren(el("span", { class: "attente" }, icone("loader"))); }
     try {
-      await api("/api/conteneurs/projet/" + nom, { projet });
+      await api("/api/conteneurs/projet/ " + nom, { projet });
       toast(t(nom === "demarrer" ? "Projet démarré" : "Projet arrêté"), "succes");
     } catch (e) { toast(e.message, "erreur", 8000); }
     afficher();
@@ -321,26 +321,26 @@
     const lire = async () => {
       zone.textContent = t("Lecture…");
       try { texte = (await api("/api/conteneurs/journal", { id: c.id })).texte; zone.textContent = texte || t("Journal vide."); zone.scrollTop = zone.scrollHeight; }
-      catch (e) { zone.textContent = "😕 " + e.message; }
+      catch (e) { zone.textContent = " " + e.message; }
     };
     grandeFenetre([
-      el("h3", {}, "📜 " + t("Journal de {nom}", { nom: c.nom })),
+      el("h3", {}, t("Journal de {nom}", { nom: c.nom })),
       el("p", {}, "300 dernières lignes"),
       zone,
       el("div", { class: "actions" },
-        el("button", { class: "btn", onclick: () => copier(texte) }, "📋 " + t("Copier")),
-        el("button", { class: "btn", onclick: lire }, "🔄 " + t("Actualiser")),
+        el("button", { class: "btn", onclick: () => copier(texte) }, t("Copier")),
+        el("button", { class: "btn", onclick: lire }, t("Actualiser")),
         el("button", { class: "btn principal", onclick: fermer }, "Fermer"))]);
     lire();
   }
 
   async function fenetreRessources() {
-    const zone = el("div", { class: "dk-fenetre" }, el("p", {}, el("span", { class: "attente" }, "⏳"), " " + t("Lecture…")));
-    grandeFenetre([el("h3", {}, "💽 " + t("Images et espace disque")), zone,
+    const zone = el("div", { class: "dk-fenetre" }, el("p", {}, el("span", { class: "attente" }, icone("loader")), t("Lecture…")));
+    grandeFenetre([el("h3", {}, t("Images et espace disque")), zone,
       el("div", { class: "actions" }, el("button", { class: "btn principal", onclick: fermer }, "Fermer"))]);
     let r;
     try { r = await api("/api/conteneurs/ressources", {}); }
-    catch (e) { zone.replaceChildren(el("p", {}, "😕 " + e.message)); return; }
+    catch (e) { zone.replaceChildren(el("p", {}, e.message)); return; }
     const tableau = (entetes, lignes, mono = []) => el("table", { class: "dk-table" },
       el("thead", {}, el("tr", {}, entetes.map(h => el("th", {}, h)))),
       el("tbody", {}, lignes.map(l => el("tr", {}, l.map((v, i) => el("td", { class: mono.includes(i) ? "mono" : "" }, document.createTextNode(String(v ?? ""))))))));
@@ -353,5 +353,5 @@
         : el("p", {}, "Aucune image."));
   }
 
-  VUES.conteneurs = { afficher, titre: "Docker", icone: "🐳", groupe: "dev", ordre: 40 };
+  VUES.conteneurs = { afficher, titre: "Docker", icone: icone("container"), groupe: "dev", ordre: 40 };
 })();

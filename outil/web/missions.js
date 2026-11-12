@@ -306,7 +306,7 @@
   const stop = f => ev => { ev.stopPropagation(); f(); };
   const sansAccents = s => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
   const nomSource = id => (M.r?.sources || []).find(s => s.id === id)?.nom || (id === "manuel" ? t("Saisie à la main") : id);
-  const rechercheCourante = () => (M.vue || "").startsWith("r:") ? (M.r?.recherches || []).find(x => "r:" + x.id === M.vue) : null;
+  const rechercheCourante = () => (M.vue || "").startsWith("r:") ? (M.r?.recherches || []).find(x => "r: " + x.id === M.vue) : null;
 
   function jour(iso) { return new Date(String(iso).slice(0, 10) + "T00:00"); }
   function dateCourte(iso) {
@@ -333,14 +333,14 @@
   }
   function quand(isoHeure) {
     const d = new Date(isoHeure);
-    return d.toLocaleDateString(I18N.locale(), { day: "numeric", month: "short" }) + " " + d.toLocaleTimeString(I18N.locale(), { hour: "2-digit", minute: "2-digit" });
+    return d.toLocaleDateString(I18N.locale(), { day: "numeric", month: "short" }) + d.toLocaleTimeString(I18N.locale(), { hour: "2-digit", minute: "2-digit" });
   }
   function salaireTexte(x) {
     const s = x.salaire;
     if (!s) return x.salaire_texte || "";
     const k = n => n >= 1000 ? (n % 1000 ? (n / 1000).toFixed(1).replace(/\.0$/, "") : String(n / 1000)) + "k" : String(n);
-    const montant = s.min && s.max && k(s.min) !== k(s.max) ? k(s.min) + "–" + k(s.max) : k(s.min || s.max);
-    return montant + " " + s.devise + (s.periode ? " " + t(PERIODES_COURT[s.periode] || "") : "");
+    const montant = s.min && s.max && k(s.min) !== k(s.max) ? k(s.min) + "– " + k(s.max) : k(s.min || s.max);
+    return montant + s.devise + (s.periode ? " " + t(PERIODES_COURT[s.periode] || "") : "");
   }
   const zonesTexte = x => (x.zones || []).map(z => t(ZONES[z] || z)).join(", ");
 
@@ -392,9 +392,9 @@
         el("button", { class: "btn principal", onclick: () => editer(null) }, icone("plus"), "Nouvelle recherche")),
       el("div", { class: "mi-onglets" },
         el("div", { class: "puces" },
-          r.recherches.map(x => el("button", { class: "puce" + (M.vue === "r:" + x.id ? " actif" : ""), onclick: () => choisir("r:" + x.id) },
-            brut(x.nom), x.nouvelles ? el("span", { class: "mi-compte", id: "mi-n-" + x.id }, String(x.nouvelles)) : null)),
-          el("button", { class: "puce" + (M.vue === "suivi" ? " actif" : ""), onclick: () => choisir("suivi") },
+          r.recherches.map(x => el("button", { class: "puce " + (M.vue === "r:" + x.id ? " actif" : ""), onclick: () => choisir("r: " + x.id) },
+            brut(x.nom), x.nouvelles ? el("span", { class: "mi-compte", id: "mi-n- " + x.id }, String(x.nouvelles)) : null)),
+          el("button", { class: "puce " + (M.vue === "suivi" ? " actif" : ""), onclick: () => choisir("suivi") },
             icone("list-checks"), "Candidatures", r.suivi.length ? el("span", { class: "mi-compte neutre" }, String(r.suivi.length)) : null)),
         el("div", { class: "espace" }),
         el("div", { class: "mi-etat", id: "mi-etat" })),
@@ -441,13 +441,13 @@
     try { o = await api("/api/missions/offres", { recherche_id: rech.id }); }
     catch (e) { toast(e.message, "erreur"); return; }
     M.offres[rech.id] = o;
-    if (M.vue === "r:" + rech.id) dessinerListe(rech);
+    if (M.vue === "r: " + rech.id) dessinerListe(rech);
     // Les offres montrées passeront dans « Déjà vues » à la prochaine ouverture.
     const nouvelles = o.offres.filter(x => x.nouvelle).map(x => x.id);
     if (nouvelles.length) {
       api("/api/missions/voir", { recherche_id: rech.id, ids: nouvelles }).then(() => {
         rech.nouvelles = 0;
-        $("#mi-n-" + rech.id)?.remove();
+        $("#mi-n- " + rech.id)?.remove();
       }).catch(() => {});
     }
   }
@@ -481,7 +481,7 @@
     const ouverte = M.ouverts.has(x.id);
     const meta = [x.entreprise, zonesTexte(x), salaireTexte(x), nomSource(x.source)].filter(Boolean).join(" · ");
     const st = x.suivi ? STATUTS[x.suivi] : null;
-    const corps = el("div", { class: "ligne" + (ouverte ? " ouverte" : ""),
+    const corps = el("div", { class: "ligne " + (ouverte ? " ouverte" : ""),
       onclick: () => { ouverte ? M.ouverts.delete(x.id) : M.ouverts.add(x.id); dessinerListe(rechercheCourante()); } },
       el("span", { class: "ligne-ic mi-score", title: "Score" }, String(x.score)),
       el("div", { class: "ligne-corps" },
@@ -526,7 +526,7 @@
   function panneau(rech) {
     const critere = (lib, val) => el("div", { class: "mi-critere" }, el("span", { class: "lib" }, lib), el("span", { class: "val sans-icone" }, brut(val || t("Aucun"))));
     const liste = (dico, ids) => ids.map(v => t(dico[v] || v)).join(", ");
-    const salaire = rech.salaire_min ? rech.salaire_min.toLocaleString(I18N.locale()) + " " + rech.devise + " " + t(PERIODES[rech.periode] || "") : "";
+    const salaire = rech.salaire_min ? rech.salaire_min.toLocaleString(I18N.locale()) + rech.devise + " " + t(PERIODES[rech.periode] || "") : "";
     const o = M.offres[rech.id];
     return el("aside", { class: "mi-cote" },
       el("div", { class: "carte" },
@@ -611,7 +611,7 @@
       : null;
     fenetre([
       el("h3", {}, "Message de candidature"),
-      el("p", { class: "mi-aide sans-icone" }, brut(x.titre + (x.entreprise ? " · " + x.entreprise : "") + " · " + nomSource(x.source))),
+      el("p", { class: "mi-aide sans-icone" }, brut(x.titre + (x.entreprise ? "· " + x.entreprise : "") + "· " + nomSource(x.source))),
       el("p", { class: "mi-aide" }, "À adapter, puis copié pour le coller sur le site de l'offre."),
       zone,
       el("div", { class: "actions" },
@@ -767,7 +767,7 @@
         } catch (e) { coche.checked = !coche.checked; toast(e.message, "erreur"); }
       } });
       const etat = s.ok === false
-        ? el("span", { class: "etat-txt rouge sans-icone" }, brut(t("En erreur") + " : " + t(s.erreur)))
+        ? el("span", { class: "etat-txt rouge sans-icone" }, brut(t("En erreur") + ": " + t(s.erreur)))
         : el("span", {}, s.derniere ? t("Dernière collecte : {quand} · {n} offres", { quand: quand(s.derniere), n: s.nombre }) : t("Jamais collectée"));
       return el("label", { class: "ligne" },
         el("span", { class: "ligne-ic" }, coche),
@@ -814,9 +814,9 @@
       el("span", { class: "ligne-ic" }, icone(ic)),
       el("div", { class: "ligne-corps" },
         el("div", { class: "ligne-titre" }, el("span", { class: "sans-icone" }, brut(s.titre))),
-        el("div", { class: "ligne-meta sans-icone" }, brut(meta + (s.note ? " · " + s.note.split("\n")[0] : "")))),
+        el("div", { class: "ligne-meta sans-icone" }, brut(meta + (s.note ? "· " + s.note.split("\n")[0] : "")))),
       el("div", { class: "ligne-cote" },
-        s.relance ? el("span", { class: "mi-relance" + (due ? " due" : ""), title: "Relancer le" }, icone("bell"), dateCourte(s.relance)) : null,
+        s.relance ? el("span", { class: "mi-relance " + (due ? " due" : ""), title: "Relancer le" }, icone("bell"), dateCourte(s.relance)) : null,
         el("span", { class: "etat-txt " + couleur }, lib)),
       el("div", { class: "ligne-actions" },
         s.url ? el("button", { class: "icone-btn", title: "Ouvrir l'offre", onclick: stop(() => ouvrirOffre(s)) }, icone("external-link")) : null,
@@ -843,7 +843,7 @@
         if (r.relance && r.relance !== (r.relance_tache || "") && actif("taches")) {
           try {
             const tache = await api("/api/taches/creer", {
-              titre: t("Relancer : {poste}", { poste: r.titre }) + (r.entreprise ? " · " + r.entreprise : ""),
+              titre: t("Relancer : {poste}", { poste: r.titre }) + (r.entreprise ? "· " + r.entreprise : ""),
               echeance: r.relance, description: r.url || "", origine: "missions" });
             r = await api("/api/missions/suivi/enregistrer", { suivi: { id: r.id, statut: r.statut, tache_id: tache.id } });
             toast("Tâche de relance créée", "succes", 1800);
@@ -857,7 +857,7 @@
     };
     fenetre([
       el("h3", {}, s ? "Modifier la candidature" : "Ajouter une candidature"),
-      !manuel ? el("p", { class: "mi-aide sans-icone" }, brut(s.titre + (s.entreprise ? " · " + s.entreprise : "") + " · " + nomSource(s.source))) : null,
+      !manuel ? el("p", { class: "mi-aide sans-icone" }, brut(s.titre + (s.entreprise ? "· " + s.entreprise : "") + "· " + nomSource(s.source))) : null,
       el("div", { class: "mi-grille" },
         manuel ? [champ("Poste", poste, "large"), champ("Entreprise", entreprise), champ("Lien de l'offre", lien)] : null,
         champ("Statut", statut), champ("Date", date),
@@ -894,9 +894,9 @@
         montrerVue("missions");
       } },
         el("span", { class: "heure", title: "Score" }, String(o.score)),
-        el("span", { class: "nom sans-icone" }, brut(o.titre + (o.entreprise ? " · " + o.entreprise : ""))))),
+        el("span", { class: "nom sans-icone" }, brut(o.titre + (o.entreprise ? "· " + o.entreprise : ""))))),
       el("div", { class: "total sans-icone" }, brut(r.recherches.map(x =>
-        x.nom + " : " + t(x.nouvelles > 1 ? "{n} nouvelles" : "{n} nouvelle", { n: x.nouvelles })).join(" · "))));
+        x.nom + ": " + t(x.nouvelles > 1 ? "{n} nouvelles" : "{n} nouvelle", { n: x.nouvelles })).join(" · "))));
   }
 
   function commandes() {
@@ -907,7 +907,7 @@
     ];
     for (const x of M.r?.recherches || []) {
       liste.push({ icone: icone("briefcase"), titre: t("Missions : {nom}", { nom: x.nom }),
-        detail: x.nouvelles ? t(x.nouvelles > 1 ? "{n} nouvelles" : "{n} nouvelle", { n: x.nouvelles }) : "", action: ouvrir("r:" + x.id) });
+        detail: x.nouvelles ? t(x.nouvelles > 1 ? "{n} nouvelles" : "{n} nouvelle", { n: x.nouvelles }) : "", action: ouvrir("r: " + x.id) });
     }
     liste.push({ icone: icone("list-checks"), titre: "Suivi des candidatures", detail: "Missions", action: ouvrir("suivi") });
     return liste;

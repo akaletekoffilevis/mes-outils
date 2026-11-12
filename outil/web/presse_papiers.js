@@ -6,9 +6,9 @@
     "Presse-papiers": "Clipboard",
     "Historique du presse-papiers": "Clipboard history",
     "Chercher…": "Search…",
-    "⏸ Pause": "⏸ Pause",
+    " Pause": " Pause",
     "▶ Reprendre": "▶ Resume",
-    "🧹 Tout effacer": "🧹 Clear all",
+    " Tout effacer": " Clear all",
     "Gardé seulement en mémoire, effacé à la fermeture de Mes outils. Les mots de passe copiés depuis le coffre (et depuis la plupart des gestionnaires de mots de passe) n'y entrent pas.":
       "Kept in memory only, erased when Mes outils closes. Passwords copied from the vault (and from most password managers) never get in.",
     "En pause : les textes copiés ne sont pas gardés.": "Paused: copied texts are not kept.",
@@ -19,7 +19,7 @@
     "Désépingler": "Unpin",
     "Supprimer": "Delete",
     "Épinglé": "Pinned",
-    "📋 Recopié": "📋 Copied again",
+    " Recopié": " Copied again",
     "Tout effacer ?": "Clear everything?",
     "Les éléments épinglés sont gardés.": "Pinned items are kept.",
     "Effacer": "Clear",
@@ -93,47 +93,47 @@
     // un message clair à la place de l'historique.
     const indisponible = r.disponible === false;
     const bandeau = indisponible
-      ? el("div", { class: "pp-bandeau pause" }, el("span", {}, "⏸"), el("span", {}, r.message || "Le presse-papiers ne répond pas."))
-      : el("div", { class: "pp-bandeau" + (r.actif ? "" : " pause") }, el("span", {}, r.actif ? "🔒" : "⏸"),
+      ? el("div", { class: "pp-bandeau pause" }, el("span", {}, icone("pause")), el("span", {}, r.message || "Le presse-papiers ne répond pas."))
+      : el("div", { class: "pp-bandeau " + (r.actif ? "" : " pause") }, el("span", {}, r.actif ? icone("lock") : icone("pause")),
         el("span", {}, r.actif
           ? "Gardé seulement en mémoire, effacé à la fermeture de Mes outils. Les mots de passe copiés depuis le coffre (et depuis la plupart des gestionnaires de mots de passe) n'y entrent pas."
           : "En pause : les textes copiés ne sont pas gardés."));
     racine().replaceChildren(
       el("div", { class: "barre-vue" },
-        el("h2", {}, "📋 " + t("Historique du presse-papiers") + " ",
+        el("h2", {}, t("Historique du presse-papiers") + " ",
           el("span", { class: "compte", title: t("{n} / {max} éléments", { n: libres, max: r.limite }) }, String(r.elements.length))),
         el("div", { class: "espace" }),
-        el("div", { class: "champ-recherche" }, el("span", {}, "🔎"), recherche),
-        el("button", { class: "btn" + (r.actif ? "" : " actif"), onclick: basculerPause, disabled: indisponible ? "" : null },
-          r.actif ? "⏸ Pause" : "▶ Reprendre"),
-        el("button", { class: "btn", onclick: toutEffacer, disabled: r.elements.length ? null : "" }, "🧹 Tout effacer")),
+        el("div", { class: "champ-recherche" }, el("span", {}, icone("search")), recherche),
+        el("button", { class: "btn " + (r.actif ? "" : " actif"), onclick: basculerPause, disabled: indisponible ? "" : null },
+          r.actif ? " Pause" : "▶ Reprendre"),
+        el("button", { class: "btn", onclick: toutEffacer, disabled: r.elements.length ? null : "" }, " Tout effacer")),
       bandeau,
       indisponible && !elements.length ? null
         : elements.length ? el("div", { class: "pp-liste" }, elements.map((e, i) => ligne(e, i)))
-        : el("div", { class: "vide" }, P.recherche ? "🔍 " + t("Aucun élément ne correspond.")
-          : "📋 " + t("Rien pour l'instant : copiez un texte (Ctrl + C), il apparaîtra ici.")));
+        : el("div", { class: "vide" }, P.recherche ? t("Aucun élément ne correspond.")
+          : t("Rien pour l'instant : copiez un texte (Ctrl + C), il apparaîtra ici.")));
     if (avaitFocus) { recherche.focus(); recherche.setSelectionRange(recherche.value.length, recherche.value.length); }
   }
 
   function ligne(e, i) {
     const nombre = new Intl.NumberFormat(I18N.locale()).format(e.longueur);
-    return el("div", { class: "carte pp-element" + (e.epingle ? " epingle" : ""), style: `animation-delay:${Math.min(i, 10) * 20}ms` },
+    return el("div", { class: "carte pp-element " + (e.epingle ? " epingle" : ""), style: `animation-delay:${Math.min(i, 10) * 20}ms` },
       heure(e.quand),
       el("div", { class: "pp-corps", title: "Recopier", onclick: () => recopier(e) },
         el("pre", { class: "pp-apercu" }, e.apercu),
         el("div", { class: "pp-infos" },
-          e.epingle ? el("span", {}, "📌 " + t("Épinglé")) : null,
+          e.epingle ? el("span", {}, t("Épinglé")) : null,
           el("span", {}, t("{n} caractères", { n: nombre })),
           e.lignes > 1 ? el("span", {}, t("{n} lignes", { n: e.lignes })) : null)),
       el("div", { class: "pp-boutons" },
-        el("button", { class: "icone-btn", title: "Recopier", onclick: () => recopier(e) }, "📋"),
-        el("button", { class: "icone-btn" + (e.epingle ? " actif" : ""), title: e.epingle ? "Désépingler" : "Épingler",
-          onclick: () => action("epingler", { id: e.id, epingle: !e.epingle }) }, "📌"),
-        el("button", { class: "icone-btn danger", title: "Supprimer", onclick: () => action("supprimer", { id: e.id }) }, "✕")));
+        el("button", { class: "icone-btn", title: "Recopier", onclick: () => recopier(e) }, icone("clipboard")),
+        el("button", { class: "icone-btn " + (e.epingle ? " actif" : ""), title: e.epingle ? "Désépingler" : "Épingler",
+          onclick: () => action("epingler", { id: e.id, epingle: !e.epingle }) }, icone("pin")),
+        el("button", { class: "icone-btn danger", title: "Supprimer", onclick: () => action("supprimer", { id: e.id }) }, icone("x"))));
   }
 
   async function action(nom, donnees) {
-    try { await api("/api/presse_papiers/" + nom, donnees); recharger(); }
+    try { await api("/api/presse_papiers/ " + nom, donnees); recharger(); }
     catch (e) { toast(e.message, "erreur"); recharger(); }
   }
 
@@ -148,9 +148,9 @@
   }
 
   async function toutEffacer() {
-    if (!(await confirmer("🧹", "Tout effacer ?", "Les éléments épinglés sont gardés.", "Effacer"))) return;
+    if (!(await confirmer(icone("brush"), "Tout effacer ?", "Les éléments épinglés sont gardés.", "Effacer"))) return;
     await action("vider", {});
   }
 
-  VUES.presse_papiers = { afficher: () => recharger(true), titre: "Presse-papiers", icone: "📋", groupe: "outils", ordre: 30 };
+  VUES.presse_papiers = { afficher: () => recharger(true), titre: "Presse-papiers", icone: icone("clipboard"), groupe: "outils", ordre: 30 };
 })();

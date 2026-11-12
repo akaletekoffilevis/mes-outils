@@ -153,7 +153,7 @@
       el("input", { type: "range", min: 0, max: 1, step: 0.01, value: audio.volume, oninput: e => { audio.volume = Number(e.target.value); } }));
     const liste = M.pistes.length
       ? el("div", { class: "musique-liste" }, M.pistes.map((p, i) =>
-          el("div", { class: "musique-ligne" + (i === M.index ? " actif" : ""), onclick: () => jouer(i) },
+          el("div", { class: "musique-ligne " + (i === M.index ? " actif" : ""), onclick: () => jouer(i) },
             el("span", { class: "numero" }, String(i + 1)),
             el("span", { class: "titre" }, p.titre),
             el("button", { class: "icone-btn suppr", title: "Supprimer", onclick: e => { e.stopPropagation(); supprimer(p.id); } }, icone("trash-2")))))
@@ -161,8 +161,8 @@
           el("div", {}, icone("music")), el("p", {}, t("Aucune piste pour l'instant.")), el("p", { class: "aide" }, t("Ajoutez des fichiers audio (mp3, wav, ogg, m4a, flac…)")));
 
     $("#vue-musique").replaceChildren(
-      el("div", { class: "barre-vue" }, el("h2", {}, icone("music"), " " + t("Musique")), el("span", { class: "espace" }),
-        el("button", { class: "btn", onclick: ajouter }, icone("plus"), " " + t("Ajouter des fichiers")),
+      el("div", { class: "barre-vue" }, el("h2", {}, icone("music"), t("Musique")), el("span", { class: "espace" }),
+        el("button", { class: "btn", onclick: ajouter }, icone("plus"), t("Ajouter des fichiers")),
         M.pistes.length ? el("button", { class: "btn discret", onclick: vider }, "Vider") : null),
       el("div", { class: "musique" },
         el("div", { class: "musique-lecture" },

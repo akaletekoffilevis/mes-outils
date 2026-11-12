@@ -44,11 +44,11 @@
     "Ouvrir l'onglet Mails": "Open the Mails tab",
     "À propos": "About",
     "Version {v}": "Version {v}",
-    "🌐 Code source sur GitHub": "🌐 Source code on GitHub",
-    "🔄 Rechercher une mise à jour": "🔄 Check for updates",
+    " Code source sur GitHub": " Source code on GitHub",
+    " Rechercher une mise à jour": " Check for updates",
     "Recherche…": "Checking…",
-    "✅ Mis à jour : la page va se recharger": "✅ Updated: the page will reload",
-    "Déjà à jour 👍": "Already up to date 👍",
+    " Mis à jour : la page va se recharger": " Updated: the page will reload",
+    "Déjà à jour ": "Already up to date ",
     "Enregistré": "Saved",
     "Choisir un dossier de projets": "Choose a projects folder",
     "Version {v} disponible": "Version {v} available",
@@ -58,7 +58,7 @@
     "Téléchargement de la version {v}…": "Downloading version {v}…",
     "Mise à jour de Mes outils": "Updating Mes outils",
     "Installation en cours : Mes outils redémarre tout seul, cette page se rechargera.": "Installing: Mes outils restarts by itself, this page will reload.",
-    "✅ Version {v} installée": "✅ Version {v} installed",
+    " Version {v} installée": " Version {v} installed",
     "La mise à jour prend du temps : relancez Mes outils depuis son raccourci.": "The update is taking a while: restart Mes outils from its shortcut.",
     "Téléchargement de la mise à jour impossible (Internet ?).": "Unable to download the update (Internet?).",
     "Installateur introuvable dans la dernière version publiée.": "Installer not found in the latest release.",
@@ -140,7 +140,7 @@
   }
 
   function carte(icone, titre, ...contenu) {
-    return el("div", { class: "carte-reg" }, el("h3", {}, icone + " " + t(titre)), ...contenu);
+    return el("div", { class: "carte-reg" }, el("h3", {}, icone + t(titre)), ...contenu);
   }
 
   function dessiner() {
@@ -150,27 +150,27 @@
     prenom.addEventListener("input", () => { clearTimeout(minuterie); minuterie = setTimeout(() => enregistrer({ prenom: prenom.value }), 700); });
 
     const langues = el("div", { class: "langues-reg" }, [["fr", "Français"], ["en", "English"]].map(([code, nom]) =>
-      el("button", { class: "btn" + (i.langue === code ? " actif" : ""), onclick: () => { if (code !== i.langue) enregistrer({ langue: code }, true); } }, nom)));
+      el("button", { class: "btn " + (i.langue === code ? " actif" : ""), onclick: () => { if (code !== i.langue) enregistrer({ langue: code }, true); } }, nom)));
 
     const themes = el("div", { class: "langues-reg" }, [["auto", "Automatique"], ["clair", "Clair"], ["sombre", "Sombre"], ["sepia", "Sépia"], ["contraste", "Contrasté"]].map(([code, nom]) =>
-      el("button", { class: "btn" + (S.theme === code ? " actif" : ""), onclick: async () => { await changerTheme(code); dessiner(); } }, icone(ICONES_THEMES[code]), t(nom))));
+      el("button", { class: "btn " + (S.theme === code ? " actif" : ""), onclick: async () => { await changerTheme(code); dessiner(); } }, icone(ICONES_THEMES[code]), t(nom))));
     const COULEURS_ACCENT = { violet: "#5b5bd6", bleu: "#2f7ae5", vert: "#12a37a", corail: "#e5603e", rose: "#d6457a" };
     const accents = el("div", { class: "langues-reg" }, [["violet", "Violet"], ["bleu", "Bleu"], ["vert", "Vert"], ["corail", "Corail"], ["rose", "Rose"]].map(([code, nom]) =>
-      el("button", { class: "btn" + (S.accent === code ? " actif" : ""), onclick: async () => { await changerAccent(code); dessiner(); } },
+      el("button", { class: "btn " + (S.accent === code ? " actif" : ""), onclick: async () => { await changerAccent(code); dessiner(); } },
         el("span", { style: `background:${COULEURS_ACCENT[code]}; width:14px; height:14px; border-radius:50%; display:inline-block; border:2px solid var(--carte); box-shadow:0 0 0 1px var(--ligne)` }),
         t(nom))));
     const densites = el("div", { class: "langues-reg" }, [["confortable", "Confortable"], ["compact", "Compact"]].map(([code, nom]) =>
-      el("button", { class: "btn" + (S.densite === code ? " actif" : ""), onclick: async () => { await changerDensite(code); dessiner(); } }, t(nom))));
+      el("button", { class: "btn " + (S.densite === code ? " actif" : ""), onclick: async () => { await changerDensite(code); dessiner(); } }, t(nom))));
     const vuesTaches = el("div", { class: "langues-reg" }, [["liste", "Liste"], ["tableau", "Tableau"]].map(([code, nom]) =>
-      el("button", { class: "btn" + (S.config?.vue_taches === code ? " actif" : ""), onclick: async () => {
+      el("button", { class: "btn " + (S.config?.vue_taches === code ? " actif" : ""), onclick: async () => {
         await enregistrer({ vue_taches: code }); dessiner();
       } }, t(nom))));
     const prioritesTaches = el("div", { class: "langues-reg" }, [["basse", "Basse"], ["normale", "Normale"], ["haute", "Haute"]].map(([code, nom]) =>
-      el("button", { class: "btn" + (S.config?.priorite_taches === code ? " actif" : ""), onclick: async () => {
+      el("button", { class: "btn " + (S.config?.priorite_taches === code ? " actif" : ""), onclick: async () => {
         await enregistrer({ priorite_taches: code }); dessiner();
       } }, t(nom))));
     const rappelsAgenda = el("div", { class: "langues-reg" }, [["", "Aucun"], ["0", "À l'heure"], ["5", "5 min"], ["15", "15 min"], ["30", "30 min"], ["60", "1 h"], ["1440", "La veille"]].map(([code, nom]) =>
-      el("button", { class: "btn" + (String(S.config?.rappel_agenda ?? "15") === code ? " actif" : ""), onclick: async () => {
+      el("button", { class: "btn " + (String(S.config?.rappel_agenda ?? "15") === code ? " actif" : ""), onclick: async () => {
         await enregistrer({ rappel_agenda: code }); dessiner();
       } }, t(nom))));
 
@@ -182,11 +182,11 @@
         el("input", { type: "checkbox", checked: masques.has(o.nom) ? null : "", onchange: e => {
           if (e.target.checked) masques.delete(o.nom); else masques.add(o.nom);
           enregistrer({ onglets_masques: [...masques] });
-        } }), iconeOnglet(o.icone), " " + I18N.traduire(o.titre))));
+        } }), iconeOnglet(o.icone), I18N.traduire(o.titre))));
 
     const listeDossiers = el("div", { class: "liste-reg" },
-      i.dossiers_projets.length ? i.dossiers_projets.map(d => el("div", {}, "📁", el("span", { title: d }, d),
-        el("button", { class: "icone-btn", title: "Retirer", onclick: () => majDossiers(i.dossiers_projets.filter(x => x !== d)) }, "✕")))
+      i.dossiers_projets.length ? i.dossiers_projets.map(d => el("div", {}, icone("folder"), el("span", { title: d }, d),
+        el("button", { class: "icone-btn", title: "Retirer", onclick: () => majDossiers(i.dossiers_projets.filter(x => x !== d)) }, icone("x"))))
         : el("div", { style: "color:var(--doux)" }, "Aucun dossier pour l'instant."));
     const ajoutDossier = el("button", { class: "btn", onclick: async () => {
       const chemin = await choisirDossier("Choisir un dossier de projets");
@@ -206,7 +206,7 @@
         if (r.nouvelle && r.automatique) {
           // Programme installé : téléchargement, installation et redémarrage
           // tout seuls ; réglages et données gardés.
-          if (await confirmer("🎁", t("Version {v} disponible", { v: r.nouvelle }),
+          if (await confirmer("", t("Version {v} disponible", { v: r.nouvelle }),
               t("Installer maintenant ? Mes outils se ferme quelques secondes puis redémarre tout seul. Vos réglages et vos données sont gardés."), "Installer")) {
             await installerMiseAJour(r.nouvelle);
           }
@@ -216,19 +216,19 @@
           const texte = i.systeme === "linux"
             ? "Télécharger la nouvelle AppImage ? Quittez la bulle (clic droit › Quitter la bulle), rendez le fichier exécutable (Propriétés › Exécutable comme un programme), puis lancez-le : vos réglages et vos données sont gardés."
             : "Télécharger le nouvel installateur ? Fermez la bulle (clic droit › Quitter), puis lancez-le : vos réglages et vos données sont gardés.";
-          if (await confirmer("🎁", t("Version {v} disponible", { v: r.nouvelle }), t(texte), "Télécharger")) {
+          if (await confirmer("", t("Version {v} disponible", { v: r.nouvelle }), t(texte), "Télécharger")) {
             await api("/api/github/ouvrir_page", { url: r.telecharger });
           }
-        } else if (r.change) { toast(t("✅ Mis à jour : la page va se recharger"), "succes", 3000); toast(t("Relancez la bulle (clic droit › Quitter, puis le raccourci) pour finir la mise à jour."), "", 9000); setTimeout(() => location.reload(), 2500); }
-        else toast(t("Déjà à jour 👍"), "succes");
+        } else if (r.change) { toast(t(" Mis à jour : la page va se recharger"), "succes", 3000); toast(t("Relancez la bulle (clic droit › Quitter, puis le raccourci) pour finir la mise à jour."), "", 9000); setTimeout(() => location.reload(), 2500); }
+        else toast(t("Déjà à jour "), "succes");
       } catch (e) { toast(e.message, "erreur", 7000); }
-      finally { majBtn.disabled = false; majBtn.textContent = t("🔄 Rechercher une mise à jour"); }
-    } }, "🔄 Rechercher une mise à jour");
+      finally { majBtn.disabled = false; majBtn.textContent = t(" Rechercher une mise à jour"); }
+    } }, " Rechercher une mise à jour");
 
     $("#vue-reglages").replaceChildren(
-      el("div", { class: "barre-vue" }, el("h2", {}, "⚙️ " + t("Réglages"))),
+      el("div", { class: "barre-vue" }, el("h2", {}, t("Réglages"))),
       el("div", { class: "reglages" },
-        carte("👤", "Profil",
+        carte(icone("user"), "Profil",
           el("label", { class: "champ" }, "Prénom (pour la salutation)", prenom),
           el("label", { class: "champ" }, "Langue", langues),
           el("label", { class: "champ" }, "Thème", themes),
@@ -238,10 +238,10 @@
           el("label", { class: "champ" }, "Priorité par défaut des tâches", prioritesTaches),
           el("label", { class: "champ" }, "Rappel par défaut de l'agenda", rappelsAgenda),
           el("label", { class: "champ" }, "Accent", accents)),
-        carte("🗂️", "Applications", el("p", { class: "aide" }, "Choisissez les applications du menu, comme dans un ERP : les autres disparaissent, leurs données restent."),
+        carte("", "Applications", el("p", { class: "aide" }, "Choisissez les applications du menu, comme dans un ERP : les autres disparaissent, leurs données restent."),
           i.profil && PROFILS[i.profil] ? el("p", { class: "aide" }, t("Votre métier : {p}", { p: t(PROFILS[i.profil].titre) })) : null,
           el("button", { class: "btn", onclick: () => montrerVue("applications") }, "Choisir mes applications")),
-        carte("🔔", "Notifications", el("p", { class: "aide" }, "Choisissez les applications qui peuvent vous envoyer des rappels par la bulle."),
+        carte("", "Notifications", el("p", { class: "aide" }, "Choisissez les applications qui peuvent vous envoyer des rappels par la bulle."),
           el("div", { class: "cases-reg" }, [
             ["contacts", "Relances (contacts)"],
             ["depenses", "Budget dépassé"],
@@ -261,14 +261,14 @@
                 await enregistrer({ notifications_desactivees: [...desac] });
               } }), libelle);
           }))),
-        carte("📁", "Dossiers de projets", el("p", { class: "aide" }, "Les onglets GitHub, Projets et État Git y cherchent vos projets (le dossier et ses sous-dossiers directs)."),
+        carte(icone("folder"), "Dossiers de projets", el("p", { class: "aide" }, "Les onglets GitHub, Projets et État Git y cherchent vos projets (le dossier et ses sous-dossiers directs)."),
           listeDossiers, ajoutDossier),
         i.systeme === "linux" ? carteLinux(i, interrupteur)
-          : carte("💻", "Windows", interrupteur("demarrage", "Lancer la bulle au démarrage de Windows"),
+          : carte(icone("laptop"), "Windows", interrupteur("demarrage", "Lancer la bulle au démarrage de Windows"),
             interrupteur("bureau", "Raccourci « Mes outils » sur le Bureau")),
-        carte("✉️", "Boîte mail", el("p", { class: "aide" }, "La boîte mail se connecte dans l'onglet Mails."),
+        carte(icone("mail"), "Boîte mail", el("p", { class: "aide" }, "La boîte mail se connecte dans l'onglet Mails."),
           el("button", { class: "btn", onclick: () => montrerVue("mails") }, "Ouvrir l'onglet Mails")),
-        carte("⌨️", "Raccourcis clavier", el("p", { class: "aide" }, "Les raccourcis disponibles dans l'application."),
+        carte("", "Raccourcis clavier", el("p", { class: "aide" }, "Les raccourcis disponibles dans l'application."),
           el("div", { class: "liste-reg" },
             el("div", {}, el("span", {}, "Ctrl + K"), el("span", {}, "Palette de commandes (aller à un onglet, lancer un outil, une action)")),
             el("div", {}, el("span", {}, "Ctrl + Entrée"), el("span", {}, "Valider dans une fenêtre")),
@@ -277,9 +277,9 @@
             el("div", {}, el("span", {}, "Entrée"), el("span", {}, "Ouvrir l'élément sélectionné")),
             el("div", {}, el("span", {}, "Ctrl + glisser"), el("span", {}, "Dupliquer un rendez-vous (Agenda)")),
             el("div", {}, el("span", {}, "Glisser-déposer"), el("span", {}, "Réorganiser les tuiles, le menu, les notes, les contacts")))),
-        carte("🧰", "À propos", el("p", { class: "aide" }, t("Version {v}", { v: i.version })),
+        carte(icone("wrench"), "À propos", el("p", { class: "aide" }, t("Version {v}", { v: i.version })),
           el("div", { style: "display:flex;gap:8px;flex-wrap:wrap" },
-            el("button", { class: "btn", onclick: () => api("/api/github/ouvrir_page", { url: i.depot }).catch(e => toast(e.message, "erreur")) }, "🌐 Code source sur GitHub"),
+            el("button", { class: "btn", onclick: () => api("/api/github/ouvrir_page", { url: i.depot }).catch(e => toast(e.message, "erreur")) }, " Code source sur GitHub"),
             majBtn))));
   }
 
@@ -288,11 +288,11 @@
   function carteLinux(i, interrupteur) {
     const presences = el("div", { class: "langues-reg" }, [["bulle_icone", "Bulle et icône"], ["bulle", "Bulle seule"], ["icone", "Icône seule"]]
       .map(([code, nom]) => el("button", {
-        class: "btn" + (i.presence === code ? " actif" : ""),
+        class: "btn " + (i.presence === code ? " actif" : ""),
         disabled: !i.icone_possible && code !== "bulle" ? "" : null,
         onclick: async () => { if (code !== i.presence) { await enregistrer({ presence: code }); dessiner(); } },
       }, nom)));
-    return carte("💻", "Linux",
+    return carte(icone("laptop"), "Linux",
       interrupteur("demarrage", "Lancer Mes outils à l'ouverture de session"),
       interrupteur("menu", "Mes outils dans le menu des applications"),
       el("label", { class: "champ" }, "Affichage", presences),
@@ -304,17 +304,17 @@
   /** Lance la mise à jour, puis attend que la nouvelle version réponde. */
   async function installerMiseAJour(version) {
     const etat = el("p", {}, t("Téléchargement de la version {v}…", { v: version }));
-    fenetre([el("div", { class: "gros" }, "⏳"), el("h3", {}, t("Mise à jour de Mes outils")), etat], true);
+    fenetre([el("div", { class: "gros" }, icone("loader")), el("h3", {}, t("Mise à jour de Mes outils")), etat], true);
     let r;
     try { r = await api("/api/reglages/installer_mise_a_jour", {}); }
     catch (e) { fermer(); toast(e.message, "erreur", 8000); return; }
-    if (r.a_jour) { fermer(); toast(t("Déjà à jour 👍"), "succes"); return; }
+    if (r.a_jour) { fermer(); toast(t("Déjà à jour "), "succes"); return; }
     etat.textContent = t("Installation en cours : Mes outils redémarre tout seul, cette page se rechargera.");
     const debut = Date.now();
     const attendre = async () => {
       try {
         const infos = await api("/api/reglages/lire", {});
-        if (infos.version === version) { etat.textContent = t("✅ Version {v} installée", { v: version }); setTimeout(() => location.reload(), 1200); return; }
+        if (infos.version === version) { etat.textContent = t(" Version {v} installée", { v: version }); setTimeout(() => location.reload(), 1200); return; }
       } catch { /* Mes outils est en train de redémarrer */ }
       if (Date.now() - debut > 180000) {
         etat.textContent = t(R.infos && R.infos.systeme === "linux"
@@ -333,5 +333,5 @@
   }
 
   VUES.reglages = { afficher: () => charger().catch(e => toast(e.message, "erreur")),
-    titre: "Réglages", icone: "⚙️", groupe: "systeme", ordre: 90 };
+    titre: "Réglages", icone: icone("settings"), groupe: "systeme", ordre: 90 };
 })();

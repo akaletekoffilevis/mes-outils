@@ -264,7 +264,7 @@
     if (E.filtre !== "toutes" && !presentes.includes(E.filtre)) E.filtre = "toutes";
     return el("div", { class: "puces" },
       [["toutes", "Toutes"], ...presentes.map(c => [c, libCategorie(c)])].map(([v, lib]) =>
-        el("button", { class: "puce" + (E.filtre === v ? " actif" : ""), onclick: () => { E.filtre = v; dessiner(); } }, lib)));
+        el("button", { class: "puce " + (E.filtre === v ? " actif" : ""), onclick: () => { E.filtre = v; dessiner(); } }, lib)));
   }
 
   function dessinerListe() {
@@ -287,7 +287,7 @@
     const actif = x.statut === "actif" || x.statut === "a_resilier";
     const meta = [x.fournisseur, frequence(x), x.paiement].filter(Boolean).join(" · ");
     const stop = f => ev => { ev.stopPropagation(); f(); };
-    const corps = el("div", { class: "ligne" + (ouverte ? " ouverte" : "") + (actif ? "" : " eteinte"),
+    const corps = el("div", { class: "ligne " + (ouverte ? " ouverte" : "") + (actif ? "" : " eteinte"),
       onclick: () => { ouverte ? E.ouverts.delete(x.id) : E.ouverts.add(x.id); dessinerListe(); } },
       el("span", { class: "ligne-ic", title: libCategorie(x.categorie) }, icCategorie(x.categorie)),
       el("div", { class: "ligne-corps" },
@@ -320,7 +320,7 @@
         champ("Catégorie", libCategorie(x.categorie)),
         champ("Coût mensuel", x.cout_mensuel_centimes ? argent(x.cout_mensuel_centimes, x.devise) : null),
         champ("Reconduction tacite", x.tacite
-          ? t("{n} jours de préavis", { n: x.preavis_jours }) + " · " + t("Résilier avant le {date}", { date: dateLongue(x.limite_resiliation) })
+          ? t("{n} jours de préavis", { n: x.preavis_jours }) + "· " + t("Résilier avant le {date}", { date: dateLongue(x.limite_resiliation) })
           : (x.frequence === "unique" ? null : t("Sans reconduction tacite"))),
         champ("Rappel", t("{n} jours avant", { n: x.rappel_jours })),
         champ("Statut", t(STATUTS[x.statut])),
@@ -330,7 +330,7 @@
         el("div", { class: "large" }, el("div", { class: "lib" }, "Derniers paiements"),
           historique.length
             ? el("div", { class: "ech-historique" }, historique.map(h =>
-                el("span", {}, dateCourte(h.echeance) + " · " + argent(h.montant_centimes, x.devise))))
+                el("span", {}, dateCourte(h.echeance) + "· " + argent(h.montant_centimes, x.devise))))
             : el("div", { class: "val", style: "color:var(--gris)" }, "Aucun paiement enregistré."))),
       el("div", { class: "ech-boutons" },
         x.lien ? el("button", { class: "btn petit", onclick: () => window.open(x.lien, "_blank", "noopener") }, icone("external-link"), "Ouvrir l'espace client") : null,
@@ -483,7 +483,7 @@
       action: () => { montrerVue("echeances"); setTimeout(() => editer(null), 80); } }];
     for (const x of (E.r?.elements || []).filter(x => x.groupe === "semaine" && (x.statut === "actif" || x.statut === "a_resilier")).slice(0, 5)) {
       liste.push({ icone: icone("check"), titre: t("Marquer payé : {nom}", { nom: x.nom }),
-        detail: dateCourte(x.prochaine) + " · " + argent(x.montant_centimes, x.devise), action: () => payer(x) });
+        detail: dateCourte(x.prochaine) + "· " + argent(x.montant_centimes, x.devise), action: () => payer(x) });
     }
     return liste;
   }

@@ -131,7 +131,7 @@
         el("span", { class: "espace" }),
         el("div", { class: "ap-barre" },
           el("div", { class: "puces" }, [["toutes", "Toutes"], ["actives", "Actives"], ["inactives", "Inactives"]].map(([cle, lib]) =>
-            el("button", { class: "puce" + (A.filtre === cle ? " actif" : ""), onclick: () => { A.filtre = cle; afficher(); } }, lib))),
+            el("button", { class: "puce " + (A.filtre === cle ? " actif" : ""), onclick: () => { A.filtre = cle; afficher(); } }, lib))),
           choixProfil)),
       el("p", { style: "color:var(--doux);margin:-6px 0 0" }, "Choisissez les applications dont vous vous servez : les autres disparaissent du menu, leurs données restent."),
       ...parGroupe(visibles).flatMap(([g, apps]) => [
@@ -141,7 +141,7 @@
       el("p", { class: "ap-note" }, "Toujours présentes : Accueil, Applications, Réglages."));
   }
   function carte(o, actif) {
-    const bouton = el("button", { class: "ap-interrupteur" + (actif ? " on" : ""), role: "switch", "aria-checked": String(actif),
+    const bouton = el("button", { class: "ap-interrupteur " + (actif ? " on" : ""), role: "switch", "aria-checked": String(actif),
       title: actif ? "Désactiver" : "Activer", onclick: async () => {
         const liste = new Set(actives());
         actif ? liste.delete(o.nom) : liste.add(o.nom);
@@ -149,7 +149,7 @@
         try { await enregistrer({ apps_actives: [...liste] }); toast(actif ? "Application désactivée" : "Application activée", "succes", 1400); afficher(); }
         catch (e) { toast(e.message, "erreur"); bouton.disabled = false; }
       } });
-    return el("div", { class: "ap-carte" + (actif ? "" : " off") },
+    return el("div", { class: "ap-carte " + (actif ? "" : " off") },
       el("div", { class: "ap-ic" }, iconeOnglet(o.icone)),
       el("div", {}, el("div", { class: "ap-titre" }, I18N.traduire(o.titre)), el("div", { class: "ap-desc" }, o.description || "")),
       bouton);
@@ -176,7 +176,7 @@
         el("p", {}, "Votre tableau de bord de travail, sur ce PC. Trois étapes pour le préparer."),
         el("label", { class: "champ" }, "Comment vous appelle-t-on ?", champ),
         el("label", { class: "champ" }, "Langue", el("div", { style: "display:flex;gap:8px" },
-          [["fr", "Français"], ["en", "English"]].map(([code, nom]) => el("button", { class: "btn" + (I18N.langue === code ? " actif" : ""), onclick: async () => {
+          [["fr", "Français"], ["en", "English"]].map(([code, nom]) => el("button", { class: "btn " + (I18N.langue === code ? " actif" : ""), onclick: async () => {
             if (code === I18N.langue) return;
             await api("/api/reglages/enregistrer", { langue: code, prenom: W.prenom });
             location.reload();
@@ -187,7 +187,7 @@
         el("h2", {}, "Quel est votre métier ?"),
         el("p", {}, "Il sert à cocher d'office les applications utiles. Vous pourrez tout changer ensuite."),
         el("div", { class: "as-profils" }, Object.entries(PROFILS).map(([cle, p]) =>
-          el("button", { class: "as-profil" + (W.profil === cle ? " choisi" : ""), onclick: () => { W.profil = cle; W.apps = pourProfil(cle); W.etape = 3; dessinerAssistant(); } },
+          el("button", { class: "as-profil " + (W.profil === cle ? " choisi" : ""), onclick: () => { W.profil = cle; W.apps = pourProfil(cle); W.etape = 3; dessinerAssistant(); } },
             icone(p.icone), el("b", {}, t(p.titre)), el("small", {}, t(p.detail))))));
     } else {
       const choisies = new Set(W.apps || []);
@@ -204,7 +204,7 @@
             el("input", { type: "checkbox", checked: choisies.has(o.nom) ? "" : null, onchange: e => {
               e.target.checked ? choisies.add(o.nom) : choisies.delete(o.nom); W.apps = [...choisies];
             } }),
-            el("div", {}, el("div", { class: "ap-titre" }, iconeOnglet(o.icone), " " + I18N.traduire(o.titre)), el("div", { class: "ap-desc" }, o.description || "")))),
+            el("div", {}, el("div", { class: "ap-titre" }, iconeOnglet(o.icone), I18N.traduire(o.titre)), el("div", { class: "ap-desc" }, o.description || "")))),
         ])));
     }
     const points = el("div", { class: "as-points" }, [1, 2, 3].map(n => el("span", { class: n === W.etape ? "actif" : "" })));

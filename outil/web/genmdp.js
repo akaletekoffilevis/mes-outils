@@ -79,7 +79,7 @@
     if (!P.valeur) generer();
     const f = force(P.valeur);
     $("#vue-genmdp").replaceChildren(
-      el("div", { class: "barre-vue" }, el("h2", {}, icone("key"), " " + t("Mot de passe")), el("span", { class: "espace" })),
+      el("div", { class: "barre-vue" }, el("h2", {}, icone("key"), t("Mot de passe")), el("span", { class: "espace" })),
       el("div", { class: "mdp" },
         el("div", { class: "mdp-carte" },
           el("div", { class: "mdp-resultat" }, P.valeur || "—"),
@@ -94,8 +94,8 @@
             el("label", { class: "mdp-option" }, el("input", { type: "checkbox", checked: P.symboles ? "" : null, onchange: e => { P.symboles = e.target.checked; generer(); dessiner(); } }), t("Symboles")),
             el("label", { class: "mdp-option", style: "grid-column:1/-1" }, el("input", { type: "checkbox", checked: P.exclure ? "" : null, onchange: e => { P.exclure = e.target.checked; generer(); dessiner(); } }), t("Exclure les caractères ambigus"))),
           el("div", { style: "display:flex;gap:8px;margin-top:12px" },
-            el("button", { class: "btn", onclick: () => { generer(); dessiner(); } }, icone("refresh-cw"), " " + t("Générer")),
-            el("button", { class: "btn discret", onclick: () => copier(P.valeur) }, icone("copy"), " " + t("Copier"))))));
+            el("button", { class: "btn", onclick: () => { generer(); dessiner(); } }, icone("refresh-cw"), t("Générer")),
+            el("button", { class: "btn discret", onclick: () => copier(P.valeur) }, icone("copy"), t("Copier"))))));
   }
 
   VUES.genmdp = { afficher: () => dessiner(), titre: "Mot de passe", icone: "key", groupe: "outils", ordre: 35,

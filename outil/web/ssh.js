@@ -10,24 +10,24 @@
     "Aucun serveur pour l'instant. « ＋ Nouveau serveur » : saisissez l'adresse, l'utilisateur et le mot de passe, la clé est créée et installée pour vous.":
       "No server yet. “＋ New server”: enter the address, the user and the password; the key is created and installed for you.",
     "{date} à {heure}": "{date} at {heure}",
-    "⚠️ Clé absente de ce PC": "⚠️ Key missing from this PC",
-    "✅ Connexion vérifiée le {date}": "✅ Connection checked on {date}",
+    " Clé absente de ce PC": " Key missing from this PC",
+    " Connexion vérifiée le {date}": " Connection checked on {date}",
     "Pas encore testé": "Not tested yet",
     "Tester la connexion": "Test the connection",
     "Ouvrir un terminal sur ce serveur": "Open a terminal on this server",
     "Retirer la clé du serveur et de ce PC": "Remove the key from the server and from this PC",
     "Copier la commande": "Copy the command",
-    "📋 « {texte} » copié": "📋 “{texte}” copied",
+    " « {texte} » copié": " “{texte}” copied",
     "Copie impossible": "Copy failed",
     "Connexion…": "Connecting…",
-    "✅ Connexion réussie, sans mot de passe": "✅ Connected, without a password",
-    "✅ Connexion réussie à {machine}, sans mot de passe": "✅ Connected to {machine}, without a password",
-    "💻 Terminal ouvert": "💻 Terminal opened",
+    " Connexion réussie, sans mot de passe": " Connected, without a password",
+    " Connexion réussie à {machine}, sans mot de passe": " Connected to {machine}, without a password",
+    " Terminal ouvert": " Terminal opened",
     "Retirer « {nom} » ?": "Remove “{nom}”?",
     "La clé est retirée du serveur, puis supprimée de ce PC. Pour y revenir sans mot de passe, il faudra recréer une clé.":
       "The key is removed from the server, then deleted from this PC. To connect again without a password, you will need to create a new key.",
     "Retirer": "Remove",
-    "🗑️ Clé retirée du serveur et de ce PC": "🗑️ Key removed from the server and from this PC",
+    " Clé retirée du serveur et de ce PC": " Key removed from the server and from this PC",
     "ex. Serveur web": "e.g. Web server",
     "ex. 203.0.113.10": "e.g. 203.0.113.10",
     "Afficher": "Show",
@@ -35,9 +35,9 @@
     "Clé installée": "Key installed",
     "Connexion vérifiée, sans mot de passe. Désormais, dans un terminal :": "Connection checked, without a password. From now on, in a terminal:",
     "Connexion vérifiée sur « {machine} », sans mot de passe. Désormais, dans un terminal :": "Connection checked on “{machine}”, without a password. From now on, in a terminal:",
-    "📋 Copier": "📋 Copy",
-    "🔑 Créer et installer la clé": "🔑 Create and install the key",
-    "🔑 Nouveau serveur SSH": "🔑 New SSH server",
+    " Copier": " Copy",
+    " Créer et installer la clé": " Create and install the key",
+    " Nouveau serveur SSH": " New SSH server",
     "Une clé est créée pour ce serveur et déposée avec le mot de passe. Le mot de passe ne sert qu'à cette première connexion : il n'est pas enregistré.":
       "A key is created for this server and installed with the password. The password is only used for this first connection: it is not stored.",
     "Nom du serveur": "Server name",
@@ -111,7 +111,7 @@
     try { await charger(); } catch (e) { toast(e.message, "erreur"); }
     const r = racine();
     const barre = el("div", { class: "barre-vue" },
-      el("h2", {}, "🔑 " + t("Serveurs SSH") + " ", el("span", { class: "compte" }, String(X.serveurs.length))),
+      el("h2", {}, t("Serveurs SSH") + " ", el("span", { class: "compte" }, String(X.serveurs.length))),
       el("div", { class: "espace" }),
       el("button", { class: "btn principal", onclick: nouveau }, "＋ Nouveau serveur"));
     const liste = X.serveurs.length
@@ -129,14 +129,14 @@
   }
 
   function carte(s, i) {
-    const etat = el("div", { class: "etat-test" + (s.dernier_resultat === "ok" ? " ok" : "") },
-      !s.cle_presente ? "⚠️ Clé absente de ce PC" : s.dernier_test ? t("✅ Connexion vérifiée le {date}", { date: dateLisible(s.dernier_test) }) : "Pas encore testé");
+    const etat = el("div", { class: "etat-test " + (s.dernier_resultat === "ok" ? " ok" : "") },
+      !s.cle_presente ? " Clé absente de ce PC" : s.dernier_test ? t(" Connexion vérifiée le {date}", { date: dateLisible(s.dernier_test) }) : "Pas encore testé");
     const boutons = el("div", { class: "actions-srv" },
-      el("button", { class: "icone-btn", title: "Tester la connexion", onclick: e => tester(s, etat, e.currentTarget) }, "🧪"),
-      el("button", { class: "icone-btn", title: "Ouvrir un terminal sur ce serveur", onclick: () => terminal(s) }, "💻"),
-      el("button", { class: "icone-btn", title: "Retirer la clé du serveur et de ce PC", onclick: () => retirer(s) }, "🗑️"));
+      el("button", { class: "icone-btn", title: "Tester la connexion", onclick: e => tester(s, etat, e.currentTarget) }, icone("flask-conical")),
+      el("button", { class: "icone-btn", title: "Ouvrir un terminal sur ce serveur", onclick: () => terminal(s) }, icone("laptop")),
+      el("button", { class: "icone-btn", title: "Retirer la clé du serveur et de ce PC", onclick: () => retirer(s) }, icone("trash-2")));
     return el("div", { class: "srv", style: `animation-delay:${i * 40}ms` },
-      el("div", { class: "av", style: `background:${COULEURS_SSH[i % COULEURS_SSH.length]}` }, "🖥️"),
+      el("div", { class: "av", style: `background:${COULEURS_SSH[i % COULEURS_SSH.length]}` }, icone("monitor")),
       el("div", { class: "infos" },
         el("div", { class: "t", title: s.nom }, brut(s.nom)),
         el("div", { class: "u" }, brut(`${s.utilisateur}@${s.hote} · port ${s.port}`)),
@@ -146,21 +146,21 @@
   }
 
   async function copier(texte) {
-    try { await navigator.clipboard.writeText(texte); toast(t("📋 « {texte} » copié", { texte }), "succes"); }
+    try { await navigator.clipboard.writeText(texte); toast(t(" « {texte} » copié", { texte }), "succes"); }
     catch { toast("Copie impossible", "erreur"); }
   }
 
   async function tester(s, etat, bouton) {
     bouton.disabled = true;
     etat.className = "etat-test";
-    etat.replaceChildren(el("span", { class: "attente" }, "⏳"), " " + t("Connexion…"));
+    etat.replaceChildren(el("span", { class: "attente" }, icone("loader")), t("Connexion…"));
     try {
       const r = await api("/api/ssh/tester", { alias: s.alias });
-      toast(r.machine ? t("✅ Connexion réussie à {machine}, sans mot de passe", { machine: r.machine }) : t("✅ Connexion réussie, sans mot de passe"), "succes");
+      toast(r.machine ? t(" Connexion réussie à {machine}, sans mot de passe", { machine: r.machine }) : t(" Connexion réussie, sans mot de passe"), "succes");
       await afficher();
     } catch (e) {
       etat.className = "etat-test ko";
-      etat.textContent = "❌ " + e.message;
+      etat.textContent = " " + e.message;
     } finally { bouton.disabled = false; }
   }
 
@@ -170,7 +170,7 @@
   }
 
   async function retirer(s) {
-    const oui = await confirmer("🗑️", t("Retirer « {nom} » ?", { nom: s.nom }),
+    const oui = await confirmer(icone("trash-2"), t("Retirer « {nom} » ?", { nom: s.nom }),
       "La clé est retirée du serveur, puis supprimée de ce PC. Pour y revenir sans mot de passe, il faudra recréer une clé.",
       "Retirer");
     if (!oui) return;
@@ -189,33 +189,33 @@
     const port = champ({ value: "22", inputmode: "numeric" });
     const utilisateur = champ({ value: "root" });
     const mdp = champ({ type: "password", autocomplete: "new-password" });
-    const oeil = el("button", { class: "icone-btn", type: "button", title: "Afficher", onclick: () => { mdp.type = mdp.type === "password" ? "text" : "password"; } }, "👁️");
+    const oeil = el("button", { class: "icone-btn", type: "button", title: "Afficher", onclick: () => { mdp.type = mdp.type === "password" ? "text" : "password"; } }, "");
     const message = el("div");
     const bouton = el("button", { class: "btn principal", onclick: async () => {
       bouton.disabled = true;
-      bouton.replaceChildren(el("span", { class: "attente" }, "⏳"), " " + t("Installation…"));
+      bouton.replaceChildren(el("span", { class: "attente" }, icone("loader")), t("Installation…"));
       message.replaceChildren();
       try {
         const r = await api("/api/ssh/creer", { nom: nom.value, hote: hote.value, port: port.value, utilisateur: utilisateur.value, mot_de_passe: mdp.value });
         mdp.value = "";
         fenetre([
-          el("div", { class: "gros" }, "✅"),
+          el("div", { class: "gros" }, icone("check")),
           el("h3", {}, "Clé installée"),
           el("p", {}, r.machine ? t("Connexion vérifiée sur « {machine} », sans mot de passe. Désormais, dans un terminal :", { machine: r.machine })
             : t("Connexion vérifiée, sans mot de passe. Désormais, dans un terminal :")),
           el("div", { class: "genere", style: "font-size:17px" }, brut(`ssh ${r.serveur.alias}`)),
           el("div", { class: "actions" },
-            el("button", { class: "btn", onclick: () => copier(`ssh ${r.serveur.alias}`) }, "📋 Copier"),
+            el("button", { class: "btn", onclick: () => copier(`ssh ${r.serveur.alias}`) }, " Copier"),
             el("button", { class: "btn principal", onclick: () => { fermer(); afficher(); } }, "OK"))], true);
       } catch (e) {
-        message.replaceChildren(el("div", { class: "alerte" }, "❌ " + e.message));
+        message.replaceChildren(el("div", { class: "alerte" }, e.message));
         bouton.disabled = false;
-        bouton.textContent = t("🔑 Créer et installer la clé");
+        bouton.textContent = t(" Créer et installer la clé");
       }
-    } }, "🔑 Créer et installer la clé");
+    } }, " Créer et installer la clé");
     mdp.addEventListener("keydown", e => { if (e.key === "Enter") bouton.click(); });
     fenetre([
-      el("h3", {}, "🔑 Nouveau serveur SSH"),
+      el("h3", {}, " Nouveau serveur SSH"),
       el("div", { class: "note-ssh" }, "Une clé est créée pour ce serveur et déposée avec le mot de passe. Le mot de passe ne sert qu'à cette première connexion : il n'est pas enregistré."),
       el("label", { class: "champ" }, "Nom du serveur", nom),
       el("div", { class: "ligne-champs" },
@@ -230,5 +230,5 @@
     nom.focus();
   }
 
-  VUES.ssh = { afficher, titre: "SSH", icone: "🔑", groupe: "dev", ordre: 60 };
+  VUES.ssh = { afficher, titre: "SSH", icone: icone("key"), groupe: "dev", ordre: 60 };
 })();

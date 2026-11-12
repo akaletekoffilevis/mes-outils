@@ -175,8 +175,8 @@
     const auj = T.r?.aujourdhui || isoJour(new Date());
     let texte;
     if (x.echeance === auj) texte = x.heure || t("Aujourd'hui");
-    else if (x.echeance === decaler(auj, 1)) texte = t("Demain") + (x.heure ? " " + x.heure : "");
-    else if (x.echeance === decaler(auj, -1)) texte = t("Hier") + (x.heure ? " " + x.heure : "");
+    else if (x.echeance === decaler(auj, 1)) texte = t("Demain") + (x.heure ? x.heure : "");
+    else if (x.echeance === decaler(auj, -1)) texte = t("Hier") + (x.heure ? x.heure : "");
     else {
       const proche = Math.abs(new Date(x.echeance + "T00:00") - new Date(auj + "T00:00")) < 7 * 864e5;
       texte = dateCourte(x.echeance, proche) + (x.heure ? ", " + x.heure : "");
@@ -246,7 +246,7 @@
         el("h2", {}, icone("list-checks"), "Tâches", el("span", { class: "compte" }, String(ouvertes))),
         el("div", { class: "espace" }),
         el("div", { class: "puces" }, [["liste", "Liste", "list"], ["tableau", "Tableau", "kanban"]].map(([v, lib, ic]) =>
-          el("button", { class: "puce" + (T.vue === v ? " actif" : ""), onclick: () => changerVue(v) }, icone(ic), lib))),
+          el("button", { class: "puce " + (T.vue === v ? " actif" : ""), onclick: () => changerVue(v) }, icone(ic), lib))),
         el("button", { class: "btn principal", onclick: () => editer(null) }, icone("plus"), "Nouvelle tâche")),
       barreFiltres(),
       el("div", { class: "tc-contenu" }, T.vue === "tableau" ? tableau() : liste()));
@@ -281,7 +281,7 @@
       oninput: e => { T.recherche = e.target.value; redessinerContenu(); } });
     return el("div", { class: "tc-filtres" },
       el("label", { class: "champ-recherche" }, el("span", {}, icone("search")), recherche),
-      etiquettes.length ? choix(T.etiquette, "Toutes les étiquettes", etiquettes.map(e => [e, txt("#" + e)]), v => (T.etiquette = v)) : null,
+      etiquettes.length ? choix(T.etiquette, "Toutes les étiquettes", etiquettes.map(e => [e, txt("# " + e)]), v => (T.etiquette = v)) : null,
       clients.length ? choix(T.client, "Tous les clients", clients.map(c => [c, txt(c)]), v => (T.client = v)) : null,
       choix(T.priorite, "Toutes les priorités", [["haute", t("Haute")], ["normale", t("Normale")], ["basse", t("Basse")]], v => (T.priorite = v)),
       el("button", { class: "btn discret tc-effacer", hidden: filtreActif() ? null : "", onclick: () => {
@@ -297,7 +297,7 @@
       const du = ouvertes.filter(x => x.groupe === g);
       if (!du.length) continue;
       blocs.push(el("div", { class: "lignes" },
-        el("div", { class: "titre-lignes tc-titre-groupe" + (g === "retard" ? " rouge" : "") }, titre, el("span", { class: "n" }, String(du.length))),
+        el("div", { class: "titre-lignes tc-titre-groupe " + (g === "retard" ? " rouge" : "") }, titre, el("span", { class: "n" }, String(du.length))),
         du.map(ligne)));
     }
     const faites = toutes.filter(x => x.statut === "fait").sort((a, b) => (b.fait_le || "").localeCompare(a.fait_le || ""));
@@ -308,7 +308,7 @@
     if (faites.length) {
       const montrees = faites.slice(0, MAX_FAITES);
       blocs.push(el("div", { class: "lignes" },
-        el("div", { class: "titre-lignes tc-titre-groupe plie" + (T.faitesOuvertes ? " ouvert" : ""),
+        el("div", { class: "titre-lignes tc-titre-groupe plie " + (T.faitesOuvertes ? " ouvert" : ""),
           onclick: () => { T.faitesOuvertes = !T.faitesOuvertes; redessinerContenu(); } },
           icone("chevron-right"), "Faites", el("span", { class: "n" }, String(faites.length))),
         T.faitesOuvertes ? [montrees.map(ligne),
@@ -337,7 +337,7 @@
 
   function caseFait(x, petite = false) {
     const fait = x.statut === "fait";
-    return el("button", { class: "tc-case" + (fait ? " fait" : "") + (petite ? " petite" : ""), title: fait ? "Marquer à faire" : "Marquer comme faite",
+    return el("button", { class: "tc-case " + (fait ? " fait" : "") + (petite ? " petite" : ""), title: fait ? "Marquer à faire" : "Marquer comme faite",
       onclick: e => { e.stopPropagation(); cocher(x, !fait); } }, icone("check"));
   }
 
@@ -351,7 +351,7 @@
       x.recurrence ? el("span", { class: "tc-meta", title: RECURRENCES[x.recurrence] }, icone("repeat"), RECURRENCES[x.recurrence]) : null,
       x.description ? el("span", { class: "tc-meta" }, txt(x.description.split("\n")[0])) : null,
     ].filter(Boolean);
-    const rangee = el("div", { class: "ligne cliquable tc-ligne-draggable" + (x.statut === "fait" ? " tc-faite" : "") + (ouverte ? " ouverte" : ""), draggable: "true", "data-id": x.id,
+    const rangee = el("div", { class: "ligne cliquable tc-ligne-draggable " + (x.statut === "fait" ? " tc-faite" : "") + (ouverte ? " ouverte" : ""), draggable: "true", "data-id": x.id,
       onclick: () => {
         if (!aDetail) { editer(x); return; }
         ouverte ? T.ouvertes.delete(x.id) : T.ouvertes.add(x.id);
@@ -360,7 +360,7 @@
       el("span", { class: "ligne-ic tc-ic" }, caseFait(x)),
       el("div", { class: "ligne-corps" },
         el("div", { class: "ligne-titre" }, el("span", { title: x.titre }, txt(x.titre)),
-          (x.etiquettes || []).map(e => el("span", { class: "tag" }, txt("#" + e)))),
+          (x.etiquettes || []).map(e => el("span", { class: "tag" }, txt("# " + e)))),
         meta.length ? el("div", { class: "ligne-meta" }, meta) : null),
       el("div", { class: "ligne-cote" }, priorite(x), echeance(x)),
       el("div", { class: "ligne-actions" },
@@ -403,8 +403,8 @@
     if (!ouverte || !aDetail) return rangee;
     return [rangee, el("div", { class: "ligne-detail" },
       x.description ? el("p", { class: "tc-desc" }, txt(x.description)) : null,
-      (x.liste || []).map(e => el("div", { class: "tc-etape" + (e.fait ? " fait" : ""), onclick: () => cocherEtape(x, e) },
-        el("span", { class: "tc-case petite" + (e.fait ? " fait" : "") }, icone("check")), el("span", {}, txt(e.texte)))),
+      (x.liste || []).map(e => el("div", { class: "tc-etape " + (e.fait ? " fait" : ""), onclick: () => cocherEtape(x, e) },
+        el("span", { class: "tc-case petite " + (e.fait ? " fait" : "") }, icone("check")), el("span", {}, txt(e.texte)))),
       x.origine ? el("div", { class: "tc-origine" }, t("Ajoutée par {app}", { app: nomApplication(x.origine) })) : null,
       el("div", { class: "tc-detail-pied" },
         el("button", { class: "btn petit", onclick: () => editer(x) }, icone("pencil"), "Modifier")))];
@@ -434,7 +434,7 @@
   }
 
   function carte(x) {
-    const c = el("div", { class: "tc-carte" + (x.statut === "fait" ? " tc-faite" : ""), draggable: "true", "data-id": x.id,
+    const c = el("div", { class: "tc-carte " + (x.statut === "fait" ? " tc-faite" : ""), draggable: "true", "data-id": x.id,
       onclick: () => editer(x) },
       el("div", { class: "tc-carte-titre" }, el("span", {}, txt(x.titre)), priorite(x)),
       el("div", { class: "tc-infos" },
@@ -442,7 +442,7 @@
         x.client ? el("span", { class: "tc-meta" }, icone("user"), txt(x.client)) : null,
         etapes(x),
         x.recurrence ? el("span", { class: "tc-meta", title: RECURRENCES[x.recurrence] }, icone("repeat")) : null),
-      (x.etiquettes || []).length ? el("div", { class: "tc-tags" }, x.etiquettes.map(e => el("span", { class: "tag" }, txt("#" + e)))) : null);
+      (x.etiquettes || []).length ? el("div", { class: "tc-tags" }, x.etiquettes.map(e => el("span", { class: "tag" }, txt("# " + e)))) : null);
     if (!c.querySelector(".tc-infos").children.length) c.querySelector(".tc-infos").remove();
     c.addEventListener("dragstart", e => {
       T.glisse = x.id;
@@ -550,7 +550,7 @@
       dessinerEtiq();
     };
     const dessinerEtiq = () => boite.replaceChildren(
-      ...valeurs.map((v, i) => el("span", { class: "tag" }, txt("#" + v),
+      ...valeurs.map((v, i) => el("span", { class: "tag" }, txt("# " + v),
         el("button", { type: "button", title: "Retirer", onclick: e => { e.stopPropagation(); valeurs.splice(i, 1); dessinerEtiq(); saisie.focus(); } }, icone("x")))),
       saisie,
       el("datalist", { id: "tc-etiquettes" }, (T.r?.etiquettes || []).filter(e => !valeurs.includes(e)).map(e => el("option", { value: e }))));
@@ -593,13 +593,13 @@
   function champClient(x) {
     if (T.contacts && T.contacts.length) {
       const s = el("select", {}, el("option", { value: "" }, "Aucun"),
-        T.contacts.map(c => el("option", { value: "c:" + c.id }, txt([c.nom, c.entreprise].filter(Boolean).join(" · ") || c.email || c.id))));
+        T.contacts.map(c => el("option", { value: "c: " + c.id }, txt([c.nom, c.entreprise].filter(Boolean).join(" · ") || c.email || c.id))));
       const connu = x.contact_id && T.contacts.some(c => String(c.id) === String(x.contact_id));
-      if (x.client && !connu) s.append(el("option", { value: "x:" + x.client }, txt(x.client)));
+      if (x.client && !connu) s.append(el("option", { value: "x: " + x.client }, txt(x.client)));
       s.value = connu ? "c:" + x.contact_id : x.client ? "x:" + x.client : "";
       return { champ: s, valeurs: () => {
         if (s.value.startsWith("c:")) {
-          const c = T.contacts.find(y => "c:" + y.id === s.value);
+          const c = T.contacts.find(y => "c: " + y.id === s.value);
           return { contact_id: String(c.id), client: c.nom || c.entreprise || "" };
         }
         return { contact_id: s.value.startsWith("x:") ? (x.contact_id || "") : "", client: s.value.startsWith("x:") ? s.value.slice(2) : "" };
@@ -626,7 +626,7 @@
     rec.value = b.recurrence || "";
     let statut = b.statut || "a_faire";
     const puces = el("div", { class: "puces tc-puces-statut" }, COLONNES.map(([v, lib]) =>
-      el("button", { type: "button", class: "puce" + (v === statut ? " actif" : ""), onclick: e => {
+      el("button", { type: "button", class: "puce " + (v === statut ? " actif" : ""), onclick: e => {
         statut = v; [...puces.children].forEach(p => p.classList.toggle("actif", p === e.currentTarget)); } }, lib)));
     const etiq = champEtiquettes(b.etiquettes || []);
     const etapesEd = champEtapes(b.liste || []);

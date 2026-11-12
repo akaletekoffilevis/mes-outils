@@ -48,14 +48,14 @@
 
   function dessiner() {
     $("#vue-hash").replaceChildren(
-      el("div", { class: "barre-vue" }, el("h2", {}, icone("hash"), " " + t("Hash")), el("span", { class: "espace" })),
+      el("div", { class: "barre-vue" }, el("h2", {}, icone("hash"), t("Hash")), el("span", { class: "espace" })),
       el("div", { class: "hash" },
         el("div", { class: "hash-carte" },
           el("div", { class: "hash-puces" }, ["SHA-1", "SHA-256", "SHA-384", "SHA-512"].map(a =>
-            el("button", { class: "hash-puce" + (a === H.algo ? " actif" : ""), onclick: () => { H.algo = a; hacher(); } }, a))),
+            el("button", { class: "hash-puce " + (a === H.algo ? " actif" : ""), onclick: () => { H.algo = a; hacher(); } }, a))),
           el("textarea", { class: "zone", rows: 4, placeholder: t("Texte à hacher"), oninput: e => { H.texte = e.target.value; hacher(); } }, H.texte),
           el("div", { class: "hash-resultat" }, H.resultat || t("Vide")),
-          el("button", { class: "btn discret", onclick: () => copier(H.resultat) }, icone("copy"), " " + t("Copier")))));
+          el("button", { class: "btn discret", onclick: () => copier(H.resultat) }, icone("copy"), t("Copier")))));
   }
 
   VUES.hash = { afficher: () => { if (!H.resultat && H.texte) hacher(); dessiner(); }, titre: "Hash", icone: "hash", groupe: "outils", ordre: 60,

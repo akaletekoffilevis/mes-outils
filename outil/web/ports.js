@@ -115,7 +115,7 @@
       const r = await api("/api/ports/liste", { udp: P.udp, forcer });
       P.ports = r.ports;
     } catch (e) {
-      racine().replaceChildren(el("div", { class: "vide" }, "😕 " + e.message));
+      racine().replaceChildren(el("div", { class: "vide" }, e.message));
       return;
     } finally { P.chargement = false; }
     dessinerListe();
@@ -130,21 +130,21 @@
     const recherche = el("input", { type: "search", placeholder: "Port ou programme…", value: P.recherche,
       spellcheck: "false", oninput: e => { P.recherche = e.target.value; dessinerListe(); } });
     const puces = el("div", { class: "puces" }, [["tous", "Tous"], ["dev", "Développement"]].map(([v, txt]) =>
-      el("button", { class: "puce" + (P.filtre === v ? " actif" : ""), onclick: e => {
+      el("button", { class: "puce " + (P.filtre === v ? " actif" : ""), onclick: e => {
         P.filtre = v; e.target.parentNode.querySelectorAll(".puce").forEach(b => b.classList.toggle("actif", b === e.target)); dessinerListe();
       } }, txt)));
     const udp = el("input", { type: "checkbox", ...(P.udp ? { checked: "" } : {}),
       onchange: e => { P.udp = e.target.checked; charger(true); } });
     racine().replaceChildren(
       el("div", { class: "barre-vue" },
-        el("h2", {}, "🔌 " + t("Ports en écoute"), " ", el("span", { class: "compte", id: "pt-nombre" }, "…")),
+        el("h2", {}, t("Ports en écoute"), " ", el("span", { class: "compte", id: "pt-nombre" }, "…")),
         el("div", { class: "espace" }),
-        el("div", { class: "champ-recherche pt-recherche" }, el("span", {}, "🔍"), recherche),
+        el("div", { class: "champ-recherche pt-recherche" }, el("span", {}, icone("search")), recherche),
         puces,
         el("label", { class: "pt-udp" }, udp, "Inclure UDP"),
-        el("button", { class: "icone-btn", title: "Actualiser", onclick: () => charger(true) }, "🔄")),
+        el("button", { class: "icone-btn", title: "Actualiser", onclick: () => charger(true) }, icone("refresh-cw"))),
       el("div", { id: "pt-reponse" }),
-      el("div", { id: "pt-liste" }, el("div", { class: "vide" }, el("span", { class: "attente" }, "⏳"), " Lecture des ports…")));
+      el("div", { id: "pt-liste" }, el("div", { class: "vide" }, el("span", { class: "attente" }, icone("loader")), " Lecture des ports…")));
     recherche.focus();
   }
 
@@ -167,8 +167,8 @@
     const port = Number(q);
     const pris = lignes.filter(l => l.port === port && l.proto === "TCP");
     zone.replaceChildren(pris.length
-      ? el("div", { class: "pt-reponse pris" }, "🔌 ", pris.map(l => t("Port {port} : {nom} (PID {pid})", l)).join(" · "))
-      : el("div", { class: "pt-reponse libre" }, "✅ ", t("Port {port} libre", { port })));
+      ? el("div", { class: "pt-reponse pris" }, " ", pris.map(l => t("Port {port} : {nom} (PID {pid})", l)).join(" · "))
+      : el("div", { class: "pt-reponse libre" }, " ", t("Port {port} libre", { port })));
   }
 
   function dessinerListe() {
@@ -190,17 +190,17 @@
       : adr.every(local) ? el("span", { class: "pt-portee" }, "Ce PC seulement") : null;
     const actions = [];
     if (l.web) actions.push(el("button", { class: "icone-btn go", title: "Ouvrir dans le navigateur",
-      onclick: () => ouvrir(l.port) }, "🌐"));
-    if (l.protege) actions.push(el("span", { class: "pt-badge", title: "Processus système : protégé" }, "🔒"));
-    else if (l.soi) actions.push(el("span", { class: "pt-badge", title: "C'est « Mes outils » lui-même" }, "🧰"));
-    else actions.push(el("button", { class: "icone-btn stop", title: "Arrêter ce programme", onclick: () => arreter(l) }, "⛔"));
+      onclick: () => ouvrir(l.port) }, icone("globe")));
+    if (l.protege) actions.push(el("span", { class: "pt-badge", title: "Processus système : protégé" }, icone("lock")));
+    else if (l.soi) actions.push(el("span", { class: "pt-badge", title: "C'est « Mes outils » lui-même" }, icone("wrench")));
+    else actions.push(el("button", { class: "icone-btn stop", title: "Arrêter ce programme", onclick: () => arreter(l) }, icone("ban")));
     return el("tr", { class: l.dev ? "dev" : "" },
       el("td", {}, el("span", { class: "pt-port" }, String(l.port)), el("span", { class: "pt-proto" }, l.proto),
         l.dev ? el("div", {}, el("span", { class: "etiquette pt-dev" }, l.dev)) : null),
       el("td", { class: "pt-adr" }, adr.join(", "), portee),
       el("td", {}, el("span", { class: "pt-nom" }, l.nom),
-        l.commande ? el("span", { class: "pt-cmd", title: t("Cliquer pour copier la ligne de commande") + "\n" + l.commande,
-          onclick: () => copier(l.commande, "📋 " + t("Ligne de commande copiée")) }, l.commande) : null),
+        l.commande ? el("span", { class: "pt-cmd", title: t("Cliquer pour copier la ligne de commande") + "\n " + l.commande,
+          onclick: () => copier(l.commande, t("Ligne de commande copiée")) }, l.commande) : null),
       el("td", { class: "pt-num" }, l.pid == null ? "—" : String(l.pid)),
       el("td", { class: "pt-num" }, memoire(l.memoire_ko)),
       el("td", {}, el("div", { class: "pt-actions" }, actions)));
@@ -222,9 +222,9 @@
         toast(t("{nom} arrêté", { nom: r.nom }), "succes");
         await charger(true);
       } catch (e) { fermer(); toast(e.message, "erreur", 8000); charger(true); }
-    } }, "⛔ " + t("Arrêter"));
+    } }, t("Arrêter"));
     fenetre([
-      el("div", { class: "gros" }, "⛔"),
+      el("div", { class: "gros" }, icone("ban")),
       el("h3", {}, "Arrêter ce programme ?"),
       el("p", {}, `${l.nom} · PID ${l.pid ?? "—"} · ${t("Port")} ${l.port}`),
       l.commande ? el("div", { class: "pt-detail" }, l.commande) : null,
@@ -233,5 +233,5 @@
       el("div", { class: "actions" }, el("button", { class: "btn", onclick: fermer }, "Annuler"), bouton)].filter(Boolean), true);
   }
 
-  VUES.ports = { afficher, titre: "Ports", icone: "🔌", groupe: "dev", ordre: 30 };
+  VUES.ports = { afficher, titre: "Ports", icone: icone("plug"), groupe: "dev", ordre: 30 };
 })();

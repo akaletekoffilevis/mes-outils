@@ -14,7 +14,7 @@
     "▶ Démarrer": "▶ Start",
     "■ Arrêter": "■ Stop",
     "Pomodoro": "Pomodoro",
-    "🍅 Pomodoro": "🍅 Pomodoro",
+    " Pomodoro": " Pomodoro",
     "Aucun chrono en cours": "No timer running",
     "Sur quoi travaillez-vous ?": "What are you working on?",
     "Récents :": "Recent:",
@@ -28,7 +28,7 @@
     "Aujourd'hui": "Today",
     "Précédent": "Previous", "Suivant": "Next",
     "＋ Session oubliée": "＋ Missed session",
-    "⬇️ Export CSV": "⬇️ CSV export",
+    "⬇ Export CSV": "⬇ CSV export",
     "Date": "Date", "Horaires": "Times", "Durée": "Duration",
     "Total": "Total",
     "Par projet": "By project",
@@ -36,15 +36,15 @@
     "Aucune session sur cette période.": "No session in this period.",
     "Modifier": "Edit", "Supprimer": "Delete", "Annuler": "Cancel", "Enregistrer": "Save", "Ajouter": "Add",
     "Début": "Start", "Fin": "End",
-    "✏️ Modifier la session": "✏️ Edit session",
+    " Modifier la session": " Edit session",
     "＋ Session oubliée ": "＋ Missed session",
     "Supprimer cette session ?": "Delete this session?",
     "Elle disparaît des totaux et des exports.": "It disappears from totals and exports.",
-    "🗑️ Session supprimée": "🗑️ Session deleted",
-    "✅ Session enregistrée": "✅ Session saved",
-    "⏱️ C'est parti !": "⏱️ Off you go!",
+    " Session supprimée": " Session deleted",
+    " Session enregistrée": " Session saved",
+    " C'est parti !": " Off you go!",
     "Moins d'une minute : session non enregistrée.": "Less than a minute: session not saved.",
-    "✅ {duree} sur « {projet} »": "✅ {duree} on “{projet}”",
+    " {duree} sur « {projet} »": " {duree} on “{projet}”",
     "Réglages du Pomodoro": "Pomodoro settings",
     "Travail (min)": "Work (min)",
     "Pause courte (min)": "Short break (min)",
@@ -53,7 +53,7 @@
     "Cocher « Pomodoro » par défaut": "Tick “Pomodoro” by default",
     "La bulle vous prévient à la fin de chaque période. Les pauses restent comptées dans le chrono : arrêtez-le pendant la pause si elle ne doit pas être facturée.":
       "The bubble lets you know when each period ends. Breaks are still counted by the timer: stop it during the break if it shouldn't be billed.",
-    "✅ Enregistré": "✅ Saved",
+    " Enregistré": " Saved",
     "Pomodoro {t}/{c}": "Pomodoro {t}/{c}",
     "Semaine du {debut} au {fin}": "Week of {debut} to {fin}",
     "Toutes les sessions": "All sessions",
@@ -192,10 +192,9 @@
   function dessiner() {
     racine().replaceChildren(
       el("div", { class: "barre-vue" },
-        el("h2", {}, "⏱️ " + t("Temps de travail")),
+        el("h2", {}, t("Temps de travail")),
         el("div", { class: "espace" }),
-        el("button", { class: "btn discret", onclick: reglages, title: "Réglages du Pomodoro" }, "🍅 " + t("Pomodoro") + " " +
-          `${T.r.reglages.travail}/${T.r.reglages.pause_courte}`)),
+        el("button", { class: "btn discret", onclick: reglages, title: "Réglages du Pomodoro" }, t("Pomodoro") + `${T.r.reglages.travail}/${T.r.reglages.pause_courte}`)),
       blocChrono(),
       barrePeriode(),
       el("div", { class: "tp-corps" }, tableau(), totaux()));
@@ -229,7 +228,7 @@
             recents.map(p => el("button", { class: "etiquette", onclick: () => { projet.value = p; note.focus(); } }, p))) : null,
           el("div", { class: "tp-boutons" },
             el("button", { class: "btn principal", onclick: demarrer }, "▶ Démarrer"),
-            el("label", { class: "tp-case" }, pomo, "🍅 Pomodoro"))),
+            el("label", { class: "tp-case" }, pomo, " Pomodoro"))),
         anneau());
     }
     const debut = date(e.depuis);
@@ -241,8 +240,8 @@
         el("div", { class: "tp-depuis" }, t("depuis {heure}", { heure: debut.toLocaleTimeString(I18N.locale(), { hour: "2-digit", minute: "2-digit" }) })),
         el("div", { class: "tp-boutons" },
           el("button", { class: "btn arreter", onclick: arreter }, "■ Arrêter"),
-          el("button", { class: "btn" + (e.pomodoro ? " actif" : ""), onclick: () => modifierEnCours({ pomodoro: !e.pomodoro }) }, "🍅 Pomodoro"),
-          el("button", { class: "btn discret", onclick: editerEnCours, title: "Modifier" }, "✏️"))),
+          el("button", { class: "btn " + (e.pomodoro ? " actif" : ""), onclick: () => modifierEnCours({ pomodoro: !e.pomodoro }) }, " Pomodoro"),
+          el("button", { class: "btn discret", onclick: editerEnCours, title: "Modifier" }, icone("pencil")))),
       anneau());
   }
 
@@ -282,7 +281,7 @@
     jauge.setAttribute("stroke-dashoffset", C * (1 - part));
     jauge.style.stroke = p.phase === "travail" ? "var(--corail)" : "var(--menthe)";
     a.querySelector(".reste").textContent = horloge((fin - Date.now()) / 1000).slice(3);
-    a.querySelector(".phase").textContent = t(PHASES[p.phase]) + " · " + t("n° {n}", { n: p.numero });
+    a.querySelector(".phase").textContent = t(PHASES[p.phase]) + "· " + t("n° {n}", { n: p.numero });
     a.title = t("Fin à {heure}", { heure: hhmm(p.fin_prevue) });
   }
 
@@ -299,7 +298,7 @@
     })();
     return el("div", { class: "barre-vue" },
       el("div", { class: "puces" }, [["jour", "Jour"], ["semaine", "Semaine"], ["mois", "Mois"]].map(([v, lib]) =>
-        el("button", { class: "puce" + (T.periode === v ? " actif" : ""), onclick: () => { T.periode = v; recharger(); } }, lib))),
+        el("button", { class: "puce " + (T.periode === v ? " actif" : ""), onclick: () => { T.periode = v; recharger(); } }, lib))),
       el("div", { class: "tp-nav" },
         el("button", { class: "icone-btn", title: "Précédent", onclick: () => decaler(-1) }, "‹"),
         el("span", { class: "lib" }, libelle.charAt(0).toUpperCase() + libelle.slice(1)),
@@ -320,7 +319,7 @@
 
   function tableau() {
     const s = T.r.sessions;
-    if (!s.length) return el("div", { class: "vide" }, "🗓️ " + t("Aucune session sur cette période."));
+    if (!s.length) return el("div", { class: "vide" }, t("Aucune session sur cette période."));
     const loc = I18N.locale();
     return el("div", { class: "carte", style: "padding:14px 12px" },
       el("table", { class: "tp-table" },
@@ -334,8 +333,8 @@
             el("td", { class: "tp-cel-note", title: x.note || "" }, x.note || ""),
             el("td", { class: "duree" }, duree(x.minutes)),
             el("td", { class: "actions" },
-              el("button", { class: "icone-btn", title: "Modifier", onclick: () => editerSession(x) }, "✏️"),
-              el("button", { class: "icone-btn danger", title: "Supprimer", onclick: () => supprimerSession(x) }, "🗑️")))),
+              el("button", { class: "icone-btn", title: "Modifier", onclick: () => editerSession(x) }, icone("pencil")),
+              el("button", { class: "icone-btn danger", title: "Supprimer", onclick: () => supprimerSession(x) }, icone("trash-2"))))),
           el("tr", { class: "total" }, el("td", { colspan: 4 }, "Total"), el("td", { class: "duree" }, duree(T.r.total)), el("td", {})))));
   }
 
@@ -346,7 +345,7 @@
     return el("div", { class: "carte tp-totaux" },
       el("div", { style: "display:flex;align-items:center;gap:8px;margin-bottom:12px" },
         el("h3", { style: "margin:0;flex:1" }, "Par projet"),
-        el("button", { class: "btn", style: "padding:6px 12px;font-size:13px", title: "Pour Excel (séparateur « ; »)", onclick: exporter }, "⬇️ Export CSV")),
+        el("button", { class: "btn", style: "padding:6px 12px;font-size:13px", title: "Pour Excel (séparateur « ; »)", onclick: exporter }, "⬇ Export CSV")),
       liste.map((x, i) => el("div", { class: "tp-barre" },
         el("div", { class: "lignes" }, el("span", { title: x.projet }, x.projet), el("span", {}, duree(x.minutes))),
         el("div", { class: "piste" }, el("div", { style: `width:${(x.minutes / max) * 100}%;background:${couleur(x.projet)};animation-delay:${i * 60}ms` })))));
@@ -356,7 +355,7 @@
   async function arreter() {
     try {
       const r = await api("/api/temps/arreter", {});
-      if (r.session) toast(t("✅ {duree} sur « {projet} »", { duree: duree(r.session.minutes), projet: r.session.projet }), "succes");
+      if (r.session) toast(t(" {duree} sur « {projet} »", { duree: duree(r.session.minutes), projet: r.session.projet }), "succes");
       else toast("Moins d'une minute : session non enregistrée.");
       recharger();
     } catch (e) { toast(e.message, "erreur"); recharger(); }
@@ -372,7 +371,7 @@
     const projet = el("input", { value: e.projet, list: "tp-projets-f", maxlength: 80 });
     const note = el("input", { value: e.note || "", maxlength: 300 });
     fenetre([
-      el("h3", {}, "✏️ " + t("Modifier")),
+      el("h3", {}, t("Modifier")),
       el("label", { class: "champ" }, "Projet", projet, el("datalist", { id: "tp-projets-f" }, suggestions().map(p => el("option", { value: p })))),
       el("label", { class: "champ" }, "Note (facultatif)", note),
       el("div", { class: "actions" },
@@ -398,7 +397,7 @@
       } catch (e) { toast(e.message, "erreur"); }
     };
     fenetre([
-      el("h3", {}, x ? "✏️ Modifier la session" : "＋ Session oubliée"),
+      el("h3", {}, x ? " Modifier la session" : "＋ Session oubliée"),
       el("label", { class: "champ" }, "Projet", projet, el("datalist", { id: "tp-projets-f" }, suggestions().map(p => el("option", { value: p })))),
       el("label", { class: "champ" }, "Note (facultatif)", note),
       el("div", { style: "display:grid;grid-template-columns:1fr 1fr;gap:12px" },
@@ -410,7 +409,7 @@
   }
 
   async function supprimerSession(x) {
-    if (!(await confirmer("🗑️", "Supprimer cette session ?", "Elle disparaît des totaux et des exports.", "Supprimer"))) return;
+    if (!(await confirmer(icone("trash-2"), "Supprimer cette session ?", "Elle disparaît des totaux et des exports.", "Supprimer"))) return;
     try { await api("/api/temps/supprimer", { id: x.id }); toast("Session supprimée"); recharger(); }
     catch (e) { toast(e.message, "erreur"); }
   }
@@ -435,7 +434,7 @@
       champ("Travail (min)", "travail", 180), champ("Pause courte (min)", "pause_courte", 60),
       champ("Pause longue (min)", "pause_longue", 120), champ("Pause longue toutes les … périodes", "cycles", 12));
     fenetre([
-      el("h3", {}, "🍅 " + t("Réglages du Pomodoro")),
+      el("h3", {}, t("Réglages du Pomodoro")),
       el("p", {}, "La bulle vous prévient à la fin de chaque période. Les pauses restent comptées dans le chrono : arrêtez-le pendant la pause si elle ne doit pas être facturée."),
       boite,
       el("label", { class: "tp-case" }, parDefaut, "Cocher « Pomodoro » par défaut"),
@@ -451,6 +450,6 @@
 
   VUES.temps = {
     afficher: async () => { await projetsExternes(); recharger(); },
-    titre: "Temps", icone: "⏱️", groupe: "outils", ordre: 40,
+    titre: "Temps", icone: "", groupe: "outils", ordre: 40,
   };
 })();

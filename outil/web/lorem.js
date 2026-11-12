@@ -55,15 +55,15 @@
   function dessiner() {
     if (!L.texte) generer();
     $("#vue-lorem").replaceChildren(
-      el("div", { class: "barre-vue" }, el("h2", {}, icone("type"), " " + t("Lorem")), el("span", { class: "espace" })),
+      el("div", { class: "barre-vue" }, el("h2", {}, icone("type"), t("Lorem")), el("span", { class: "espace" })),
       el("div", { class: "lorem" },
         el("div", { class: "lorem-carte" },
           el("div", { class: "lorem-ligne" }, el("label", {}, t("Paragraphes")), el("input", { type: "number", min: 1, max: 20, value: L.paragraphes, oninput: e => { L.paragraphes = Math.max(1, Number(e.target.value) || 1); generer(); dessiner(); } })),
           el("div", { class: "lorem-ligne" }, el("label", {}, t("Mots par paragraphe")), el("input", { type: "number", min: 5, max: 100, value: L.mots, oninput: e => { L.mots = Math.max(5, Number(e.target.value) || 5); generer(); dessiner(); } })),
           el("div", { class: "lorem-ligne" }, el("label", {}, ""), el("label", { class: "mdp-option" }, el("input", { type: "checkbox", checked: L.ponctuation ? "" : null, onchange: e => { L.ponctuation = e.target.checked; generer(); dessiner(); } }), t("Avec ponctuation"))),
           el("div", { style: "display:flex;gap:8px" },
-            el("button", { class: "btn", onclick: () => { generer(); dessiner(); } }, icone("refresh-cw"), " " + t("Générer")),
-            el("button", { class: "btn discret", onclick: () => copier(L.texte) }, icone("copy"), " " + t("Copier")))),
+            el("button", { class: "btn", onclick: () => { generer(); dessiner(); } }, icone("refresh-cw"), t("Générer")),
+            el("button", { class: "btn discret", onclick: () => copier(L.texte) }, icone("copy"), t("Copier")))),
         el("div", { class: "lorem-carte" }, el("div", { class: "lorem-texte" }, L.texte))));
   }
 
