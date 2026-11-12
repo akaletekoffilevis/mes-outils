@@ -207,9 +207,17 @@ def ouvrir_tableau(onglet=None):
         # rapide). La fenêtre existante, si elle est là, est au premier plan
         # via wmctrl ci-dessus (quand wmctrl est installé).
         if time.time() - _derniere_ouverture < 3.0:
+            # Meilleur effort : tenter de ramener la fenêtre existante via
+            # xdg-open (peut la faire passer au premier plan sous GNOME).
+            try:
+                subprocess.Popen(["xdg-open", adresse], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            except (OSError, subprocess.SubprocessError):
+                pass
             return
-        systeme.ouvrir_fenetre_appli(adresse, 1180, 800)
+        # Marquer comme ouverte AVANT de lancer Chrome, pour éviter la
+        # course si l'utilisateur clique deux fois très vite.
         _derniere_ouverture = time.time()
+        systeme.ouvrir_fenetre_appli(adresse, 1180, 800)
         return
     hwnd = trouver_fenetre(TITRE_TABLEAU)
     if hwnd:

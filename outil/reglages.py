@@ -114,6 +114,18 @@ def enregistrer(d):
         if not isinstance(masques, list) or not all(isinstance(n, str) and n.isidentifier() for n in masques):
             raise ValueError("Liste d'onglets invalide.")
         valeurs["onglets_masques"] = [n for n in masques if n not in ("accueil", "reglages")]
+    if "ordre_menu" in d:
+        ordre = d["ordre_menu"]
+        if not isinstance(ordre, dict):
+            raise ValueError("Ordre du menu invalide.")
+        propre = {}
+        for g, liste in ordre.items():
+            if not isinstance(g, str):
+                raise ValueError("Groupe invalide.")
+            if not isinstance(liste, list) or not all(isinstance(n, str) and n.isidentifier() for n in liste):
+                raise ValueError("Liste d'onglets invalide.")
+            propre[g] = liste
+        valeurs["ordre_menu"] = propre
     if "presence" in d:
         if d["presence"] not in PRESENCES:
             raise ValueError("Affichage inconnu.")
