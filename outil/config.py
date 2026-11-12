@@ -55,7 +55,8 @@ THEMES = ("auto", "clair", "sombre", "sepia", "contraste")
 ACCENTS = ("violet", "bleu", "vert", "corail", "rose")
 DENSITES = ("confortable", "compact")
 # Métiers proposés au premier lancement (ils pré-cochent des applications).
-PROFILS = ("freelance", "assistant_virtuel", "assistant_direction", "developpeur", "personnalise")
+PROFILS = ("freelance", "assistant_virtuel", "assistant_direction", "developpeur",
+           "comptable", "redacteur", "designer", "consultant", "commercial", "personnalise")
 # Toujours présentes, jamais désactivables.
 APPS_FIXES = ("accueil", "applications", "reglages")
 
