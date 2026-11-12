@@ -494,8 +494,9 @@
 
   // -- actions -----------------------------------------------------------------
   async function ajouterProjet() {
+    toast("Une fenêtre de choix de dossier s'ouvre (elle peut apparaître derrière cette fenêtre).", "info", 4000);
     const chemin = await choisirDossier("Choisir le dossier du projet");
-    if (!chemin) return;
+    if (!chemin) { toast("Aucun dossier choisi.", "info", 2000); return; }
     if (await appel("ajouter", { chemin }, "Projet ajouté")) afficher();
   }
 

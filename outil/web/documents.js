@@ -340,13 +340,17 @@
   }
 
   async function ajouterFichiers() {
+    toast("Une fenêtre de choix de fichiers s'ouvre (elle peut apparaître derrière cette fenêtre).", "info", 4000);
     const r = await action("/api/documents/choisir_fichiers", { titre: I18N.traduire("Choisir des documents") });
     if (r?.chemins?.length) formulaire({ chemins: r.chemins, genre: "fichier" });
+    else toast("Aucun fichier choisi.", "info", 2000);
   }
 
   async function ajouterDossier() {
+    toast("Une fenêtre de choix de dossier s'ouvre (elle peut apparaître derrière cette fenêtre).", "info", 4000);
     const chemin = await choisirDossier("Choisir le dossier à ajouter", D.r?.dernier_dossier || "");
     if (chemin) formulaire({ chemins: [chemin], genre: "dossier" });
+    else toast("Aucun dossier choisi.", "info", 2000);
   }
 
   /** Libellé d'un contact pour le champ Client : son entreprise, sinon son nom. */
