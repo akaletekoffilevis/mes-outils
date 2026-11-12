@@ -69,7 +69,7 @@
     P.r = r; P.empreinte = empreinte;
     dessiner();
   }
-  const recharger = (force = true) => charger(force).catch(e => toast("😕 " + e.message, "erreur"));
+  const recharger = (force = true) => charger(force).catch(e => toast(e.message, "erreur"));
 
   // Les nouveaux textes copiés apparaissent tout seuls tant que l'onglet est ouvert.
   setInterval(() => { if (visible()) charger().catch(() => {}); }, 2000);
@@ -134,12 +134,12 @@
 
   async function action(nom, donnees) {
     try { await api("/api/presse_papiers/" + nom, donnees); recharger(); }
-    catch (e) { toast("😕 " + e.message, "erreur"); recharger(); }
+    catch (e) { toast(e.message, "erreur"); recharger(); }
   }
 
   async function recopier(e) {
-    try { await api("/api/presse_papiers/recopier", { id: e.id }); toast("📋 Recopié", "succes", 1400); }
-    catch (err) { toast("😕 " + err.message, "erreur"); }
+    try { await api("/api/presse_papiers/recopier", { id: e.id }); toast("Recopié", "succes", 1400); }
+    catch (err) { toast(err.message, "erreur"); }
     recharger();
   }
 

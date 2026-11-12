@@ -235,7 +235,7 @@
       await charger();
       const quand = nouveauDebut.toLocaleDateString(I18N.locale(), { weekday: "short", day: "numeric", month: "short" }) + (x.journee ? "" : " " + t("à {heure}", { heure: x.debut.slice(11, 16) }));
       toast(t(copier ? "⧉ Copié au {quand}" : "📅 Déplacé au {quand}", { quand }), "succes");
-    } catch (err) { toast("😕 " + err.message, "erreur"); await charger(); }
+    } catch (err) { toast(err.message, "erreur"); await charger(); }
   }
 
   /** Glisser-déposer d'un jour à l'autre (vue mois, journée entière).
@@ -472,7 +472,7 @@
             await api("/api/agenda/enregistrer", { element: e });
             fermer(); A.ref = new Date(e.debut); await charger();
             toast(source.id ? "Rendez-vous modifié" : "Rendez-vous ajouté", "succes");
-          } catch (err) { toast("😕 " + err.message, "erreur"); }
+          } catch (err) { toast(err.message, "erreur"); }
         } }, e.id ? "Enregistrer" : "Ajouter"))]);
     majJournee();
     setTimeout(() => titre.focus(), 60);
@@ -481,6 +481,6 @@
   // La ligne « maintenant » avance toute seule.
   setInterval(() => { if (S.vue === "agenda" && A.mode === "semaine" && !$("#voile").classList.contains("visible")) dessiner(); }, 300000);
 
-  VUES.agenda = { afficher: () => charger().catch(err => toast("😕 " + err.message, "erreur")),
+  VUES.agenda = { afficher: () => charger().catch(err => toast(err.message, "erreur")),
     titre: "Agenda", icone: "📅", groupe: "quotidien", ordre: 30 };
 })();

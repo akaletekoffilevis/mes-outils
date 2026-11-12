@@ -209,7 +209,7 @@
   // -- actions -------------------------------------------------------------------
   async function ouvrir(port) {
     try { await api("/api/ports/ouvrir", { port }); }
-    catch (e) { toast("😕 " + e.message, "erreur", 6000); }
+    catch (e) { toast(e.message, "erreur", 6000); }
   }
 
   function arreter(l) {
@@ -219,9 +219,9 @@
       try {
         const r = await api("/api/ports/arreter", { pid: l.pid, nom: l.nom, arbre: arbre.checked });
         fermer();
-        toast("⛔ " + t("{nom} arrêté", { nom: r.nom }), "succes");
+        toast(t("{nom} arrêté", { nom: r.nom }), "succes");
         await charger(true);
-      } catch (e) { fermer(); toast("😕 " + e.message, "erreur", 8000); charger(true); }
+      } catch (e) { fermer(); toast(e.message, "erreur", 8000); charger(true); }
     } }, "⛔ " + t("Arrêter"));
     fenetre([
       el("div", { class: "gros" }, "⛔"),

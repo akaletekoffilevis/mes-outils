@@ -159,7 +159,7 @@
     T.demande = false;
     dessiner();
   }
-  const recharger = () => charger().catch(e => toast("😕 " + e.message, "erreur"));
+  const recharger = () => charger().catch(e => toast(e.message, "erreur"));
 
   /** Noms de projets venant de l'onglet Projets, s'il existe (sinon rien). */
   async function projetsExternes() {
@@ -213,9 +213,9 @@
       const demarrer = async () => {
         try {
           T.r.etat = await api("/api/temps/demarrer", { projet: projet.value, note: note.value, pomodoro: pomo.checked });
-          toast("⏱️ C'est parti !", "succes", 1500);
+          toast("C'est parti !", "succes", 1500);
           recharger();
-        } catch (err) { toast("😕 " + err.message, "erreur"); projet.focus(); }
+        } catch (err) { toast(err.message, "erreur"); projet.focus(); }
       };
       const recents = suggestions().slice(0, 8);
       return el("div", { class: "carte tp-haut" },
@@ -359,12 +359,12 @@
       if (r.session) toast(t("✅ {duree} sur « {projet} »", { duree: duree(r.session.minutes), projet: r.session.projet }), "succes");
       else toast("Moins d'une minute : session non enregistrée.");
       recharger();
-    } catch (e) { toast("😕 " + e.message, "erreur"); recharger(); }
+    } catch (e) { toast(e.message, "erreur"); recharger(); }
   }
 
   async function modifierEnCours(valeurs) {
     try { T.r.etat = await api("/api/temps/en_cours", valeurs); dessiner(); }
-    catch (e) { toast("😕 " + e.message, "erreur"); recharger(); }
+    catch (e) { toast(e.message, "erreur"); recharger(); }
   }
 
   function editerEnCours() {
@@ -391,11 +391,11 @@
       const session = { ...b, projet: projet.value, note: note.value, debut: debut.value, fin: fin.value };
       try {
         await api(x ? "/api/temps/modifier" : "/api/temps/ajouter", { session });
-        fermer(); toast("✅ Session enregistrée", "succes", 1600);
+        fermer(); toast("Session enregistrée", "succes", 1600);
         // Une session ajoutée hors de la période affichée : on va la montrer.
         if (!x && debut.value) T.date = debut.value.slice(0, 10);
         recharger();
-      } catch (e) { toast("😕 " + e.message, "erreur"); }
+      } catch (e) { toast(e.message, "erreur"); }
     };
     fenetre([
       el("h3", {}, x ? "✏️ Modifier la session" : "＋ Session oubliée"),
@@ -411,8 +411,8 @@
 
   async function supprimerSession(x) {
     if (!(await confirmer("🗑️", "Supprimer cette session ?", "Elle disparaît des totaux et des exports.", "Supprimer"))) return;
-    try { await api("/api/temps/supprimer", { id: x.id }); toast("🗑️ Session supprimée"); recharger(); }
-    catch (e) { toast("😕 " + e.message, "erreur"); }
+    try { await api("/api/temps/supprimer", { id: x.id }); toast("Session supprimée"); recharger(); }
+    catch (e) { toast(e.message, "erreur"); }
   }
 
   async function exporter() {
@@ -421,7 +421,7 @@
       const lien = el("a", { href: URL.createObjectURL(new Blob([r.csv], { type: "text/csv;charset=utf-8" })), download: r.nom });
       document.body.append(lien); lien.click(); lien.remove();
       setTimeout(() => URL.revokeObjectURL(lien.href), 5000);
-    } catch (e) { toast("😕 " + e.message, "erreur"); }
+    } catch (e) { toast(e.message, "erreur"); }
   }
 
   function reglages() {
@@ -444,8 +444,8 @@
         el("button", { class: "btn principal", onclick: async () => {
           const valeurs = { pomodoro_par_defaut: parDefaut.checked };
           boite.querySelectorAll("input").forEach(i => { valeurs[i.dataset.cle] = Number(i.value); });
-          try { await api("/api/temps/reglages", valeurs); fermer(); toast("✅ Enregistré", "succes", 1400); recharger(); }
-          catch (e) { toast("😕 " + e.message, "erreur"); }
+          try { await api("/api/temps/reglages", valeurs); fermer(); toast("Enregistré", "succes", 1400); recharger(); }
+          catch (e) { toast(e.message, "erreur"); }
         } }, "Enregistrer"))]);
   }
 

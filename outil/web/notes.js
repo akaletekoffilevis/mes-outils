@@ -213,7 +213,7 @@
         N.notes = notes;
         const ordre = notes.map(x => x.id);
         if (S.config) S.config.ordre_notes = ordre;
-        api("/api/reglages/enregistrer", { ordre_notes: ordre }).catch(e => toast("😕 " + e.message, "erreur"));
+        api("/api/reglages/enregistrer", { ordre_notes: ordre }).catch(e => toast(e.message, "erreur"));
         dessinerGrille();
       });
       grille.append(card);
@@ -297,7 +297,7 @@
           if (!(await confirmer("🗑️", "Supprimer cette note ?", "Elle disparaît définitivement.", "Supprimer"))) { editer(n); return; }
           await api("/api/notes/supprimer", { id: n.id });
           N.notes = N.notes.filter(x => x.id !== n.id);
-          dessiner(); toast("🗑️ Note supprimée");
+          dessiner(); toast("Note supprimée");
         } }, "🗑 Supprimer") : null,
         el("button", { class: "btn principal", onclick: async () => {
           clearTimeout(timer);
@@ -319,6 +319,6 @@
     observateur.observe($("#voile"), { attributes: true, attributeFilter: ["class"] });
   }
 
-  VUES.notes = { afficher: () => charger().catch(e => toast("😕 " + e.message, "erreur")), nouvelle,
+  VUES.notes = { afficher: () => charger().catch(e => toast(e.message, "erreur")), nouvelle,
     titre: "Notes", icone: "📝", groupe: "quotidien", ordre: 20 };
 })();

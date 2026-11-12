@@ -186,7 +186,7 @@
         versChamp ? el("button", { class: "btn principal", onclick: () => { versChamp(valeur.textContent); } }, "✅ Utiliser")
           : el("button", { class: "btn principal", onclick: async () => {
             await api("/api/coffre/presse_papiers", { texte: valeur.textContent });
-            toast("📋 Copié — effacé du presse-papiers dans 30 s", "succes");
+            toast("Copié — effacé du presse-papiers dans 30 s", "succes");
           } }, "📋 Copier"))]);
     relancer();
   }
@@ -216,7 +216,7 @@
   }
 
   async function afficher() {
-    try { suivreEtat(await api("/api/coffre/etat", {})); } catch (e) { toast("😕 " + e.message, "erreur"); return; }
+    try { suivreEtat(await api("/api/coffre/etat", {})); } catch (e) { toast(e.message, "erreur"); return; }
     if (!C.etat.existe) return ecranCreation();
     if (!C.etat.ouvert) return ecranVerrouille();
     await chargerListe();
@@ -228,10 +228,10 @@
     const compris = el("input", { type: "checkbox", style: "accent-color:var(--violet);width:17px;height:17px" });
     const bouton = el("button", { class: "btn principal", onclick: async () => {
       if (m1.value !== m2.value) { toast("Les deux mots de passe ne sont pas identiques", "erreur"); return; }
-      if (!compris.checked) { toast("Cochez la case : c'est important 🙏", "erreur"); return; }
+      if (!compris.checked) { toast("Cochez la case : c'est important", "erreur"); return; }
       bouton.disabled = true; bouton.textContent = t("Création…");
-      try { await appel("/api/coffre/creer", { maitre: m1.value }); m1.value = m2.value = ""; toast("🎉 Coffre créé et ouvert !", "succes"); await chargerListe(); }
-      catch (e) { toast("😕 " + e.message, "erreur", 6000); bouton.disabled = false; bouton.textContent = t("Créer le coffre"); }
+      try { await appel("/api/coffre/creer", { maitre: m1.value }); m1.value = m2.value = ""; toast("Coffre créé et ouvert !", "succes"); await chargerListe(); }
+      catch (e) { toast(e.message, "erreur", 6000); bouton.disabled = false; bouton.textContent = t("Créer le coffre"); }
     } }, "Créer le coffre");
     racine().replaceChildren(el("div", { class: "coffre-ecran" },
       el("div", { class: "cadenas" }, "🔐"),
@@ -252,7 +252,7 @@
     async function ouvrir() {
       bouton.disabled = true; bouton.textContent = t("Ouverture…");
       try { await appel("/api/coffre/ouvrir", { maitre: m.value }); m.value = ""; await chargerListe(); }
-      catch (e) { toast("😕 " + e.message, "erreur", 5000); m.select(); bouton.disabled = false; bouton.textContent = t("🔓 Déverrouiller"); }
+      catch (e) { toast(e.message, "erreur", 5000); m.select(); bouton.disabled = false; bouton.textContent = t("🔓 Déverrouiller"); }
     }
     racine().replaceChildren(el("div", { class: "coffre-ecran" },
       el("div", { class: "cadenas" }, "🔒"),
@@ -327,7 +327,7 @@
     try {
       await appel("/api/coffre/copier", { id: e.id, champ });
       toast(champ === "mot_de_passe" ? "🔑 Mot de passe copié — effacé dans 30 s" : "👤 Identifiant copié", "succes");
-    } catch (err) { toast("😕 " + err.message, "erreur"); }
+    } catch (err) { toast(err.message, "erreur"); }
   }
 
   // -- formulaire -----------------------------------------------------------------
@@ -367,7 +367,7 @@
       el("div", { class: "actions" },
         e.id ? el("button", { class: "btn discret", style: "margin-right:auto;color:var(--rouge)", onclick: async () => {
           if (!(await confirmer("🗑️", t("Supprimer « {nom} » ?", { nom: e.titre }), "L'entrée disparaît du coffre. Rien ne pourra la récupérer.", "Supprimer"))) { editer(entree); return; }
-          await appel("/api/coffre/supprimer", { id: e.id }); await chargerListe(); toast("🗑️ Entrée supprimée");
+          await appel("/api/coffre/supprimer", { id: e.id }); await chargerListe(); toast("Entrée supprimée");
         } }, "🗑 Supprimer") : null,
         el("button", { class: "btn", onclick: fermer }, "Annuler"),
         el("button", { class: "btn principal", onclick: async () => {
@@ -375,7 +375,7 @@
           if (mdpModifie) x.mot_de_passe = mdp.value;
           if (noteChargee) x.note = note.value;
           try { await appel("/api/coffre/enregistrer", { entree: x }); fermer(); await chargerListe(); toast(e.id ? "✏️ Entrée modifiée" : "🎉 Ajouté au coffre !", "succes"); }
-          catch (err) { toast("😕 " + err.message, "erreur"); }
+          catch (err) { toast(err.message, "erreur"); }
         } }, e.id ? "Enregistrer" : "Ajouter"))]);
     setTimeout(() => titre.focus(), 60);
   }

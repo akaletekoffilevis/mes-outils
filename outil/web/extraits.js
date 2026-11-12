@@ -92,7 +92,7 @@
     if (X.etiquette && !X.etiquettes.includes(X.etiquette)) { X.etiquette = ""; return charger(); }
     dessiner();
   }
-  const recharger = () => charger().catch(e => toast("😕 " + e.message, "erreur"));
+  const recharger = () => charger().catch(e => toast(e.message, "erreur"));
 
   function dessiner() {
     const vue = $("#vue-extraits");
@@ -160,7 +160,7 @@
   async function copierExtrait(x) {
     try {
       await api("/api/extraits/copier", { id: x.id });
-      toast("📋 Copié", "succes", 1400);
+      toast("Copié", "succes", 1400);
     } catch (e) {
       // Presse-papiers du système occupé (ou absent) : on essaie par le navigateur.
       await copier(x.contenu);
@@ -171,13 +171,13 @@
 
   async function epingler(x) {
     try { await api("/api/extraits/epingler", { id: x.id, epingle: !x.epingle }); recharger(); }
-    catch (e) { toast("😕 " + e.message, "erreur"); }
+    catch (e) { toast(e.message, "erreur"); }
   }
 
   async function supprimer(x) {
     if (!(await confirmer("🗑️", "Supprimer cet extrait ?", "Il disparaît définitivement.", "Supprimer"))) return;
-    try { await api("/api/extraits/supprimer", { id: x.id }); toast("🗑️ Extrait supprimé"); recharger(); }
-    catch (e) { toast("😕 " + e.message, "erreur"); }
+    try { await api("/api/extraits/supprimer", { id: x.id }); toast("Extrait supprimé"); recharger(); }
+    catch (e) { toast(e.message, "erreur"); }
   }
 
   function editer(x) {
@@ -197,8 +197,8 @@
         etiquettes: etiquettes.value, epingle: epingle.checked };
       try {
         await api("/api/extraits/enregistrer", { extrait });
-        fermer(); toast("✅ Extrait enregistré", "succes", 1600); recharger();
-      } catch (e) { toast("😕 " + e.message, "erreur"); }
+        fermer(); toast("Extrait enregistré", "succes", 1600); recharger();
+      } catch (e) { toast(e.message, "erreur"); }
     };
     fenetre([el("div", { class: "ex-editeur" },
       el("h3", {}, x ? "✏️ Modifier l'extrait" : "✨ Nouvel extrait"),

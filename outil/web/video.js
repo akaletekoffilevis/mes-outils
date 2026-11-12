@@ -83,7 +83,7 @@
   }
 
   async function charger() {
-    try { const r = await api("/api/video/lister", {}); V.videos = r.videos || []; } catch (e) { V.videos = []; toast("😕 " + e.message, "erreur"); }
+    try { const r = await api("/api/video/lister", {}); V.videos = r.videos || []; } catch (e) { V.videos = []; toast(e.message, "erreur"); }
     if (V.index >= V.videos.length) V.index = V.videos.length ? 0 : -1;
     dessiner();
   }
@@ -117,21 +117,21 @@
     const chemins = await choisirFichiers("Choisir des fichiers vidéo", "", true, "Vidéo (*.mp4;*.webm;*.ogg;*.mov;*.avi;*.mkv;*.m4v)|*.mp4;*.webm;*.ogg;*.mov;*.avi;*.mkv;*.m4v");
     if (!chemins || !chemins.length) return;
     for (const c of chemins) {
-      try { await api("/api/video/ajouter", { chemin: c }); } catch (e) { toast("😕 " + e.message, "erreur"); }
+      try { await api("/api/video/ajouter", { chemin: c }); } catch (e) { toast(e.message, "erreur"); }
     }
     await charger();
   }
 
   async function supprimer(id) {
     if (!(await confirmer(icone("trash-2"), t("Supprimer cette vidéo ?"), "", "Supprimer"))) return;
-    try { await api("/api/video/supprimer", { id }); toast(t("Vidéo supprimée"), "succes", 1500); } catch (e) { toast("😕 " + e.message, "erreur"); }
+    try { await api("/api/video/supprimer", { id }); toast(t("Vidéo supprimée"), "succes", 1500); } catch (e) { toast(e.message, "erreur"); }
     await charger();
   }
 
   async function vider() {
     if (!V.videos.length) return;
     if (!(await confirmer(icone("trash-2"), "Vider la liste ?", "Toutes les vidéos sont retirées (les fichiers restent sur le PC).", "Vider"))) return;
-    try { await api("/api/video/vider", {}); } catch (e) { toast("😕 " + e.message, "erreur"); }
+    try { await api("/api/video/vider", {}); } catch (e) { toast(e.message, "erreur"); }
     await charger();
   }
 

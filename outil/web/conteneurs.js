@@ -168,7 +168,7 @@
         el("h3", {}, "Docker n'est pas installé"),
         el("p", {}, "Docker sert à faire tourner des bases de données et des applis dans des conteneurs, sans rien installer d'autre sur ce PC."),
         el("div", { class: "boutons" },
-          el("button", { class: "btn principal", onclick: () => api("/api/conteneurs/telecharger", {}).catch(e => toast("😕 " + e.message, "erreur")) },
+          el("button", { class: "btn principal", onclick: () => api("/api/conteneurs/telecharger", {}).catch(e => toast(e.message, "erreur")) },
             "🌐 " + t("Télécharger Docker Desktop")),
           el("button", { class: "btn", onclick: afficher }, "🔄 " + t("Réessayer")))));
   }
@@ -191,7 +191,7 @@
   async function demarrerDesktop(bouton) {
     if (D.attente) return;
     try { await api("/api/conteneurs/desktop", {}); }
-    catch (e) { toast("😕 " + e.message, "erreur", 6000); return; }
+    catch (e) { toast(e.message, "erreur", 6000); return; }
     D.attente = true;
     bouton.disabled = true;
     bouton.replaceChildren(el("span", { class: "attente" }, "⏳"), " " + t("Docker Desktop démarre…"));
@@ -202,9 +202,9 @@
         if (!$("#vue-conteneurs").classList.contains("actif")) return;
         let r;
         try { r = await api("/api/conteneurs/liste", {}); } catch { continue; }
-        if (r.demarre) { D.donnees = r; toast("🐳 " + t("Docker est prêt"), "succes"); dessiner(); return; }
+        if (r.demarre) { D.donnees = r; toast(t("Docker est prêt"), "succes"); dessiner(); return; }
       }
-      toast("⌛ " + t("Docker Desktop met du temps à démarrer : réessayez dans un instant."), "", 6000);
+      toast(t("Docker Desktop met du temps à démarrer : réessayez dans un instant."), "", 6000);
       ecranArrete();
     } finally { D.attente = false; }
   }
@@ -278,8 +278,8 @@
 
   async function action(nom, c, bouton) {
     if (bouton) { bouton.disabled = true; bouton.replaceChildren(el("span", { class: "attente" }, "⏳")); }
-    try { await api("/api/conteneurs/" + nom, { id: c.id }); toast("🐳 " + t(MESSAGES[nom]), "succes"); }
-    catch (e) { toast("😕 " + e.message, "erreur", 8000); }
+    try { await api("/api/conteneurs/" + nom, { id: c.id }); toast(t(MESSAGES[nom]), "succes"); }
+    catch (e) { toast(e.message, "erreur", 8000); }
     afficher();
   }
 
@@ -290,8 +290,8 @@
 
   async function supprimer(c) {
     if (!(await confirmer("🗑️", "Supprimer ce conteneur ?", "Le conteneur est retiré. Ses volumes et son image restent sur ce PC.", "Supprimer"))) return;
-    try { await api("/api/conteneurs/supprimer", { id: c.id }); toast("🗑️ " + t("Conteneur supprimé"), "succes"); }
-    catch (e) { toast("😕 " + e.message, "erreur", 8000); }
+    try { await api("/api/conteneurs/supprimer", { id: c.id }); toast(t("Conteneur supprimé"), "succes"); }
+    catch (e) { toast(e.message, "erreur", 8000); }
     afficher();
   }
 
@@ -300,14 +300,14 @@
     if (bouton) { bouton.disabled = true; bouton.replaceChildren(el("span", { class: "attente" }, "⏳")); }
     try {
       await api("/api/conteneurs/projet/" + nom, { projet });
-      toast("📦 " + t(nom === "demarrer" ? "Projet démarré" : "Projet arrêté"), "succes");
-    } catch (e) { toast("😕 " + e.message, "erreur", 8000); }
+      toast(t(nom === "demarrer" ? "Projet démarré" : "Projet arrêté"), "succes");
+    } catch (e) { toast(e.message, "erreur", 8000); }
     afficher();
   }
 
   async function ouvrir(port) {
     try { await api("/api/conteneurs/ouvrir", { port }); }
-    catch (e) { toast("😕 " + e.message, "erreur"); }
+    catch (e) { toast(e.message, "erreur"); }
   }
 
   function grandeFenetre(contenu) {

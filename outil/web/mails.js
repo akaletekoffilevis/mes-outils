@@ -301,10 +301,10 @@
       try {
         await api("/api/mail/connexion", { adresse: adresse.value.trim(), secret: secret.value, reglages });
         secret.value = "";
-        toast("🎉 Boîte mail connectée !", "succes");
+        toast("Boîte mail connectée !", "succes");
         M.etat = await api("/api/mail/etat");
         dessinerBoite(); rafraichir(); compterMails();
-      } catch (e) { toast("😕 " + e.message, "erreur", 8000); }
+      } catch (e) { toast(e.message, "erreur", 8000); }
       finally { bouton.disabled = false; bouton.textContent = t("Connecter"); }
     }
     secret.addEventListener("keydown", e => { if (e.key === "Enter") connecter(); });
@@ -446,9 +446,9 @@
       envoyer.disabled = true; envoyer.textContent = t("Envoi…");
       try {
         await api("/api/mail/envoyer", { a: a.value, cc: cc.value, sujet: objet.value, corps: corps.value, reponse_a: v.reponse_a, references: v.references });
-        fermer(); toast("🚀 Mail envoyé !", "succes");
+        fermer(); toast("Mail envoyé !", "succes");
         if (M.dossier === "envoyes") rafraichir();
-      } catch (e) { toast("😕 " + e.message, "erreur", 7000); envoyer.disabled = false; envoyer.textContent = t("📨 Envoyer"); }
+      } catch (e) { toast(e.message, "erreur", 7000); envoyer.disabled = false; envoyer.textContent = t("📨 Envoyer"); }
     } }, "📨 Envoyer");
     // Application Modèles de messages : insérer un texte prêt à l'emploi.
     // Le mail en cours est gardé (la fenêtre est remplacée le temps du choix).

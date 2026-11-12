@@ -36,7 +36,7 @@
       qr.make();
       Q.svg = qr.createSvgTag(Q.taille, 4);
       dessiner();
-    } catch (e) { toast("Probleme : " + e.message, "erreur"); }
+    } catch (e) { toast("Probleme :" + e.message, "erreur"); }
   }
 
   function dessiner() {

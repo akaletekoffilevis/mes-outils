@@ -165,7 +165,7 @@
   }
 
   async function terminal(s) {
-    try { await api("/api/ssh/terminal", { alias: s.alias }); toast("💻 Terminal ouvert", "succes"); }
+    try { await api("/api/ssh/terminal", { alias: s.alias }); toast("Terminal ouvert", "succes"); }
     catch (e) { toast(e.message, "erreur"); }
   }
 
@@ -176,8 +176,8 @@
     if (!oui) return;
     try {
       const r = await api("/api/ssh/retirer", { alias: s.alias });
-      if (r.avertissement) toast("⚠️ " + r.avertissement, "erreur", 9000);
-      else toast("🗑️ Clé retirée du serveur et de ce PC", "succes");
+      if (r.avertissement) toast(r.avertissement, "erreur", 9000);
+      else toast("Clé retirée du serveur et de ce PC", "succes");
       afficher();
     } catch (e) { toast(e.message, "erreur"); }
   }

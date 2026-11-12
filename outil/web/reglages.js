@@ -129,14 +129,14 @@
   async function enregistrer(valeurs, recharger = false) {
     try {
       R.infos = await api("/api/reglages/enregistrer", valeurs);
-      toast("✅ " + t("Enregistré"), "succes", 1400);
+      toast(t("Enregistré"), "succes", 1400);
       if (recharger) setTimeout(() => location.reload(), 500);
       else {
         S.masques = R.infos.onglets_masques;
         if (S.config && "prenom" in valeurs) { S.config.prenom = R.infos.prenom; horloge(); }
         construireMenu();
       }
-    } catch (e) { toast("😕 " + e.message, "erreur"); }
+    } catch (e) { toast(e.message, "erreur"); }
   }
 
   function carte(icone, titre, ...contenu) {
@@ -195,8 +195,8 @@
 
     const interrupteur = (genre, texte) => el("label", { class: "case-reg" },
       el("input", { type: "checkbox", checked: i.raccourcis[genre] ? "" : null, onchange: async e => {
-        try { R.infos = await api("/api/reglages/raccourci", { genre, actif: e.target.checked }); toast("✅ " + t("Enregistré"), "succes", 1400); }
-        catch (err) { e.target.checked = !e.target.checked; toast("😕 " + err.message, "erreur"); }
+        try { R.infos = await api("/api/reglages/raccourci", { genre, actif: e.target.checked }); toast(t("Enregistré"), "succes", 1400); }
+        catch (err) { e.target.checked = !e.target.checked; toast(err.message, "erreur"); }
       } }), texte);
 
     const majBtn = el("button", { class: "btn", onclick: async () => {
@@ -221,7 +221,7 @@
           }
         } else if (r.change) { toast(t("✅ Mis à jour : la page va se recharger"), "succes", 3000); toast(t("Relancez la bulle (clic droit › Quitter, puis le raccourci) pour finir la mise à jour."), "", 9000); setTimeout(() => location.reload(), 2500); }
         else toast(t("Déjà à jour 👍"), "succes");
-      } catch (e) { toast("😕 " + e.message, "erreur", 7000); }
+      } catch (e) { toast(e.message, "erreur", 7000); }
       finally { majBtn.disabled = false; majBtn.textContent = t("🔄 Rechercher une mise à jour"); }
     } }, "🔄 Rechercher une mise à jour");
 
@@ -279,7 +279,7 @@
             el("div", {}, el("span", {}, "Glisser-déposer"), el("span", {}, "Réorganiser les tuiles, le menu, les notes, les contacts")))),
         carte("🧰", "À propos", el("p", { class: "aide" }, t("Version {v}", { v: i.version })),
           el("div", { style: "display:flex;gap:8px;flex-wrap:wrap" },
-            el("button", { class: "btn", onclick: () => api("/api/github/ouvrir_page", { url: i.depot }).catch(e => toast("😕 " + e.message, "erreur")) }, "🌐 Code source sur GitHub"),
+            el("button", { class: "btn", onclick: () => api("/api/github/ouvrir_page", { url: i.depot }).catch(e => toast(e.message, "erreur")) }, "🌐 Code source sur GitHub"),
             majBtn))));
   }
 
@@ -307,7 +307,7 @@
     fenetre([el("div", { class: "gros" }, "⏳"), el("h3", {}, t("Mise à jour de Mes outils")), etat], true);
     let r;
     try { r = await api("/api/reglages/installer_mise_a_jour", {}); }
-    catch (e) { fermer(); toast("😕 " + e.message, "erreur", 8000); return; }
+    catch (e) { fermer(); toast(e.message, "erreur", 8000); return; }
     if (r.a_jour) { fermer(); toast(t("Déjà à jour 👍"), "succes"); return; }
     etat.textContent = t("Installation en cours : Mes outils redémarre tout seul, cette page se rechargera.");
     const debut = Date.now();
@@ -328,10 +328,10 @@
   }
 
   async function majDossiers(liste) {
-    try { R.infos = await api("/api/reglages/dossiers", { dossiers: liste }); dessiner(); toast("✅ " + t("Enregistré"), "succes", 1400); }
-    catch (e) { toast("😕 " + e.message, "erreur"); }
+    try { R.infos = await api("/api/reglages/dossiers", { dossiers: liste }); dessiner(); toast(t("Enregistré"), "succes", 1400); }
+    catch (e) { toast(e.message, "erreur"); }
   }
 
-  VUES.reglages = { afficher: () => charger().catch(e => toast("😕 " + e.message, "erreur")),
+  VUES.reglages = { afficher: () => charger().catch(e => toast(e.message, "erreur")),
     titre: "Réglages", icone: "⚙️", groupe: "systeme", ordre: 90 };
 })();

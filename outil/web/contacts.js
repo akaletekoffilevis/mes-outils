@@ -329,7 +329,7 @@
         C.r.contacts = contacts;
         const ordre = contacts.map(x => x.id);
         if (S.config) S.config.ordre_contacts = ordre;
-        api("/api/reglages/enregistrer", { ordre_contacts: ordre }).catch(e => toast("😕 " + e.message, "erreur"));
+        api("/api/reglages/enregistrer", { ordre_contacts: ordre }).catch(e => toast(e.message, "erreur"));
         dessinerListe();
       });
       lignes.append(l);

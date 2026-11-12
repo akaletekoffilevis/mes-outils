@@ -65,7 +65,7 @@
   }
 
   async function charger() {
-    try { const r = await api("/api/musique/lister", {}); M.pistes = r.pistes || []; } catch (e) { M.pistes = []; toast("😕 " + e.message, "erreur"); }
+    try { const r = await api("/api/musique/lister", {}); M.pistes = r.pistes || []; } catch (e) { M.pistes = []; toast(e.message, "erreur"); }
     if (M.index >= M.pistes.length) M.index = M.pistes.length ? 0 : -1;
     dessiner();
   }
@@ -102,21 +102,21 @@
     const chemins = await choisirFichiers("Choisir des fichiers audio", "", true, "Audio (*.mp3;*.wav;*.ogg;*.m4a;*.flac;*.aac;*.opus)|*.mp3;*.wav;*.ogg;*.m4a;*.flac;*.aac;*.opus");
     if (!chemins || !chemins.length) return;
     for (const c of chemins) {
-      try { await api("/api/musique/ajouter", { chemin: c }); } catch (e) { toast("😕 " + e.message, "erreur"); }
+      try { await api("/api/musique/ajouter", { chemin: c }); } catch (e) { toast(e.message, "erreur"); }
     }
     await charger();
   }
 
   async function supprimer(id) {
     if (!(await confirmer(icone("trash-2"), t("Supprimer cette piste ?"), "", "Supprimer"))) return;
-    try { await api("/api/musique/supprimer", { id }); toast(t("Piste supprimée"), "succes", 1500); } catch (e) { toast("😕 " + e.message, "erreur"); }
+    try { await api("/api/musique/supprimer", { id }); toast(t("Piste supprimée"), "succes", 1500); } catch (e) { toast(e.message, "erreur"); }
     await charger();
   }
 
   async function vider() {
     if (!M.pistes.length) return;
     if (!(await confirmer(icone("trash-2"), "Vider la playlist ?", "Toutes les pistes sont retirées (les fichiers restent sur le PC).", "Vider"))) return;
-    try { await api("/api/musique/vider", {}); } catch (e) { toast("😕 " + e.message, "erreur"); }
+    try { await api("/api/musique/vider", {}); } catch (e) { toast(e.message, "erreur"); }
     await charger();
   }
 

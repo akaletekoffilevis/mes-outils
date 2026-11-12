@@ -361,7 +361,7 @@
       c.type === "json" ? el("div", { class: "rq-tete", style: "margin-top:8px" },
         el("button", { class: "btn", onclick: () => {
           try { c.texte = JSON.stringify(JSON.parse(c.texte), null, 2); zone.value = c.texte; verifier(); }
-          catch (e) { toast("❌ " + e.message, "erreur", 5000); }
+          catch (e) { toast(e.message, "erreur", 5000); }
         } }, "✨ Mettre en forme"), etat) : null);
   }
 
@@ -402,8 +402,8 @@
       el("button", { class: "btn", onclick: async () => {
         const variables = {};
         for (const l of R.variables) if (l.actif && l.cle.trim()) variables[l.cle.trim()] = l.valeur;
-        try { prendreEtat(await api("/api/requetes/variables", { variables })); toast("💾 Variables enregistrées", "succes"); dessinerRequete(); }
-        catch (e) { toast("😕 " + e.message, "erreur", 6000); }
+        try { prendreEtat(await api("/api/requetes/variables", { variables })); toast("Variables enregistrées", "succes"); dessinerRequete(); }
+        catch (e) { toast(e.message, "erreur", 6000); }
       } }, "💾 " + t("Enregistrer les variables")));
   }
 
@@ -424,7 +424,7 @@
   async function copierCurl() {
     if (!R.req.url.trim()) { toast("Indiquez une adresse", "erreur"); return; }
     try { const r = await api("/api/requetes/curl", { requete: propre(R.req) }); copier(r.commande, "📋 Commande cURL copiée"); }
-    catch (e) { toast("😕 " + e.message, "erreur", 6000); }
+    catch (e) { toast(e.message, "erreur", 6000); }
   }
 
   function charger(requete, ident = null, nom = "") {
@@ -433,8 +433,8 @@
     for (const cle of ["jeton", "utilisateur", "mot_de_passe"]) if (R.req.auth[cle] === MASQUE) R.req.auth[cle] = "";
     R.idEnregistree = ident; R.nomEnregistree = nom;
     const texte = JSON.stringify(requete);
-    if (texte.includes(MASQUE)) toast("🔒 Valeurs masquées (••••) à ressaisir avant l'envoi", "", 4500);
-    else if (ident && requete.auth && requete.auth.type !== "aucune") toast("🔒 Authentification à ressaisir (elle n'est pas enregistrée)", "", 4500);
+    if (texte.includes(MASQUE)) toast("Valeurs masquées (••••) à ressaisir avant l'envoi", "", 4500);
+    else if (ident && requete.auth && requete.auth.type !== "aucune") toast("Authentification à ressaisir (elle n'est pas enregistrée)", "", 4500);
     if (R.req.auth.type !== "aucune" && (texte.includes(MASQUE) || ident)) R.ongletReq = "auth";
     dessinerRequete();
   }
@@ -453,9 +453,9 @@
         prendreEtatSansVariables(r);
         R.idEnregistree = r.enregistree.id; R.nomEnregistree = r.enregistree.nom;
         R.ongletListe = "enregistrees";
-        fermer(); toast("💾 Requête enregistrée", "succes");
+        fermer(); toast("Requête enregistrée", "succes");
         dessinerRequete(); dessinerCote();
-      } catch (e) { toast("😕 " + e.message, "erreur", 6000); }
+      } catch (e) { toast(e.message, "erreur", 6000); }
     };
     fenetre([
       el("h3", {}, "💾 " + t("Enregistrer la requête")),
@@ -521,7 +521,7 @@
   async function viderHistorique() {
     if (!(await confirmer("🗑️", "Vider l'historique ?", "Les 50 dernières requêtes envoyées sont effacées.", "Vider"))) return;
     try { prendreEtatSansVariables(await api("/api/requetes/historique/vider", {})); dessinerCote(); }
-    catch (e) { toast("😕 " + e.message, "erreur"); }
+    catch (e) { toast(e.message, "erreur"); }
   }
 
   async function supprimer(e) {
@@ -529,8 +529,8 @@
     try {
       prendreEtatSansVariables(await api("/api/requetes/supprimer", { id: e.id }));
       if (R.idEnregistree === e.id) { R.idEnregistree = null; dessinerRequete(); }
-      toast("🗑️ Requête supprimée"); dessinerCote();
-    } catch (err) { toast("😕 " + err.message, "erreur"); }
+      toast("Requête supprimée"); dessinerCote();
+    } catch (err) { toast(err.message, "erreur"); }
   }
 
   // -- réponse ---------------------------------------------------------------------
