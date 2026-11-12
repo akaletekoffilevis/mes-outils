@@ -232,10 +232,17 @@ def mise_a_jour(_d=None):
         return {"change": False}
     if _git("status", "--porcelain", "--untracked-files=no").stdout.strip():
         raise ValueError("Des fichiers de « Mes outils » ont été modifiés sur ce PC : mise à jour annulée.")
+    # Branche par défaut selon le système.
+    branche = "linux" if systeme.LINUX else "main"
     avant = _git("rev-parse", "HEAD").stdout.strip()
-    r = _git("pull", "--ff-only", delai=120)
+    # Toujours tirer depuis origin/<branche> pour éviter les problèmes de
+    # tracking (branche locale sans upstream, ou branche de fonctionnalité).
+    r = _git("fetch", "origin", branche, delai=120)
     if r.returncode != 0:
-        raise RuntimeError("La mise à jour a échoué : " + (r.stderr or r.stdout).strip()[:300])
+        raise RuntimeError("La mise à jour a échoué (fetch) : " + (r.stderr or r.stdout).strip()[:300])
+    r = _git("merge", "--ff-only", f"origin/{branche}", delai=120)
+    if r.returncode != 0:
+        raise RuntimeError("La mise à jour a échoué (merge) : " + (r.stderr or r.stdout).strip()[:300])
     apres = _git("rev-parse", "HEAD").stdout.strip()
     return {"change": avant != apres, "message": (r.stdout or "").strip()[:500]}
 
