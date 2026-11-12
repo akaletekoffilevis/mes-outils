@@ -27,7 +27,9 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import config  # noqa: E402  (outils.json et dossier donnees)
 import donnees  # noqa: E402  (notes et agenda)
+import musique  # noqa: E402  (lecteur audio local)
 import systeme  # noqa: E402  (tout ce qui dépend de Windows ou de Linux)
+import video  # noqa: E402  (visionneuse vidéo locale)
 
 # MES_OUTILS_PORT : un autre port (essais, seconde copie à côté de la vraie).
 HOTE, PORT = "127.0.0.1", int(os.environ.get("MES_OUTILS_PORT") or 8760)
@@ -408,6 +410,32 @@ class Gestionnaire(BaseHTTPRequestHandler):
                 if os.path.isfile(fichier) and os.path.splitext(nom)[1] in TYPES_FICHIERS:
                     with open(fichier, "rb") as f:
                         return self.repondre(200, f.read(), TYPES_FICHIERS[os.path.splitext(nom)[1]])
+            if chemin == "/fichier/musique":
+                chemin_fichier = urllib.parse.unquote(self.path.split("?chemin=", 1)[-1]) if "?chemin=" in self.path else None
+                if chemin_fichier:
+                    chemin_fichier = os.path.normpath(chemin_fichier)
+                    if os.path.isfile(chemin_fichier) and os.path.splitext(chemin_fichier)[1].lower() in musique.EXTENSIONS:
+                        type_mime = {
+                            ".mp3": "audio/mpeg", ".wav": "audio/wav", ".ogg": "audio/ogg",
+                            ".m4a": "audio/mp4", ".flac": "audio/flac", ".aac": "audio/aac",
+                            ".opus": "audio/opus", ".wma": "audio/x-ms-wma",
+                        }.get(os.path.splitext(chemin_fichier)[1].lower(), "application/octet-stream")
+                        with open(chemin_fichier, "rb") as f:
+                            return self.repondre(200, f.read(), type_mime)
+                return self.repondre(404, {"erreur": "Fichier introuvable."})
+            if chemin == "/fichier/video":
+                chemin_fichier = urllib.parse.unquote(self.path.split("?chemin=", 1)[-1]) if "?chemin=" in self.path else None
+                if chemin_fichier:
+                    chemin_fichier = os.path.normpath(chemin_fichier)
+                    if os.path.isfile(chemin_fichier) and os.path.splitext(chemin_fichier)[1].lower() in video.EXTENSIONS:
+                        type_mime = {
+                            ".mp4": "video/mp4", ".webm": "video/webm", ".ogg": "video/ogg",
+                            ".mov": "video/quicktime", ".avi": "video/x-msvideo",
+                            ".mkv": "video/x-matroska", ".m4v": "video/mp4", ".wmv": "video/x-ms-wmv",
+                        }.get(os.path.splitext(chemin_fichier)[1].lower(), "application/octet-stream")
+                        with open(chemin_fichier, "rb") as f:
+                            return self.repondre(200, f.read(), type_mime)
+                return self.repondre(404, {"erreur": "Fichier introuvable."})
             self.repondre(404, {"erreur": "Introuvable."})
         except Exception as e:  # noqa: BLE001
             journal(traceback.format_exc())
