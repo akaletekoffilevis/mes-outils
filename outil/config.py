@@ -59,7 +59,8 @@ PRIORITES_TACHES = ("basse", "normale", "haute")
 RAPPELS_AGENDA = ("", "0", "5", "15", "30", "60", "1440")
 # Métiers proposés au premier lancement (ils pré-cochent des applications).
 PROFILS = ("freelance", "assistant_virtuel", "assistant_direction", "developpeur",
-           "comptable", "redacteur", "designer", "consultant", "commercial", "personnalise")
+           "comptable", "redacteur", "designer", "consultant", "commercial",
+           "pharmacien", "avocat", "architecte", "enseignant", "medecin", "personnalise")
 # Toujours présentes, jamais désactivables.
 APPS_FIXES = ("accueil", "applications", "reglages")
 

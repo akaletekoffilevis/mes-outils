@@ -1017,9 +1017,14 @@ const PROFILS = {
   designer: { titre: "Designer", icone: "palette", detail: "Projets, contacts, factures, temps passé." },
   consultant: { titre: "Consultant", icone: "users", detail: "Clients, réunions, factures, temps passé." },
   commercial: { titre: "Commercial", icone: "trending-up", detail: "Contacts, missions, factures, réunions." },
+  pharmacien: { titre: "Pharmacien", icone: "pill", detail: "Stock, clients, factures, documents." },
+  avocat: { titre: "Avocat", icone: "scale", detail: "Clients, dossiers, échéances, factures." },
+  architecte: { titre: "Architecte", icone: "ruler", detail: "Projets, clients, factures, documents." },
+  enseignant: { titre: "Enseignant", icone: "graduation-cap", detail: "Classes, notes, documents, agenda." },
+  medecin: { titre: "Médecin", icone: "stethoscope", detail: "Patients, rendez-vous, documents, factures." },
   personnalise: { titre: "Je choisis moi-même", icone: "settings", detail: "Partir de zéro et cocher ce qui sert." },
 };
-const TOUS_PROFILS = ["freelance", "assistant_virtuel", "assistant_direction", "developpeur", "comptable", "redacteur", "designer", "consultant", "commercial"];
+const TOUS_PROFILS = ["freelance", "assistant_virtuel", "assistant_direction", "developpeur", "comptable", "redacteur", "designer", "consultant", "commercial", "pharmacien", "avocat", "architecte", "enseignant", "medecin"];
 // Applications toujours présentes (jamais désactivables).
 const APPS_FIXES = ["accueil", "applications", "reglages"];
 // Catalogue des applications écrites avant la page Applications : description,
@@ -1036,9 +1041,9 @@ const CATALOGUE = {
   boite: { description: "JWT, JSON, Base64, UUID, expressions régulières…", profils: ["developpeur"] },
   musique: { description: "Lecteur audio local : fichiers, playlist, play, pause, volume.", profils: ["developpeur", "freelance", "assistant_virtuel", "assistant_direction"] },
   video: { description: "Visionneuse vidéo locale : fichiers, playlist, play, pause, volume.", profils: ["developpeur", "freelance", "assistant_virtuel", "assistant_direction"] },
-  convertisseur: { description: "Convertisseur d'unités : longueur, masse, température, volume, vitesse, données, temps.", profils: ["freelance", "assistant_virtuel", "assistant_direction", "developpeur", "comptable", "redacteur", "designer", "consultant", "commercial"] },
-  minuteur: { description: "Chronomètre et compte à rebours, avec tours et alarme.", profils: ["freelance", "assistant_virtuel", "assistant_direction", "developpeur", "comptable", "redacteur", "designer", "consultant", "commercial"] },
-  qrcode: { description: "Générer un QR code (texte, URL, Wi-Fi, contact) et le télécharger en SVG ou PNG.", profils: ["freelance", "assistant_virtuel", "assistant_direction", "developpeur", "comptable", "redacteur", "designer", "consultant", "commercial"] },
+  convertisseur: { description: "Convertisseur d'unités : longueur, masse, température, volume, vitesse, données, temps.", profils: ["freelance", "assistant_virtuel", "assistant_direction", "developpeur", "comptable", "redacteur", "designer", "consultant", "commercial", "pharmacien", "avocat", "architecte", "enseignant", "medecin"] },
+  minuteur: { description: "Chronomètre et compte à rebours, avec tours et alarme.", profils: ["freelance", "assistant_virtuel", "assistant_direction", "developpeur", "comptable", "redacteur", "designer", "consultant", "commercial", "pharmacien", "avocat", "architecte", "enseignant", "medecin"] },
+  qrcode: { description: "Générer un QR code (texte, URL, Wi-Fi, contact) et le télécharger en SVG ou PNG.", profils: ["freelance", "assistant_virtuel", "assistant_direction", "developpeur", "comptable", "redacteur", "designer", "consultant", "commercial", "pharmacien", "avocat", "architecte", "enseignant", "medecin"] },
   serveurs: { description: "Vos serveurs de dev et vos serveurs Odoo : démarrer, arrêter, journal.", profils: ["developpeur"] },
   projets: { description: "Vos projets : VS Code, terminal, serveurs de dev, état Git.", profils: ["developpeur"] },
   github: { description: "Dépôts, pull requests, issues, état des tests GitHub.", profils: ["developpeur"] },
