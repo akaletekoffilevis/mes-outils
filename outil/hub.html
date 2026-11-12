@@ -14,7 +14,8 @@
     if (nom === "auto") nom = matchMedia("(prefers-color-scheme: dark)").matches ? "sombre" : "clair";
     if (!["clair", "sombre", "sepia", "contraste"].includes(nom)) nom = "clair";
     document.documentElement.dataset.theme = nom;
-    try { document.documentElement.dataset.accent = localStorage.getItem("mes-outils-accent") || "violet"; } catch {} })();
+    try { document.documentElement.dataset.accent = localStorage.getItem("mes-outils-accent") || "violet"; } catch {}
+    try { document.documentElement.dataset.densite = localStorage.getItem("mes-outils-densite") || "confortable"; } catch {} })();
 </script>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect width='24' height='24' rx='6' fill='%235b5bd6'/><g fill='none' stroke='white' stroke-width='2'><rect x='6' y='6' width='5' height='5' rx='1'/><rect x='13' y='6' width='5' height='5' rx='1'/><rect x='6' y='13' width='5' height='5' rx='1'/><rect x='13' y='13' width='5' height='5' rx='1'/></g></svg>">
 <style>
@@ -83,6 +84,19 @@
   :root[data-theme="sombre"][data-accent="vert"] { --violet: #62d6a2; --violet-2: #85e0b8; --violet-clair: #102a20; --sur-violet: #0d0d18; }
   :root[data-theme="sombre"][data-accent="corail"] { --violet: #f08060; --violet-2: #f59a80; --violet-clair: #301619; --sur-violet: #0d0d18; }
   :root[data-theme="sombre"][data-accent="rose"] { --violet: #f08bb4; --violet-2: #f5a3c2; --violet-clair: #30121f; --sur-violet: #0d0d18; }
+  /* Densité : mode compact (espacements réduits). */
+  :root[data-densite="compact"] { --rayon: 8px; }
+  :root[data-densite="compact"] .tuile { padding: 8px 10px; }
+  :root[data-densite="compact"] .carte { padding: 12px; }
+  :root[data-densite="compact"] .carte-jour { padding: 8px 10px; }
+  :root[data-densite="compact"] .serveur { padding: 8px 10px; gap: 8px; }
+  :root[data-densite="compact"] .ligne { padding: 5px 10px; min-height: 40px; }
+  :root[data-densite="compact"] .vide { padding: 20px 16px; }
+  :root[data-densite="compact"] .tuiles, :root[data-densite="compact"] .serveurs, :root[data-densite="compact"] .aujourdhui { gap: 8px; }
+  :root[data-densite="compact"] .corps { gap: 16px; }
+  :root[data-densite="compact"] main { padding: 12px 0 16px; }
+  :root[data-densite="compact"] h2 { margin: 18px 0 8px; }
+  :root[data-densite="compact"] .carte-reg { padding: 12px 14px; }
   * { box-sizing: border-box; }
   [hidden] { display: none !important; }
   html, body { margin: 0; min-height: 100%; }
@@ -590,7 +604,7 @@ new MutationObserver(mutations => {
 }).observe(document.documentElement, { childList: true, subtree: true, characterData: true });
 document.addEventListener("DOMContentLoaded", () => traiterEmojis(document.body));
 // S.systeme : "windows" ou "linux" (donné par /api/onglets).
-const S = { config: null, edition: false, serveurs: null, systeme: "windows", accent: "violet" };
+const S = { config: null, edition: false, serveurs: null, systeme: "windows", accent: "violet", densite: "confortable" };
 /** Vrai quand Mes outils tourne sous Linux. */
 const surLinux = () => S.systeme === "linux";
 /** Le texte qui convient au système : selonSysteme("…Windows…", "…Linux…"). */
@@ -1089,6 +1103,7 @@ async function demarrerOnglets() {
   if (surLinux()) $("#btn-gadget").hidden = true;
   appliquerTheme(info.theme || "auto");
   appliquerAccent(info.accent || "violet");
+  appliquerDensite(info.densite || "confortable");
   for (const f of info.fichiers) {
     const nom = f.replace(/\.js$/, "");
     if (!$("#vue-" + nom)) $("#vues").insertBefore(el("section", { class: "vue", id: "vue-" + nom }), $("#vues > footer"));
@@ -1334,6 +1349,17 @@ function appliquerAccent(choix) {
 async function changerAccent(choix) {
   appliquerAccent(choix);
   try { await api("/api/reglages/enregistrer", { accent: choix }); } catch (e) { toast("😕 " + e.message, "erreur"); }
+}
+const DENSITES = ["confortable", "compact"];
+function appliquerDensite(choix) {
+  if (!DENSITES.includes(choix)) choix = "confortable";
+  S.densite = choix;
+  document.documentElement.dataset.densite = choix === "confortable" ? "" : choix;
+  try { localStorage.setItem("mes-outils-densite", choix); } catch {}
+}
+async function changerDensite(choix) {
+  appliquerDensite(choix);
+  try { await api("/api/reglages/enregistrer", { densite: choix }); } catch (e) { toast("😕 " + e.message, "erreur"); }
 }
 sombreWindows.addEventListener("change", () => { if (S.theme === "auto") appliquerTheme("auto"); });
 async function changerTheme(choix) {

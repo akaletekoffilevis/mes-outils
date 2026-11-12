@@ -364,7 +364,7 @@ class Gestionnaire(BaseHTTPRequestHandler):
             if chemin == "/api/onglets":
                 contenu = lire_outils()
                 return self.repondre(200, {"fichiers": onglets_web(), "langue": config.langue(), "theme": config.theme(),
-                                           "accent": config.accent(),
+                                           "accent": config.accent(), "densite": config.densite(),
                                            "masques": contenu.get("onglets_masques") or [],
                                            # None : jamais choisies (anciennes installations : tout est actif)
                                            "apps_actives": contenu.get("apps_actives"),

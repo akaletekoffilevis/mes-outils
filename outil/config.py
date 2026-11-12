@@ -53,6 +53,7 @@ JOURNAL = os.path.join(BASE if GELE else ICI, "hub.log")
 LANGUES = ("fr", "en")
 THEMES = ("auto", "clair", "sombre", "sepia", "contraste")
 ACCENTS = ("violet", "bleu", "vert", "corail", "rose")
+DENSITES = ("confortable", "compact")
 # Métiers proposés au premier lancement (ils pré-cochent des applications).
 PROFILS = ("freelance", "assistant_virtuel", "assistant_direction", "developpeur", "personnalise")
 # Toujours présentes, jamais désactivables.
@@ -168,6 +169,11 @@ def theme():
 def accent():
     valeur = lire().get("accent") or "violet"
     return valeur if valeur in ACCENTS else "violet"
+
+
+def densite():
+    valeur = lire().get("densite") or "confortable"
+    return valeur if valeur in DENSITES else "confortable"
 
 
 def app_active(nom):

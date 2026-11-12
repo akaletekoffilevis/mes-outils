@@ -58,6 +58,7 @@ def lire(_d=None):
         "langue": config.langue(),
         "theme": config.theme(),
         "accent": config.accent(),
+        "densite": config.densite(),
         "onglets_masques": contenu.get("onglets_masques") or [],
         "apps_actives": contenu.get("apps_actives"),
         "profil": contenu.get("profil") or "",
@@ -93,6 +94,10 @@ def enregistrer(d):
         if d["accent"] not in config.ACCENTS:
             raise ValueError("Accent inconnu.")
         valeurs["accent"] = d["accent"]
+    if "densite" in d:
+        if d["densite"] not in config.DENSITES:
+            raise ValueError("Densité inconnue.")
+        valeurs["densite"] = d["densite"]
     if "apps_actives" in d:
         apps = d["apps_actives"]
         if apps is not None and (not isinstance(apps, list) or not all(isinstance(n, str) and n.isidentifier() for n in apps)):
