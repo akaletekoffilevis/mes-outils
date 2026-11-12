@@ -225,6 +225,7 @@
     Object.assign(n, enregistree);
     const i = N.notes.findIndex(x => x.id === n.id);
     if (i >= 0) N.notes[i] = n; else N.notes.push(n);
+    dessiner();
     return n;
   }
 
@@ -292,7 +293,7 @@
       el("div", { class: "outils-note" }, pastilles, epingle, el("span", { title: "Rappel" }, icone("clock")), rappel, genre, etat),
       el("div", { class: "actions" },
         !nouvelleNote || n.id ? el("button", { class: "btn discret", style: "margin-right:auto;color:var(--rouge)", onclick: async () => {
-          if (!n.id) { fermer(); return; }
+          if (!n.id) { fermer(); dessiner(); return; }
           if (!(await confirmer(icone("trash-2"), "Supprimer cette note ?", "Elle disparaît définitivement.", "Supprimer"))) { editer(n); return; }
           await api("/api/notes/supprimer", { id: n.id });
           N.notes = N.notes.filter(x => x.id !== n.id);
