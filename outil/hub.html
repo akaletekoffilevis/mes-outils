@@ -100,7 +100,7 @@
 
   /* Menu (dock) ----------------------------------------------------------- */
   .menu { position: sticky; top: var(--entete); height: calc(100vh - var(--entete)); width: 216px; flex: none;
-    display: flex; flex-direction: column; gap: 1px; overflow: hidden;
+    display: flex; flex-direction: column; gap: 1px; overflow-y: auto; overflow-x: hidden;
     background: var(--carte); border-right: 1px solid var(--ligne); padding: 12px 10px; }
   .menu .groupe.bas { margin-top: auto; }
   .menu .groupe { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--gris); font-weight: 600; margin: 14px 10px 4px; }
