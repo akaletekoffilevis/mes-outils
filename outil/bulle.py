@@ -771,9 +771,12 @@ class Bulle:
             noms = list(APPS_ALERTES) + sorted(hub.modules_connus() - set(APPS_ALERTES) - {"config"})
         except Exception:  # noqa: BLE001
             noms = list(APPS_ALERTES)
+        desactivees = set((hub.config.lire() or {}).get("notifications_desactivees") or [])
         for nom in noms:
             try:
                 if not hub.config.app_active(nom):
+                    continue
+                if nom in desactivees:
                     continue
                 mod = module(nom)
                 if not mod or not hasattr(mod, "alertes_dues"):

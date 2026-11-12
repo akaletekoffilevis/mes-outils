@@ -60,6 +60,7 @@ def lire(_d=None):
         "accent": config.accent(),
         "densite": config.densite(),
         "onglets_masques": contenu.get("onglets_masques") or [],
+        "notifications_desactivees": contenu.get("notifications_desactivees") or [],
         "apps_actives": contenu.get("apps_actives"),
         "profil": contenu.get("profil") or "",
         "dossiers_projets": config.dossiers_projets(),
@@ -114,6 +115,11 @@ def enregistrer(d):
         if not isinstance(masques, list) or not all(isinstance(n, str) and n.isidentifier() for n in masques):
             raise ValueError("Liste d'onglets invalide.")
         valeurs["onglets_masques"] = [n for n in masques if n not in ("accueil", "reglages")]
+    if "notifications_desactivees" in d:
+        notifs = d["notifications_desactivees"] or []
+        if not isinstance(notifs, list) or not all(isinstance(n, str) and n.isidentifier() for n in notifs):
+            raise ValueError("Liste de notifications invalide.")
+        valeurs["notifications_desactivees"] = notifs
     if "ordre_menu" in d:
         ordre = d["ordre_menu"]
         if not isinstance(ordre, dict):
@@ -126,6 +132,16 @@ def enregistrer(d):
                 raise ValueError("Liste d'onglets invalide.")
             propre[g] = liste
         valeurs["ordre_menu"] = propre
+    if "ordre_notes" in d:
+        ordre = d["ordre_notes"]
+        if not isinstance(ordre, list) or not all(isinstance(n, str) and n.isidentifier() for n in ordre):
+            raise ValueError("Ordre des notes invalide.")
+        valeurs["ordre_notes"] = ordre
+    if "ordre_contacts" in d:
+        ordre = d["ordre_contacts"]
+        if not isinstance(ordre, list) or not all(isinstance(n, str) and n.isidentifier() for n in ordre):
+            raise ValueError("Ordre des contacts invalide.")
+        valeurs["ordre_contacts"] = ordre
     if "presence" in d:
         if d["presence"] not in PRESENCES:
             raise ValueError("Affichage inconnu.")

@@ -87,6 +87,15 @@
     "Installation automatique réservée au programme installé (AppImage).": "Automatic installation is only for the installed program (AppImage).",
     "Installation automatique réservée au programme installé (Setup.exe).": "Automatic installation is only for the installed program (Setup.exe).",
     "Affichage inconnu.": "Unknown display mode.",
+    "Notifications": "Notifications",
+    "Relances (contacts)": "Follow-ups (contacts)",
+    "Budget dépassé": "Budget exceeded",
+    "Documents qui expirent": "Expiring documents",
+    "Échéances": "Deadlines",
+    "Factures en retard": "Overdue invoices",
+    "Tâches à l'heure": "Tasks on time",
+    "Pomodoro": "Pomodoro",
+    "Réunions": "Meetings",
   });
 
   const style = document.createElement("style");
@@ -211,6 +220,26 @@
         carte("🗂️", "Applications", el("p", { class: "aide" }, "Choisissez les applications du menu, comme dans un ERP : les autres disparaissent, leurs données restent."),
           i.profil && PROFILS[i.profil] ? el("p", { class: "aide" }, t("Votre métier : {p}", { p: t(PROFILS[i.profil].titre) })) : null,
           el("button", { class: "btn", onclick: () => montrerVue("applications") }, "Choisir mes applications")),
+        carte("🔔", "Notifications", el("p", { class: "aide" }, "Choisissez les applications qui peuvent vous envoyer des rappels par la bulle."),
+          el("div", { class: "cases-reg" }, [
+            ["contacts", "Relances (contacts)"],
+            ["depenses", "Budget dépassé"],
+            ["documents", "Documents qui expirent"],
+            ["echeances", "Échéances"],
+            ["factures", "Factures en retard"],
+            ["taches", "Tâches à l'heure"],
+            ["temps", "Pomodoro"],
+            ["reunions", "Réunions"],
+          ].map(([nom, libelle]) => {
+            const desactivees = new Set(i.notifications_desactivees || []);
+            const actif = !desactivees.has(nom);
+            return el("label", { class: "case-reg" },
+              el("input", { type: "checkbox", checked: actif ? "" : null, onchange: async e => {
+                const desac = new Set(i.notifications_desactivees || []);
+                if (e.target.checked) desac.delete(nom); else desac.add(nom);
+                await enregistrer({ notifications_desactivees: [...desac] });
+              } }), libelle);
+          }))),
         carte("📁", "Dossiers de projets", el("p", { class: "aide" }, "Les onglets GitHub, Projets et État Git y cherchent vos projets (le dossier et ses sous-dossiers directs)."),
           listeDossiers, ajoutDossier),
         i.systeme === "linux" ? carteLinux(i, interrupteur)
